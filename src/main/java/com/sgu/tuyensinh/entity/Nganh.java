@@ -13,24 +13,26 @@ import lombok.NoArgsConstructor;
  * Ngành tuyển sinh.
  *
  * Ghi chú:
- * - `id` là mã ngành, dùng làm khóa chính.
+ * - Theo schema DB, bảng `xt_nganh` dùng cột `manganh` là mã ngành.
+ * - Mình map `id` (String) sang cột `manganh` để các quan hệ kiểu `ManyToOne`
+ *   (ví dụ từ `xt_nganh_tohop`) có thể join theo đúng mã ngành.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "nganh")
+@Table(name = "xt_nganh")
 public class Nganh {
 
     @Id
-    @Column(name = "ma_nganh", nullable = false, length = 50)
+    @Column(name = "manganh", nullable = false, length = 45)
     private String id;
 
-    @Column(name = "ten_nganh", nullable = false, length = 255)
+    @Column(name = "tennganh", nullable = false, length = 100)
     private String tenNganh;
 
-    @Column(name = "chi_tieu")
+    @Column(name = "n_chitieu", nullable = false)
     private Integer chiTieu;
 }
 

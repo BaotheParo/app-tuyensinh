@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGU Admission System 2026 - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            color: #495057;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .score-input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f8f9fa;
+            border-color: #764ba2;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state img {
+            width: 200px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                overflow-x: scroll;
+            }
+
+            .data-table {
+                font-size: 0.9em;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 SGU Admission System 2026</h1>
+            <p>University Admission Management Platform</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('candidates')">👥 Candidates</button>
+            <button class="nav-tab" onclick="switchTab('majors')">📚 Majors</button>
+            <button class="nav-tab" onclick="switchTab('scores')">📝 Scores</button>
+            <button class="nav-tab" onclick="switchTab('admission')">✅ Admission Engine</button>
+            <button class="nav-tab" onclick="switchTab('import')">📤 Import Data</button>
+            <button class="nav-tab" onclick="switchTab('reports')">📈 Reports</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="alert alert-info">
+                    <strong>Welcome to SGU Admission System 2026</strong><br>
+                    This system manages university admissions with 4.3 million candidate records across 54 combinations.
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalCandidates">4,231</h3>
+                        <p>Total Candidates</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="acceptedCount">0</h3>
+                        <p>Accepted</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="rejectedCount">10,898</h3>
+                        <p>Rejected</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingCount">18</h3>
+                        <p>PT1 Priority</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">System Overview</div>
+                    <p><strong>Version:</strong> 3.0 (Upgraded for Year 3)</p>
+                    <p><strong>Last Updated:</strong> March 16, 2026</p>
+                    <p><strong>Key Features:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>✅ POI-based file import with batch processing</li>
+                        <li>✅ HashMap caching for conversion tables</li>
+                        <li>✅ Single transaction architecture with no rollback</li>
+                        <li>✅ Multi-level admission algorithm (PT1-PT4)</li>
+                        <li>✅ Skip optimization for combinations with 0 scores</li>
+                        <li>✅ Database indexing for performance</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Candidates Tab -->
+            <div id="candidates" class="tab-content">
+                <div class="card">
+                    <div class="card-header">Candidate Management</div>
+                    
+                    <input type="text" class="search-box" placeholder="🔍 Search by CCCD, Name..." id="candidateSearch">
+                    
+                    <div class="filter-group">
+                        <button class="filter-btn active" onclick="filterCandidates('all')">All</button>
+                        <button class="filter-btn" onclick="filterCandidates('accepted')">Accepted</button>
+                        <button class="filter-btn" onclick="filterCandidates('rejected')">Rejected</button>
+                        <button class="filter-btn" onclick="filterCandidates('pt1')">PT1 Priority</button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showAddCandidateModal()">➕ Add New Candidate</button>
+
+                    <table class="data-table" id="candidatesTable">
+                        <thead>
+                            <tr>
+                                <th>CCCD</th>
+                                <th>Full Name</th>
+                                <th>Birth Date</th>
+                                <th>Major</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidatesBody">
+                            <tr>
+                                <td>058304001234</td>
+                                <td>Nguyen Van A</td>
+                                <td>15/05/2008</td>
+                                <td>Computer Science</td>
+                                <td><span class="status-badge status-pending">PT1 Priority</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="viewCandidate('058304001234')">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>079123456789</td>
+                                <td>Tran Thi B</td>
+                                <td>22/08/2008</td>
+                                <td>Business Admin</td>
+                                <td><span class="status-badge status-accepted">Accepted</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="viewCandidate('079123456789')">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Majors Tab -->
+            <div id="majors" class="tab-content">
+                <div class="card">
+                    <div class="card-header">Major Management</div>
+                    
+                    <button class="btn btn-primary" onclick="showAddMajorModal()">➕ Add New Major</button>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Major Name</th>
+                                <th>Methods</th>
+                                <th>Quota</th>
+                                <th>Flags</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CS01</td>
+                                <td>Computer Science</td>
+                                <td>PT1, PT2, PT3, PT4</td>
+                                <td>200</td>
+                                <td>TO, LI, HO, SI, VA</td>
+                                <td>
+                                    <button class="btn btn-secondary">Edit</button>
+                                    <button class="btn btn-danger">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>BA01</td>
+                                <td>Business Administration</td>
+                                <td>PT1, PT2, PT3</td>
+                                <td>150</td>
+                                <td>TO, LI, HO</td>
+                                <td>
+                                    <button class="btn btn-secondary">Edit</button>
+                                    <button class="btn btn-danger">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>EN01</td>
+                                <td>English Language</td>
+                                <td>PT1, PT4</td>
+                                <td>100</td>
+                                <td>TO, N1</td>
+                                <td>
+                                    <button class="btn btn-secondary">Edit</button>
+                                    <button class="btn btn-danger">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Scores Tab -->
+            <div id="scores" class="tab-content">
+                <div class="card">
+                    <div class="card-header">Score Management</div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Scoring Methods:</strong><br>
+                        • PT1 (Tuyen thang): Direct admission based on priority<br>
+                        • PT2 (DGNL): Scale 1200 points<br>
+                        • PT3 (V-SAT): Scale 450 points<br>
+                        • PT4 (THPT): Scale 30 points (subject-based)
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Candidate (CCCD):</label>
+                        <input type="text" placeholder="Enter CCCD" id="scoreSearchCCCD">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="loadCandidateScores()">🔍 Load Scores</button>
+
+                    <div id="scoresDisplay" style="margin-top: 30px; display: none;">
+                        <h3>Score Details for Candidate</h3>
+                        
+                        <div class="card">
+                            <h4>English Certificate Scores (N1_CC)</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>N1_THI (Real English Score):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="n1_thi">
+                                </div>
+                                <div class="form-group">
+                                    <label>Best Certificate:</label>
+                                    <select id="best_cert">
+                                        <option value="">None</option>
+                                        <option value="IELTS">IELTS</option>
+                                        <option value="TOEFL">TOEFL</option>
+                                        <option value="VSTEP">VSTEP</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Certificate Score:</label>
+                                    <input type="number" step="0.1" id="cert_score">
+                                </div>
+                                <div class="form-group">
+                                    <label>Certificate Expiry Date:</label>
+                                    <input type="date" id="cert_expiry">
+                                </div>
+                            </div>
+                            <p><strong>N1_CC Calculation:</strong> MAX(N1_THI, best_cert_converted_score)</p>
+                            <p><strong>Result N1_CC:</strong> <span id="n1_cc_result" style="font-size: 1.3em; color: #667eea;">-</span></p>
+                        </div>
+
+                        <div class="card">
+                            <h4>Subject Combination Scores</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Math (Toán):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_toan">
+                                </div>
+                                <div class="form-group">
+                                    <label>Literature (Văn):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_van">
+                                </div>
+                                <div class="form-group">
+                                    <label>English (Anh):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_anh">
+                                </div>
+                                <div class="form-group">
+                                    <label>Physics (Lý):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_ly">
+                                </div>
+                                <div class="form-group">
+                                    <label>Chemistry (Hóa):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_hoa">
+                                </div>
+                                <div class="form-group">
+                                    <label>Biology (Sinh):</label>
+                                    <input type="number" step="0.1" min="0" max="10" class="score-input" id="score_sinh">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h4>Test Scores</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>DGNL (0-1200):</label>
+                                    <input type="number" min="0" max="1200" class="score-input" id="score_dgnl">
+                                </div>
+                                <div class="form-group">
+                                    <label>V-SAT (0-450):</label>
+                                    <input type="number" min="0" max="450" class="score-input" id="score_vsat">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-success" onclick="saveScores()">💾 Save Scores</button>
+                            <button class="btn btn-secondary" onclick="calculateScores()">🧮 Calculate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admission Engine Tab -->
+            <div id="admission" class="tab-content">
+                <div class="card">
+                    <div class="card-header">🎯 Admission Algorithm Engine</div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Algorithm Workflow (6 Steps):</strong><br>
+                        1. Pre-calculate N1_CC for all candidates<br>
+                        2. Pre-calculate DC (Bonus Points)<br>
+                        3. Pre-calculate DXT for all combinations<br>
+                        4. Run admission algorithm (PT1 → PT4)<br>
+                        5. View results by major<br>
+                        6. Export results to Excel
+                    </div>
+
+                    <div class="card">
+                        <h4>Step 1: Pre-calculate N1_CC</h4>
+                        <p>Calculate English proficiency score using N1_CC = MAX(N1_THI, best_cert_converted_score)</p>
+                        <button class="btn btn-primary" onclick="precalculateN1CC()">▶️ Run N1_CC Calculation</button>
+                        <div id="n1cc_progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="n1cc_fill">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Step 2: Pre-calculate DC (Bonus Points)</h4>
+                        <p>Calculate bonus points based on HSG achievements and location</p>
+                        <button class="btn btn-primary" onclick="precalculateDC()">▶️ Run DC Calculation</button>
+                        <div id="dc_progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="dc_fill">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Step 3: Pre-calculate DXT (Admission Scores)</h4>
+                        <p>Calculate final admission scores for all combinations</p>
+                        <button class="btn btn-primary" onclick="precalculateDXT()">▶️ Run DXT Calculation</button>
+                        <div id="dxt_progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="dxt_fill">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Step 4: Run Admission Algorithm</h4>
+                        <p>Execute the complete admission process with PT1-PT4 prioritization</p>
+                        <button class="btn btn-success" onclick="runAdmissionAlgorithm()" style="font-size: 1.2em; padding: 15px 40px;">
+                            🚀 RUN FULL ADMISSION ALGORITHM
+                        </button>
+                        <div id="admission_progress" style="display: none; margin-top: 20px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="admission_fill">0%</div>
+                            </div>
+                            <div id="admission_status" style="margin-top: 15px; font-weight: 600;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="admission_results" style="display: none;">
+                        <h4>✅ Admission Results Summary</h4>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3 id="result_accepted">0</h3>
+                                <p>ACCEPTED</p>
+                            </div>
+                            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <h3 id="result_rejected">0</h3>
+                                <p>REJECTED</p>
+                            </div>
+                            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <h3 id="result_pt1">0</h3>
+                                <p>PT1 Priority</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="viewDetailedResults()">📊 View Detailed Results</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Data Tab -->
+            <div id="import" class="tab-content">
+                <div class="card">
+                    <div class="card-header">📤 Import Data from Excel</div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Import Features:</strong><br>
+                        • POI-based Excel file reading with batch processing<br>
+                        • Validates all required fields (CCCD, dates, scores)<br>
+                        • Uses INSERT ... ON DUPLICATE KEY UPDATE strategy<br>
+                        • SwingWorker for async processing with progress bar<br>
+                        • Single transaction architecture (1 transaction at end)<br>
+                        • Processing time: 3-5 minutes for 43k records
+                    </div>
+
+                    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📁</div>
+                        <h3>Click to select Excel file</h3>
+                        <p style="margin-top: 10px; color: #6c757d;">Supported formats: .xlsx, .xls</p>
+                    </div>
+
+                    <div id="import_file_info" style="display: none; margin-top: 20px;">
+                        <div class="card">
+                            <h4>Selected File: <span id="file_name"></span></h4>
+                            <p><strong>File Size:</strong> <span id="file_size"></span></p>
+                            
+                            <div class="form-group">
+                                <label>Select Import Type:</label>
+                                <select id="import_type">
+                                    <option value="candidates">Candidate Information (Ds_thi_sinh.xlsx)</option>
+                                    <option value="scores">Test Scores (Nguong_dau_vao_2025.xlsx)</option>
+                                    <option value="majors">Majors (tohopmon.xlsx)</option>
+                                    <option value="wishes">Candidate Wishes (Nguyenvong.xlsx)</option>
+                                    <option value="bonuspoints">Bonus Points (Ds_quy_doi_tieng_Anh.xlsx)</option>
+                                    <option value="hsg">HSG Achievements (Uu_tien_xet_tuyen.xlsx)</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" onclick="startImport()">▶️ Start Import</button>
+                        </div>
+                    </div>
+
+                    <div id="import_progress" style="display: none; margin-top: 20px;">
+                        <h3>Import Progress</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="import_fill">0%</div>
+                        </div>
+                        <p style="margin-top: 15px;"><strong>Status:</strong> <span id="import_status">Processing...</span></p>
+                        <p><strong>Records Processed:</strong> <span id="records_processed">0</span> / <span id="total_records">0</span></p>
+                        <p><strong>Errors:</strong> <span id="error_count">0</span></p>
+                        <div id="error_log" style="max-height: 200px; overflow-y: auto; margin-top: 15px; display: none;">
+                            <h4>Error Log:</h4>
+                            <div id="error_list" style="background: #f8d7da; padding: 15px; border-radius: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <div id="import_complete" style="display: none; margin-top: 20px;">
+                        <div class="alert alert-success">
+                            <strong>✅ Import Completed Successfully!</strong><br>
+                            <span id="import_summary"></span>
+                        </div>
+                        <button class="btn btn-primary" onclick="resetImport()">Import Another File</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <div class="card">
+                    <div class="card-header">📈 Reports & Statistics</div>
+                    
+                    <div class="card">
+                        <h4>Admission Statistics by Major</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Major</th>
+                                    <th>Quota</th>
+                                    <th>Applications</th>
+                                    <th>Accepted</th>
+                                    <th>Acceptance Rate</th>
+                                    <th>Min Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Computer Science</td>
+                                    <td>200</td>
+                                    <td>850</td>
+                                    <td>200</td>
+                                    <td>23.5%</td>
+                                    <td>25.8</td>
+                                </tr>
+                                <tr>
+                                    <td>Business Administration</td>
+                                    <td>150</td>
+                                    <td>620</td>
+                                    <td>150</td>
+                                    <td>24.2%</td>
+                                    <td>24.5</td>
+                                </tr>
+                                <tr>
+                                    <td>English Language</td>
+                                    <td>100</td>
+                                    <td>380</td>
+                                    <td>100</td>
+                                    <td>26.3%</td>
+                                    <td>26.2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <h4>Admission by Method</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Total Accepted</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>PT1 (Direct Admission)</td>
+                                    <td>18</td>
+                                    <td>4.2%</td>
+                                </tr>
+                                <tr>
+                                    <td>PT2 (DGNL)</td>
+                                    <td>120</td>
+                                    <td>28.4%</td>
+                                </tr>
+                                <tr>
+                                    <td>PT3 (V-SAT)</td>
+                                    <td>85</td>
+                                    <td>20.1%</td>
+                                </tr>
+                                <tr>
+                                    <td>PT4 (THPT)</td>
+                                    <td>200</td>
+                                    <td>47.3%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="exportReport('excel')">📊 Export to Excel</button>
+                        <button class="btn btn-primary" onclick="exportReport('pdf')">📄 Export to PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Candidate Modal -->
+    <div id="addCandidateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Candidate</div>
+            <form id="addCandidateForm">
+                <div class="form-group">
+                    <label>CCCD (12 digits):</label>
+                    <input type="text" pattern="[0-9]{12}" required placeholder="058304001234">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name:</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name:</label>
+                        <input type="text" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Birth Date (dd/MM/yyyy):</label>
+                    <input type="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Gender:</label>
+                    <select required>
+                        <option value="">Select...</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority Area (Đối tượng ưu tiên):</label>
+                    <select>
+                        <option value="">None</option>
+                        <option value="01">ĐT 01: War veteran child (≥81% disabled)</option>
+                        <option value="02">ĐT 02: War victim (21-80% disabled)</option>
+                        <option value="03">ĐT 03: Revolutionary family</option>
+                        <option value="04">ĐT 04: Ethnic minority (&lt;10,000 people)</option>
+                        <option value="05">ĐT 05: Revolutionary period (before 1945)</option>
+                        <option value="06a">ĐT 06a: Ethnic minority (special difficulty area)</option>
+                        <option value="07">ĐT 07: THPT graduate (special difficulty area)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Region (Khu vực):</label>
+                    <select>
+                        <option value="">Select...</option>
+                        <option value="KV1">KV1: Special difficulty mountainous/island areas</option>
+                        <option value="KV2-NT">KV2-NT: Rural areas</option>
+                        <option value="KV2">KV2: Urban/suburban areas</option>
+                        <option value="KV3">KV3: Major cities (HN, HCM, HP, DN, Can Tho)</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">Save Candidate</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCandidateModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentTab = 'dashboard';
+        let candidates = [
+            {
+                cccd: '058304001234',
+                name: 'Nguyen Van A',
+                birthDate: '15/05/2008',
+                major: 'Computer Science',
+                status: 'PT1 Priority',
+                n1_cc: 8.5,
+                dxt: 28.5,
+                method: 'PT1'
+            },
+            {
+                cccd: '079123456789',
+                name: 'Tran Thi B',
+                birthDate: '22/08/2008',
+                major: 'Business Admin',
+                status: 'Accepted',
+                n1_cc: 7.8,
+                dxt: 26.3,
+                method: 'PT4'
+            }
+        ];
+
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            currentTab = tabId;
+        }
+
+        // Candidate filtering
+        function filterCandidates(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter logic would go here
+            console.log('Filtering by:', filter);
+        }
+
+        // Modal management
+        function showAddCandidateModal() {
+            document.getElementById('addCandidateModal').classList.add('active');
+        }
+
+        function showAddMajorModal() {
+            alert('Add Major modal would open here');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function viewCandidate(cccd) {
+            alert(`Viewing details for candidate: ${cccd}`);
+        }
+
+        // Score calculation functions
+        function loadCandidateScores() {
+            const cccd = document.getElementById('scoreSearchCCCD').value;
+            if (!cccd) {
+                alert('Please enter a CCCD');
+                return;
+            }
+            
+            document.getElementById('scoresDisplay').style.display = 'block';
+            // Load actual scores from database here
+        }
+
+        function calculateN1CC() {
+            const n1_thi = parseFloat(document.getElementById('n1_thi').value) || 0;
+            const cert = document.getElementById('best_cert').value;
+            const certScore = parseFloat(document.getElementById('cert_score').value) || 0;
+            const certExpiry = document.getElementById('cert_expiry').value;
+            
+            // Check certificate expiry
+            if (cert && certExpiry) {
+                const expiryDate = new Date(certExpiry);
+                const cutoffDate = new Date('2026-06-30');
+                
+                if (expiryDate < cutoffDate) {
+                    alert('Certificate expired! Cannot use this certificate.');
+                    return 0;
+                }
+            }
+            
+            // Convert certificate score to scale 10
+            let convertedScore = 0;
+            if (cert === 'IELTS') {
+                if (certScore >= 7.0) convertedScore = 10.0;
+                else if (certScore >= 6.5) convertedScore = 9.0;
+                else if (certScore >= 5.5) convertedScore = 8.0;
+                else convertedScore = certScore * 1.2;
+            } else if (cert === 'TOEFL') {
+                if (certScore >= 627) convertedScore = 10.0;
+                else if (certScore >= 500) convertedScore = 9.0;
+                else convertedScore = certScore / 62.7;
+            } else if (cert === 'VSTEP') {
+                if (certScore >= 5) convertedScore = 10.0;
+                else if (certScore >= 4) convertedScore = 9.0;
+                else convertedScore = certScore * 2;
+            }
+            
+            const n1_cc = Math.max(n1_thi, convertedScore);
+            document.getElementById('n1_cc_result').textContent = n1_cc.toFixed(2);
+            return n1_cc;
+        }
+
+        function calculateScores() {
+            const n1_cc = calculateN1CC();
+            alert(`Scores calculated! N1_CC = ${n1_cc.toFixed(2)}`);
+        }
+
+        function saveScores() {
+            alert('Scores saved successfully!');
+        }
+
+        // Pre-calculation functions
+        function precalculateN1CC() {
+            document.getElementById('n1cc_progress').style.display = 'block';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                document.getElementById('n1cc_fill').style.width = progress + '%';
+                document.getElementById('n1cc_fill').textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        alert('✅ N1_CC calculation completed for all candidates!');
+                        document.getElementById('n1cc_progress').style.display = 'none';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function precalculateDC() {
+            document.getElementById('dc_progress').style.display = 'block';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                document.getElementById('dc_fill').style.width = progress + '%';
+                document.getElementById('dc_fill').textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        alert('✅ DC (Bonus Points) calculation completed!');
+                        document.getElementById('dc_progress').style.display = 'none';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function precalculateDXT() {
+            document.getElementById('dxt_progress').style.display = 'block';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 3;
+                document.getElementById('dxt_fill').style.width = progress + '%';
+                document.getElementById('dxt_fill').textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        alert('✅ DXT (Admission Score) calculation completed for all combinations!');
+                        document.getElementById('dxt_progress').style.display = 'none';
+                    }, 500);
+                }
+            }, 150);
+        }
+
+        // Main admission algorithm
+        function runAdmissionAlgorithm() {
+            if (!confirm('This will run the full admission algorithm. Continue?')) {
+                return;
+            }
+            
+            document.getElementById('admission_progress').style.display = 'block';
+            document.getElementById('admission_results').style.display = 'none';
+            
+            let progress = 0;
+            const statuses = [
+                'Phase 0: Pre-scoring (N1_CC, DC, DXT)...',
+                'Phase 1: Processing PT1 (Direct Admission)...',
+                'Phase 2: Processing PT2 (DGNL)...',
+                'Phase 3: Processing PT3 (V-SAT)...',
+                'Phase 4: Processing PT4 (THPT)...',
+                'Finalizing results...',
+                'Writing to database...'
+            ];
+            let statusIndex = 0;
+            
+            const interval = setInterval(() => {
+                progress += 2;
+                document.getElementById('admission_fill').style.width = progress + '%';
+                document.getElementById('admission_fill').textContent = progress + '%';
+                
+                if (progress % 15 === 0 && statusIndex < statuses.length) {
+                    document.getElementById('admission_status').textContent = statuses[statusIndex];
+                    statusIndex++;
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('admission_progress').style.display = 'none';
+                        document.getElementById('admission_results').style.display = 'block';
+                        
+                        // Update results
+                        document.getElementById('result_accepted').textContent = '4,231';
+                        document.getElementById('result_rejected').textContent = '10,898';
+                        document.getElementById('result_pt1').textContent = '18';
+                        
+                        // Update dashboard
+                        document.getElementById('acceptedCount').textContent = '4,231';
+                        document.getElementById('rejectedCount').textContent = '10,898';
+                        document.getElementById('pendingCount').textContent = '0';
+                        
+                        alert('✅ Admission algorithm completed successfully!\n\nAccepted: 4,231\nRejected: 10,898\nPT1 Priority: 18');
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function viewDetailedResults() {
+            switchTab('reports');
+            document.querySelector('.nav-tab:last-child').click();
+        }
+
+        // File import functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('import_file_info').style.display = 'block';
+                document.getElementById('file_name').textContent = file.name;
+                document.getElementById('file_size').textContent = (file.size / 1024).toFixed(2) + ' KB';
+            }
+        }
+
+        function startImport() {
+            const importType = document.getElementById('import_type').value;
+            
+            document.getElementById('import_file_info').style.display = 'none';
+            document.getElementById('import_progress').style.display = 'block';
+            
+            let progress = 0;
+            const totalRecords = 43514;
+            let processed = 0;
+            let errors = 0;
+            
+            document.getElementById('total_records').textContent = totalRecords;
+            
+            const interval = setInterval(() => {
+                progress += 2;
+                processed += Math.floor(totalRecords * 0.02);
+                
+                if (Math.random() > 0.95) {
+                    errors++;
+                }
+                
+                document.getElementById('import_fill').style.width = progress + '%';
+                document.getElementById('import_fill').textContent = progress + '%';
+                document.getElementById('records_processed').textContent = Math.min(processed, totalRecords);
+                document.getElementById('error_count').textContent = errors;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('import_progress').style.display = 'none';
+                        document.getElementById('import_complete').style.display = 'block';
+                        document.getElementById('import_summary').textContent = 
+                            `Total Records: ${totalRecords}\nSuccessfully Imported: ${totalRecords - errors}\nErrors: ${errors}\nTime: 3.5 minutes`;
+                    }, 500);
+                }
+            }, 80);
+        }
+
+        function resetImport() {
+            document.getElementById('import_complete').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('import_file_info').style.display = 'none';
+        }
+
+        // Report export functions
+        function exportReport(format) {
+            alert(`Exporting report to ${format.toUpperCase()} format...\n\nReport will include:\n• Admission statistics by major\n• Acceptance rates\n• Method breakdown\n• Score distributions`);
+        }
+
+        // Search functionality
+        document.getElementById('candidateSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            // Filter candidates table based on search term
+            console.log('Searching for:', searchTerm);
+        });
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            console.log('SGU Admission System 2026 - Prototype loaded');
+        });
+
+        // Calculate N1_CC on input change
+        ['n1_thi', 'best_cert', 'cert_score', 'cert_expiry'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', calculateN1CC);
+            }
+        });
+    </script>
+</body>
+</html>
