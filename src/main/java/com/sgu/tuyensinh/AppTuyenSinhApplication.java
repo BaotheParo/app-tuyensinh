@@ -1,7 +1,13 @@
 package com.sgu.tuyensinh;
 
+import com.sgu.tuyensinh.admin.ui.MainFrame;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+import javax.swing.*;
 
 /**
  * Điểm khởi chạy của ứng dụng Spring Boot.
@@ -14,6 +20,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AppTuyenSinhApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AppTuyenSinhApplication.class, args);
+        SpringApplication app = new SpringApplication(AppTuyenSinhApplication.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+        app.run(args);
+    }
+
+    @Bean
+    public CommandLineRunner run() {
+        return args -> {
+            SwingUtilities.invokeLater(() -> {
+                new MainFrame().setVisible(true);
+            });
+        };
     }
 }
