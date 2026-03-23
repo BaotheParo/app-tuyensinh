@@ -153,7 +153,7 @@ public class NganhToHop {
      * - `dolech` âm -> trừ (âm) = cộng bù -> tăng điểm khi quy về gốc.
      * - `dolech` dương -> trừ (dương) -> giảm điểm khi quy về gốc.
      */
-    @Column(name = "dolech", precision = 6, scale = 2)
+    @Column(name = "dolech")
     private Double doLech;
 
     // ===== Quan hệ =====

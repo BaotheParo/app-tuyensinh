@@ -67,6 +67,18 @@
             <version>2.137</version>
         </dependency>
 
+        <!-- Apache POI: đọc file Excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+
         <!-- Test (có sẵn của Spring Boot) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

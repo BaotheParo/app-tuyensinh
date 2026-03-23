@@ -60,19 +60,19 @@ public class DiemCong {
     /**
      * Điểm cộng từ chứng chỉ/nguồn dữ liệu (cột DB: diemCC).
      */
-    @Column(name = "diemCC", precision = 6, scale = 2)
+    @Column(name = "diemCC")
     private Double diemCC;
 
     /**
      * Điểm cộng ưu tiên (cột DB: diemUtxt).
      */
-    @Column(name = "diemUtxt", precision = 6, scale = 2)
+    @Column(name = "diemUtxt")
     private Double diemUtxt;
 
     /**
      * Tổng điểm cộng sau khi xử lý theo logic trong PRD (cột DB: diemTong).
      */
-    @Column(name = "diemTong", precision = 6, scale = 2)
+    @Column(name = "diemTong")
     private Double diemTong;
 
     /**

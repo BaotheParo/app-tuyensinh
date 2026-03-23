@@ -60,25 +60,25 @@ public class BangQuyDoi {
     /**
      * Cận dưới điểm gốc.
      */
-    @Column(name = "d_diema", precision = 6, scale = 2)
+    @Column(name = "d_diema")
     private Double diemGocA;
 
     /**
      * Cận trên điểm gốc.
      */
-    @Column(name = "d_diemb", precision = 6, scale = 2)
+    @Column(name = "d_diemb")
     private Double diemGocB;
 
     /**
      * Cận dưới điểm quy đổi tương ứng.
      */
-    @Column(name = "d_diemc", precision = 6, scale = 2)
+    @Column(name = "d_diemc")
     private Double diemQuyDoiC;
 
     /**
      * Cận trên điểm quy đổi tương ứng.
      */
-    @Column(name = "d_diemd", precision = 6, scale = 2)
+    @Column(name = "d_diemd")
     private Double diemQuyDoiD;
 
     /**

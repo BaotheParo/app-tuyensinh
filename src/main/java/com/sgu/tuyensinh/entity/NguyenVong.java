@@ -80,16 +80,16 @@ public class NguyenVong {
     private String ttThm;
 
     // ====== Các cột điểm trong bảng (để lưu đầy đủ dữ liệu theo DB schema) ======
-    @Column(name = "diem_thxt", precision = 10, scale = 5)
+    @Column(name = "diem_thxt")
     private Double diemThxt;
 
-    @Column(name = "diem_utqd", precision = 10, scale = 5)
+    @Column(name = "diem_utqd")
     private Double diemUtqd;
 
-    @Column(name = "diem_cong", precision = 6, scale = 2)
+    @Column(name = "diem_cong")
     private Double diemCong;
 
-    @Column(name = "diem_xettuyen", precision = 10, scale = 5)
+    @Column(name = "diem_xettuyen")
     private Double diemXetTuyen;
 
     /**
