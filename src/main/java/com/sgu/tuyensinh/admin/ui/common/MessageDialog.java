@@ -1,3 +1,5 @@
+package com.sgu.tuyensinh.admin.ui.common;
+
 import javax.swing.*;
 
 public class MessageDialog {
