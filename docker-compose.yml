@@ -5,8 +5,8 @@ services:
     image: mysql:8.0
     container_name: mysql-sgu-2026
     environment:
-      MYSQL_ROOT_PASSWORD: "123456"
-      MYSQL_DATABASE: "sgu_tuyensinh_2026"
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: sgu_tuyensinh_2026
     ports:
       - "3306:3306"
     volumes:

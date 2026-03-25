@@ -131,4 +131,37 @@ public class ExcelReaderUtil {
                 return null;
         }
     }
+    public static BigDecimal getSafeBigDecimal(Cell cell) {
+    if (cell == null || cell.getCellType() == CellType.BLANK) {
+        return null;
+    }
+
+    switch (cell.getCellType()) {
+        case NUMERIC:
+            return BigDecimal.valueOf(cell.getNumericCellValue());
+
+        case STRING:
+            String text = cell.getStringCellValue().trim();
+            if (text.isEmpty()) {
+                return null;
+            }
+            try {
+                // xử lý trường hợp dùng dấu phẩy
+                text = text.replace(',', '.');
+                return new BigDecimal(text);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+
+        case FORMULA:
+            try {
+                return BigDecimal.valueOf(cell.getNumericCellValue());
+            } catch (IllegalStateException e) {
+                return null;
+            }
+
+        default:
+            return null;
+    }
+}
 }
