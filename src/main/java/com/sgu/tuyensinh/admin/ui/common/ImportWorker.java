@@ -1,6 +1,12 @@
 package com.sgu.tuyensinh.admin.ui.common;
 
 import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import org.apache.poi.ss.usermodel.*;   //phải thêm thư viện âpche vào pom.xml
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.swing.*;
@@ -22,13 +28,81 @@ public class ImportWorker extends SwingWorker<Void, Integer> {
             Sheet sheet = workbook.getSheetAt(0);
             int totalRows = sheet.getPhysicalNumberOfRows();
 
-            for (int i = 0; i < totalRows; i++) {
-                Row row = sheet.getRow(i);
-                Cell cell = row.getCell(0);
-                String value = cell.getStringCellValue();
-                // gọi API backend để lưu dữ liệu...
+            // Lấy dòng đầu tiên làm header (tên cột)
+            Row headerRow = sheet.getRow(0);
+            int totalCols = headerRow.getPhysicalNumberOfCells();
 
-                // cập nhật tiến trình
+            for (int i = 1; i < totalRows; i++) { // bắt đầu từ dòng 1, bỏ header
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                // Xây dựng JSON từ tất cả các cột
+                StringBuilder jsonBuilder = new StringBuilder("{");
+                for (int j = 0; j < totalCols; j++) {
+                    Cell headerCell = headerRow.getCell(j);
+                    Cell dataCell = row.getCell(j);
+
+                    if (headerCell == null || dataCell == null) continue;
+
+                    String key = headerCell.getStringCellValue();
+                    String value;
+
+                    switch (dataCell.getCellType()) {
+                        case STRING:
+                            value = dataCell.getStringCellValue();
+                            break;
+                        case NUMERIC:
+                            if (DateUtil.isCellDateFormatted(dataCell)) {
+                                value = new SimpleDateFormat("yyyy-MM-dd").format(dataCell.getDateCellValue());
+                            } else {
+                                value = String.valueOf(dataCell.getNumericCellValue());
+                            }
+                            break;
+                        case BOOLEAN:
+                            value = String.valueOf(dataCell.getBooleanCellValue());
+                            break;
+                        default:
+                            value = "";
+                    }
+
+                    jsonBuilder.append("\"")
+                            .append(key)
+                            .append("\":\"")
+                            .append(value)
+                            .append("\"");
+
+                    if (j < totalCols - 1) {
+                        jsonBuilder.append(", ");
+                    }
+                }
+                jsonBuilder.append("}");
+
+                String jsonInputString = jsonBuilder.toString();
+
+                // --- Gọi API backend ---
+                try {
+                    URL url = new URL("http://localhost:8080/api/import");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                    conn.setDoOutput(true);
+
+                    try (OutputStream os = conn.getOutputStream()) {
+                        byte[] input = jsonInputString.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+
+                    int code = conn.getResponseCode();
+                    if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_CREATED) {
+                        System.err.println("Import thất bại cho dòng " + i + ": " + code);
+                    }
+
+                    conn.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // --- Cập nhật tiến trình ---
                 int progress = (int) ((i + 1) * 100.0 / totalRows);
                 publish(progress);
                 setProgress(progress);
