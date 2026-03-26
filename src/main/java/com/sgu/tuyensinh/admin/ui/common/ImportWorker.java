@@ -1,5 +1,8 @@
 package com.sgu.tuyensinh.admin.ui.common;
 
+import java.io.FileInputStream;
+import org.apache.poi.ss.usermodel.*;   //phải thêm thư viện âpche vào pom.xml
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.swing.*;
 
 public class ImportWorker extends SwingWorker<Void, Integer> {
@@ -13,15 +16,27 @@ public class ImportWorker extends SwingWorker<Void, Integer> {
 
     @Override
     protected Void doInBackground() throws Exception {
-        // Ví dụ giả lập tiến trình import // này chỉ là mô phỏng, cần thay bằng logic thực tế để import file Excel
-        for (int i = 0; i <= 100; i++) {
-            Thread.sleep(50); // giả lập thời gian xử lý
-            publish(i);       // gửi tiến trình
-            setProgress(i);   // cập nhật progress
+        try (FileInputStream fis = new FileInputStream(filePath);
+            Workbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            int totalRows = sheet.getPhysicalNumberOfRows();
+
+            for (int i = 0; i < totalRows; i++) {
+                Row row = sheet.getRow(i);
+                Cell cell = row.getCell(0);
+                String value = cell.getStringCellValue();
+                // gọi API backend để lưu dữ liệu...
+
+                // cập nhật tiến trình
+                int progress = (int) ((i + 1) * 100.0 / totalRows);
+                publish(progress);
+                setProgress(progress);
+            }
         }
-        // TODO: gọi API backend để import file Excel thật sự
         return null;
     }
+
 
     @Override
     protected void process(java.util.List<Integer> chunks) {
