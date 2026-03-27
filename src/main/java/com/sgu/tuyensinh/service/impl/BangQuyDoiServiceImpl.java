@@ -113,8 +113,11 @@ public class BangQuyDoiServiceImpl implements IImportService {
 
     private BangQuyDoi convertToEntity(QuyDoiNNImportDTO dto) {
         BangQuyDoi entity = new BangQuyDoi();
-        entity.setMaQuyDoi(dto.getMaQuyDoi());
-        entity.setPhuongThuc(dto.getPhuongThuc().trim());
+        // HOTFIX: Tuyệt đối không set giá trị cho trường Khóa chính (identity) khi import
+        // entity.setMaQuyDoi(dto.getMaQuyDoi()); 
+
+        // HOTFIX: Gán cứng phương thức là NGOAINGU cho module Quy đổi Tiếng Anh theo đúng PRD
+        entity.setPhuongThuc("NGOAINGU"); 
         entity.setDToHop(dto.getToHop() != null ? dto.getToHop().trim() : null);
         entity.setMon(dto.getMon().trim());
         entity.setDiemGocA(dto.getDiemA());
