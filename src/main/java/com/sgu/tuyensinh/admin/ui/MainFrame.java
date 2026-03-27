@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -19,7 +21,7 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-@Component
+// @Component
 public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
@@ -41,7 +43,7 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
+    public MainFrame() {
 //        this.nhanVien = nhanVien;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -392,66 +394,53 @@ public class MainFrame extends JFrame {
     }//GEN-LAST:event_btnBaoCaoActionPerformed
 
     private void addIconTaskbar() {
-
-        btnDangXuat.setText("<html>&nbsp;&nbsp;&nbsp;Đăng xuất</html>");
-        btnBangQuyDoi.setText("<html>&nbsp;&nbsp;&nbsp;Bảng Quy Đổi</html>");
-        btnDiemUuTien.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Ưu Tiên</html>");
-        btnNguyenVong.setText("<html>&nbsp;&nbsp;&nbsp;Nguyện Vọng</html>");
-        btnThiSinh.setText("<html>&nbsp;&nbsp;&nbsp;Thí Sinh</html>");
-        btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
-        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
-        btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
-        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
-        btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
+//        btnDangXuat.setText("<html>&nbsp;&nbsp;&nbsp;Đăng xuất</html>");
+//        btnBangQuyDoi.setText("<html>&nbsp;&nbsp;&nbsp;Bảng Quy Đổi</html>");
+//        btnDiemUuTien.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Ưu Tiên</html>");
+//        btnNguyenVong.setText("<html>&nbsp;&nbsp;&nbsp;Nguyện Vọng</html>");
+//        btnThiSinh.setText("<html>&nbsp;&nbsp;&nbsp;Thí Sinh</html>");
+//        btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
+//        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
+//        btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
+//        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
+//        btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
 
         // Đặt icon và căn chỉnh biểu tượng sang trái cho mỗi button
-        btnTrangChu.setIcon(new FlatSVGIcon("res/icon/home.svg"));
+        btnTrangChu.setIcon(new FlatSVGIcon("icon/home.svg"));
         btnTrangChu.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnNganh.setIcon(new FlatSVGIcon("res/icon/product.svg"));
+        btnNganh.setIcon(new FlatSVGIcon("icon/product.svg"));
         btnNganh.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnToHopMon.setIcon(new FlatSVGIcon("res/icon/brand.svg"));
+        btnToHopMon.setIcon(new FlatSVGIcon("icon/brand.svg"));
         btnToHopMon.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnThiSinh.setIcon(new FlatSVGIcon("res/icon/import.svg"));
+        btnThiSinh.setIcon(new FlatSVGIcon("icon/import.svg"));
         btnThiSinh.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnBangQuyDoi.setIcon(new FlatSVGIcon("res/icon/customer.svg"));
+        btnBangQuyDoi.setIcon(new FlatSVGIcon("icon/customer.svg"));
         btnBangQuyDoi.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnDiemUuTien.setIcon(new FlatSVGIcon("res/icon/supplier.svg"));
+        btnDiemUuTien.setIcon(new FlatSVGIcon("icon/area.svg"));
         btnDiemUuTien.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnNguyenVong.setIcon(new FlatSVGIcon("res/icon/staff.svg"));
+        btnNguyenVong.setIcon(new FlatSVGIcon("icon/staff.svg"));
         btnNguyenVong.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnXetTuyen.setIcon(new FlatSVGIcon("res/icon/statistical.svg"));
+        btnXetTuyen.setIcon(new FlatSVGIcon("icon/ghinhangopy.svg"));
         btnXetTuyen.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnDangXuat.setIcon(new FlatSVGIcon("res/icon/log_out.svg"));
+        btnDiemThi.setIcon(new FlatSVGIcon("icon/nhomquyen.svg"));
+        btnDiemThi.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnToHopMon.setIcon(new FlatSVGIcon("icon/permission.svg"));
+        btnToHopMon.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnBaoCao.setIcon(new FlatSVGIcon("icon/statistical.svg"));
+        btnBaoCao.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnDangXuat.setIcon(new FlatSVGIcon("icon/log_out.svg"));
         btnDangXuat.setHorizontalAlignment(SwingConstants.LEFT);
-
-        // Gán icon (Đảm bảo folder res/icon có thật)
-        try {
-            btnTrangChu.setIcon(new FlatSVGIcon("res/icon/home.svg"));
-            btnNganh.setIcon(new FlatSVGIcon("res/icon/product.svg"));
-            btnToHopMon.setIcon(new FlatSVGIcon("res/icon/brand.svg"));
-            btnThiSinh.setIcon(new FlatSVGIcon("res/icon/import.svg"));
-            btnBangQuyDoi.setIcon(new FlatSVGIcon("res/icon/customer.svg"));
-            btnDiemUuTien.setIcon(new FlatSVGIcon("res/icon/supplier.svg"));
-            btnNguyenVong.setIcon(new FlatSVGIcon("res/icon/staff.svg"));
-            btnXetTuyen.setIcon(new FlatSVGIcon("res/icon/statistical.svg"));
-            btnDangXuat.setIcon(new FlatSVGIcon("res/icon/log_out.svg"));
-        } catch (Exception e) {
-            System.err.println("Không tìm thấy file icon SVG: " + e.getMessage());
-        }
-
-        // Căn lề trái toàn bộ nút
-        for (AbstractButton btn : java.util.Arrays.asList(btnTrangChu, btnNganh, btnToHopMon, btnThiSinh,
-                btnDiemThi, btnBangQuyDoi, btnDiemUuTien, btnNguyenVong, btnXetTuyen, btnBaoCao)) {
-            btn.setHorizontalAlignment(SwingConstants.LEFT);
-        }
     }
 
     private void setUT() {
