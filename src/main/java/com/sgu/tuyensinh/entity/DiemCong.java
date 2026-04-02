@@ -82,6 +82,14 @@ public class DiemCong {
     private String ghichu;
 
     /**
+     * Ngày cấp chứng chỉ (dạng chuỗi dd/MM/yyyy).
+     * Senior: Mặc dù DB nên để DATE, nhưng cấu trúc file import thường là String, 
+     * việc parse ở Service giúp minh họa logic xử lý cho sinh viên.
+     */
+    @Column(name = "ngay_cap", length = 20)
+    private String ngayCap;
+
+    /**
      * Khóa duy nhất khi import tạo (dùng để chống trùng).
      */
     @Column(name = "dc_keys", nullable = false, length = 45)
