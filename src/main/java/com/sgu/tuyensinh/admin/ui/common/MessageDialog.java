@@ -1,4 +1,8 @@
 package com.sgu.tuyensinh.admin.ui.common;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 96ab4ed6e412ff347741ba7f6f80acfd9a80f128
 import javax.swing.*;
 
 public class MessageDialog {
