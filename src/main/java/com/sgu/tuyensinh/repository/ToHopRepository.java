@@ -7,12 +7,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Repository thao tác bảng {@code xt_tohop_monthi}.
  */
 public interface ToHopRepository extends JpaRepository<ToHop, Integer> {
     @Query("SELECT t.maToHop FROM ToHop t WHERE t.maToHop IN :maToHopList")
     Set<String> findExistingMaToHop(@Param("maToHopList") List<String> maToHopList);
+    boolean existsByMaToHop(String maToHop);
 }
 
