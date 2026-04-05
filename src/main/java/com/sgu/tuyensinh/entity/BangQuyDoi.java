@@ -28,6 +28,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "xt_bangquydoi")
 public class BangQuyDoi {
 
+    // HOTFIX: Sử dụng Integer (Object) để Hibernate nhận diện null là record mới, 
+    // và dùng @GeneratedValue để MySQL tự động tăng ID (BE-3.2 Vinh fix)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idqd", nullable = false)
@@ -36,7 +38,7 @@ public class BangQuyDoi {
     /**
      * Phương thức: ví dụ ĐGNL, VSAT, NGOAINGU.
      */
-    @Column(name = "d_phuongthuc", length = 45)
+    @Column(name = "d_phuongthuc", length = 255)
     private String phuongThuc;
 
     /**
@@ -48,49 +50,49 @@ public class BangQuyDoi {
     /**
      * Mã tổ hợp (nếu bảng quy đổi có tách theo tổ hợp; có thể null).
      */
-    @Column(name = "d_tohop", length = 45)
+    @Column(name = "d_tohop", length = 255)
     private String dToHop;
 
     /**
      * Môn thi hoặc loại chứng chỉ (ví dụ: IELTS, TOEFL ITP, VSAT..., hoặc mã môn).
      */
-    @Column(name = "d_mon", length = 45)
+    @Column(name = "d_mon", length = 255)
     private String mon;
 
     /**
      * Cận dưới điểm gốc.
      */
-    @Column(name = "d_diema", precision = 6, scale = 2)
+    @Column(name = "d_diema")
     private Double diemGocA;
 
     /**
      * Cận trên điểm gốc.
      */
-    @Column(name = "d_diemb", precision = 6, scale = 2)
+    @Column(name = "d_diemb")
     private Double diemGocB;
 
     /**
      * Cận dưới điểm quy đổi tương ứng.
      */
-    @Column(name = "d_diemc", precision = 6, scale = 2)
+    @Column(name = "d_diemc")
     private Double diemQuyDoiC;
 
     /**
      * Cận trên điểm quy đổi tương ứng.
      */
-    @Column(name = "d_diemd", precision = 6, scale = 2)
+    @Column(name = "d_diemd")
     private Double diemQuyDoiD;
 
     /**
      * Mã bảng quy đổi (duy nhất trong dữ liệu import).
      */
-    @Column(name = "d_maquydoi", length = 45)
+    @Column(name = "d_maquydoi", length = 255)
     private String maQuyDoi;
 
     /**
      * Phân vị/nhãn khoảng điểm (phục vụ import/diagnostics, tùy dataset).
      */
-    @Column(name = "d_phanvi", length = 45)
+    @Column(name = "d_phanvi", length = 255)
     private String phanVi;
 }
 

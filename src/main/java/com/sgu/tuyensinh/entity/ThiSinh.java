@@ -53,5 +53,15 @@ public class ThiSinh {
 
     @Column(name = "khu_vuc_ut", length = 50)
     private String khuVucUt;
+
+    // Giữ danh sách Điểm cộng & Điểm thi để dùng trong logic tính điểm
+    // Tạm để @Transient giúp dễ bind từ query / object map
+    @jakarta.persistence.Transient
+    private java.util.List<DiemCong> diemCongs;
+
+    @lombok.ToString.Exclude
+    @jakarta.persistence.OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "cccd", referencedColumnName = "cccd", insertable = false, updatable = false)
+    private DiemThi diemThi;
 }
 

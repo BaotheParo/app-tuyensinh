@@ -53,6 +53,13 @@ Ghi chú:
 
 ## 4) Cách chạy dự án
 
+### Hỗ trợ khởi chạy DB bằng Docker (Local Dev)
+Nếu máy bạn chưa cài đặt MySQL, bạn có thể chạy file Compose có sẵn để dựng nhanh DB bằng lệnh:
+```bash
+docker compose up -d
+```
+Hệ thống sẽ tự động kéo image MySQL 8.0, thiết lập database `sgu_tuyensinh_2026` với user/pass là `root / 123456`.
+
 ### Chạy bằng Maven
 
 ```bash
@@ -98,6 +105,10 @@ Các package chính:
 - `DiemThi` → bảng `diem_thi` (có cột **nk1..nk8** để map SQL gốc)
 - `Nganh` → bảng `nganh`
 - `User` → bảng `users` (phục vụ đăng nhập)
+- `DiemCong` → bảng `diem_cong` (Quản lý điểm cộng chứng chỉ/HSG)
+- `NganhToHop` → bảng `nganh_to_hop` (Cấu hình hệ số và mức bù lệch môn Toán/Văn/Anh...)
+- `NguyenVong` → bảng `nguyen_vong`
+- `BangQuyDoi` → bảng `bang_qui_doi`
 
 ### Repository (package `com.sgu.tuyensinh.repository`)
 
@@ -151,4 +162,13 @@ Hiện tại dự án có **Auth lõi tối giản** để nhóm hiểu luồng 
 - **Lombok không hoạt động trong IDE**:
   - Bật plugin Lombok (IntelliJ/Eclipse)
   - Enable “Annotation Processing” trong IDE
+
+---
+
+## 11) Các Module Nghiệp Vụ Chính (Core Services)
+Dự án được phân rã nghiệp vụ rõ ràng để team dễ dàng nắm bắt:
+- **`ScoringService.java`**: Chịu trách nhiệm tính điểm xét tuyển (ĐXT) tuân thủ cực kỳ chuẩn xác 6 bước bộ quy tắc (tính tổ hợp gốc, điểm cộng, ưu tiên giảm dần, v.v.). Đây là Core Engine độc lập.
+- **`ThiSinhService.java`**: Xử lý logic Thí sinh (phân trang tối ưu hiệu năng không mắc lỗi N+1 query bằng `LEFT JOIN FETCH`, cập nhật điểm thủ công và đảm bảo giao dịch với `@Transactional`).
+- **`UserService.java`**: Nghiệp vụ quản lý user bao gồm chặn tạo trùng tên, thay đổi mật khẩu, phân quyền động (`toggleRole`) và hỗ trợ cấm/khóa hoạt động tài khoản (`toggleStatus`).
+- **`ExcelReaderUtil.java`**: Nằm ở `util`, dùng `Apache POI` để duyệt đọc file Excel an toàn (chống lỗi tràn số mũ E+11 của Excel, xử lý kiểu mượt mà cho sinh viên sử dụng).
 

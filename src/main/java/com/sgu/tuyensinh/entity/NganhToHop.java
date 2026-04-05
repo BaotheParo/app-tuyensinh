@@ -40,14 +40,14 @@ public class NganhToHop {
      * Dùng để join tới {@link Nganh}.
      */
     @Column(name = "manganh", nullable = false, length = 45)
-    private String manganh;
+    private String maNganh;
 
     /**
      * Mã tổ hợp môn.
      * Dùng để join tới {@link ToHop}.
      */
     @Column(name = "matohop", nullable = false, length = 45)
-    private String matohop;
+    private String maToHop;
 
     // ===== Môn thành phần + hệ số môn (w1, w2, w3 trong PRD) =====
 
@@ -104,48 +104,48 @@ public class NganhToHop {
      * - Trong DB là tinyint (0/1). Mình vẫn map kiểu {@code Double} để phù hợp yêu cầu của bài và
      *   thuận tiện nếu sau này nhóm dùng giá trị không chỉ 0/1.
      */
-    @Column(name = "N1")
-    private Double n1;
+    @Column(name = "`N1`")
+    private Double n1 = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Tiếng Anh (xem PRD phần skip optimization)
 
     /** Flag môn TO (Toán). */
-    @Column(name = "TO")
-    private Double to;
+    @Column(name = "`TO`")
+    private Double to = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Toán (xem PRD phần skip optimization) 
 
     /** Flag môn LI (Lý). */
-    @Column(name = "LI")
-    private Double li;
+    @Column(name = "`LI`")
+    private Double li = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Lý (xem PRD phần skip optimization)
 
     /** Flag môn HO (Hóa). */
-    @Column(name = "HO")
-    private Double ho;
+    @Column(name = "`HO`")
+    private Double ho = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Hóa (xem PRD phần skip optimization)
 
     /** Flag môn SI (Sinh). */
-    @Column(name = "SI")
-    private Double si;
+    @Column(name = "`SI`")
+    private Double si = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Sinh (xem PRD phần skip optimization)
 
     /** Flag môn VA (Văn). */
-    @Column(name = "VA")
-    private Double va;
+    @Column(name = "`VA`")
+    private Double va = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Văn (xem PRD phần skip optimization)
 
     /** Flag môn SU (Sử). */
-    @Column(name = "SU")
-    private Double su;
+    @Column(name = "`SU`")
+    private Double su = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Sử (xem PRD phần skip optimization)
 
     /** Flag môn DI (Địa). */
-    @Column(name = "DI")
-    private Double di;
+    @Column(name = "`DI`")
+    private Double di = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Địa (xem PRD phần skip optimization)
 
     /** Flag môn TI (Tin). */
-    @Column(name = "TI")
-    private Double ti;
+    @Column(name = "`TI`")
+    private Double ti = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn Tin (xem PRD phần skip optimization)
 
     /** Flag môn KHAC (môn khác theo cấu hình). */
-    @Column(name = "KHAC")
-    private Double khac;
+    @Column(name = "`KHAC`")
+    private Double khac = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn khác (xem PRD phần skip optimization)
 
     /** Flag môn KTPL (môn khác/nhóm môn theo cấu hình). */
-    @Column(name = "KTPL")
-    private Double ktpl;
+    @Column(name = "`KTPL`")
+    private Double ktpl = 0.0;   // Mặc định 0.0 (không bắt buộc), nếu = 1.0 thì bắt buộc phải có điểm môn khác/nhóm môn (xem PRD phần skip optimization)
 
     /**
      * Độ lệch để quy đổi điểm tổ hợp đang xét về tổ hợp gốc của ngành.
@@ -153,8 +153,8 @@ public class NganhToHop {
      * - `dolech` âm -> trừ (âm) = cộng bù -> tăng điểm khi quy về gốc.
      * - `dolech` dương -> trừ (dương) -> giảm điểm khi quy về gốc.
      */
-    @Column(name = "dolech", precision = 6, scale = 2)
-    private Double doLech;
+    @Column(name = "dolech")
+    private Double doLech = 0.0;   // Mặc định 0.0 (không lệch), nếu < 0 thì khi quy về tổ hợp gốc sẽ cộng thêm điểm, nếu > 0 thì khi quy về tổ hợp gốc sẽ trừ đi điểm.
 
     // ===== Quan hệ =====
 

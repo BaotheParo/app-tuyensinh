@@ -60,19 +60,19 @@ public class DiemCong {
     /**
      * Điểm cộng từ chứng chỉ/nguồn dữ liệu (cột DB: diemCC).
      */
-    @Column(name = "diemCC", precision = 6, scale = 2)
+    @Column(name = "diemCC")
     private Double diemCC;
 
     /**
      * Điểm cộng ưu tiên (cột DB: diemUtxt).
      */
-    @Column(name = "diemUtxt", precision = 6, scale = 2)
+    @Column(name = "diemUtxt")
     private Double diemUtxt;
 
     /**
      * Tổng điểm cộng sau khi xử lý theo logic trong PRD (cột DB: diemTong).
      */
-    @Column(name = "diemTong", precision = 6, scale = 2)
+    @Column(name = "diemTong")
     private Double diemTong;
 
     /**
@@ -80,6 +80,14 @@ public class DiemCong {
      */
     @Column(name = "ghichu")
     private String ghichu;
+
+    /**
+     * Ngày cấp chứng chỉ (dạng chuỗi dd/MM/yyyy).
+     * Senior: Mặc dù DB nên để DATE, nhưng cấu trúc file import thường là String, 
+     * việc parse ở Service giúp minh họa logic xử lý cho sinh viên.
+     */
+    @Column(name = "ngay_cap", length = 20)
+    private String ngayCap;
 
     /**
      * Khóa duy nhất khi import tạo (dùng để chống trùng).

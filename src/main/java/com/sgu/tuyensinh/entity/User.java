@@ -48,5 +48,13 @@ public class User {
      */
     @Column(name = "role", nullable = false, length = 20)
     private String role;
+
+    /**
+     * Trạng thái hoạt động của tài khoản (Khóa/Mở khóa).
+     * Mặc định khi tạo mới là true (đang hoạt động).
+     */
+    @Column(name = "is_active")
+    @Builder.Default
+    private Boolean isActive = true;
 }
 
