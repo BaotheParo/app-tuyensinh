@@ -7,26 +7,27 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import org.apache.poi.ss.usermodel.*;   //phải thêm thư viện âpche vào pom.xml
+import org.apache.poi.ss.usermodel.*; //phải thêm thư viện âpche vào pom.xml
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.swing.*;
 
 public class ImportWorker extends SwingWorker<Void, Integer> {
     private String filePath;
-    private JProgressBar progressBar;
+    private ProgressPanel progressPanel;
+    private int totalRows;
 
-    public ImportWorker(String filePath, JProgressBar progressBar) {
+    public ImportWorker(String filePath, ProgressPanel progressPanel) {
         this.filePath = filePath;
-        this.progressBar = progressBar;
+        this.progressPanel = progressPanel;
     }
 
     @Override
     protected Void doInBackground() throws Exception {
         try (FileInputStream fis = new FileInputStream(filePath);
-            Workbook workbook = new XSSFWorkbook(fis)) {
+                Workbook workbook = new XSSFWorkbook(fis)) {
 
             Sheet sheet = workbook.getSheetAt(0);
-            int totalRows = sheet.getPhysicalNumberOfRows();
+            totalRows = sheet.getPhysicalNumberOfRows();
 
             // Lấy dòng đầu tiên làm header (tên cột)
             Row headerRow = sheet.getRow(0);
@@ -34,7 +35,8 @@ public class ImportWorker extends SwingWorker<Void, Integer> {
 
             for (int i = 1; i < totalRows; i++) { // bắt đầu từ dòng 1, bỏ header
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 // Xây dựng JSON từ tất cả các cột
                 StringBuilder jsonBuilder = new StringBuilder("{");
@@ -42,7 +44,8 @@ public class ImportWorker extends SwingWorker<Void, Integer> {
                     Cell headerCell = headerRow.getCell(j);
                     Cell dataCell = row.getCell(j);
 
-                    if (headerCell == null || dataCell == null) continue;
+                    if (headerCell == null || dataCell == null)
+                        continue;
 
                     String key = headerCell.getStringCellValue();
                     String value;
@@ -103,24 +106,24 @@ public class ImportWorker extends SwingWorker<Void, Integer> {
                 }
 
                 // --- Cập nhật tiến trình ---
-                int progress = (int) ((i + 1) * 100.0 / totalRows);
-                publish(progress);
-                setProgress(progress);
+                publish(i); // gửi số dòng hiện tại
+                setProgress((int) ((i + 1) * 100.0 / totalRows)); // vẫn có thể set % nếu muốn
             }
         }
         return null;
     }
 
-
     @Override
     protected void process(java.util.List<Integer> chunks) {
         // Cập nhật thanh tiến trình
-        int latest = chunks.get(chunks.size() - 1);
-        progressBar.setValue(latest);
+        int currentRow = chunks.get(chunks.size() - 1);
+        progressPanel.updateProgress(currentRow, totalRows);
+
     }
 
     @Override
     protected void done() {
-        JOptionPane.showMessageDialog(progressBar.getParent(), "Import hoàn tất!");
+        progressPanel.finish(totalRows);
+        JOptionPane.showMessageDialog(progressPanel.getParent(), "Import hoàn tất!");
     }
 }
