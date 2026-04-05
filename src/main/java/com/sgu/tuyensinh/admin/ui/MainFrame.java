@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import com.sgu.tuyensinh.entity.ThiSinh;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -20,7 +21,10 @@ import java.awt.*;
  */
 @Component
 public class MainFrame extends JFrame {
-    // Panel
+    // Inject các Panel do Spring quản lý
+    private final NganhPanel nganhPanel;
+    private final ThiSinhPanel thiSinhPanel;
+    private final ToHopPanel toHopPanel; // Bổ sung
 //    private SanPham sanphamPanel;
 //    private NhaCungCap nhacungcapPanel;
 //    private KhachHang khachHangPanel;
@@ -37,8 +41,12 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame() {
+    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
 //        this.nhanVien = nhanVien;
+        this.nganhPanel = nganhPanel;
+        this.thiSinhPanel = thiSinhPanel;
+        this.toHopPanel = toHopPanel;
+
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Hệ thống quản lý tuyển sinh đại học");
@@ -357,23 +365,17 @@ public class MainFrame extends JFrame {
 //        addTaskBar(mainContent2, khachHangPanel);
     }//GEN-LAST:event_btnBangQuyDoiActionPerformed
 
-    private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThiSinhActionPerformed
-        // TODO add your handling code here:
-//        this.phieuNhapPanel = new PhieuNhap();
-//        addTaskBar(mainContent2, phieuNhapPanel);
-    }//GEN-LAST:event_btnThiSinhActionPerformed
+    private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, toHopPanel); // <-- Chắc chắn chỗ này là toHopPanel chưa?
+    }
 
-    private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToHopMonActionPerformed
-        // TODO add your handling code here:
-//        this.thuocTinhPanel = new ThuocTinh();
-//        addTaskBar(mainContent2, thuocTinhPanel);
-    }//GEN-LAST:event_btnToHopMonActionPerformed
+    private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, nganhPanel);
+    }
 
-    private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNganhActionPerformed
-        // TODO add your handling code here:
-//        this.sanphamPanel = new SanPham();
-//        addTaskBar(mainContent2, sanphamPanel);
-    }//GEN-LAST:event_btnNganhActionPerformed
+    private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, thiSinhPanel); // <-- Chắc chắn chỗ này là thiSinhPanel chưa?
+    }
 
     private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTrangChuActionPerformed
         // TODO add your handling code here:
@@ -393,7 +395,7 @@ public class MainFrame extends JFrame {
         btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
         btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
         btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
-        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
+        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
         btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
 
         // Đặt icon và căn chỉnh biểu tượng sang trái cho mỗi button
@@ -459,15 +461,15 @@ public class MainFrame extends JFrame {
         btnTrangChuActionPerformed(null);
     }
 
-//    private void addTaskBar(Container mainContent, JPanel panel) {
-//        mainContent.setLayout(new BorderLayout());
-//        panel.setSize(mainContent.getSize());
-//        mainContent.removeAll();
-//        mainContent.add(panel, BorderLayout.CENTER);
-//        mainContent.setVisible(true);
-//        mainContent.revalidate();
-//        mainContent.repaint();
-//    }
+    private void addTaskBar(Container mainContent, JPanel panel) {
+        mainContent.setLayout(new BorderLayout());
+        panel.setSize(mainContent.getSize());
+        mainContent.removeAll();
+        mainContent.add(panel, BorderLayout.CENTER);
+        mainContent.setVisible(true);
+        mainContent.revalidate();
+        mainContent.repaint();
+    }
 
 //    private void phanQuyenTheoVaiTro() {
 //        int role = nhanVien.getRoleGroupId();
