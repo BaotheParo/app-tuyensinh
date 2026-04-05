@@ -30,7 +30,7 @@ public class ThiSinhServiceImpl {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             String kw = keyword.trim();
-            return thiSinhRepository.findByIdContainingOrHoTenContainingIgnoreCase(kw, kw, pageable);
+            return thiSinhRepository.findByIdContainingIgnoreCaseOrHoTenContainingIgnoreCase(keyword, keyword, pageable);
         }
 
         return thiSinhRepository.findAll(pageable);

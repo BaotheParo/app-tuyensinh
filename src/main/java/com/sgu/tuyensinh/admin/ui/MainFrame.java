@@ -19,7 +19,7 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-// @Component
+@Component
 public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
@@ -52,9 +52,12 @@ public class MainFrame extends JFrame {
         this.setTitle("Hệ thống quản lý tuyển sinh đại học");
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Init Frame's Components 
-        setUT();
+        // Init Frame's Components
+        // BƯỚC 1: Phải gọi initComponents TRƯỚC để tạo ra các đối tượng UI (mainContent2, v.v.)
         initComponents();
+
+        // BƯỚC 2: Sau đó mới gọi các hàm setup tùy chỉnh (setUT, addIconTaskbar)
+        setUT();
         addIconTaskbar();
 
         // Gán tên và chức vụ
@@ -377,9 +380,12 @@ public class MainFrame extends JFrame {
         addTaskBar(mainContent2, thiSinhPanel); // <-- Chắc chắn chỗ này là thiSinhPanel chưa?
     }
 
-    private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTrangChuActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTrangChuActionPerformed
+    private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {
+        // Có thể thêm DashboardPanel vào đây sau
+        mainContent2.removeAll();
+        mainContent2.revalidate();
+        mainContent2.repaint();
+    }
 
     private void btnBaoCaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBaoCaoActionPerformed
         // TODO add your handling code here:
@@ -425,6 +431,27 @@ public class MainFrame extends JFrame {
 
         btnDangXuat.setIcon(new FlatSVGIcon("res/icon/log_out.svg"));
         btnDangXuat.setHorizontalAlignment(SwingConstants.LEFT);
+
+        // Gán icon (Đảm bảo folder res/icon có thật)
+        try {
+            btnTrangChu.setIcon(new FlatSVGIcon("res/icon/home.svg"));
+            btnNganh.setIcon(new FlatSVGIcon("res/icon/product.svg"));
+            btnToHopMon.setIcon(new FlatSVGIcon("res/icon/brand.svg"));
+            btnThiSinh.setIcon(new FlatSVGIcon("res/icon/import.svg"));
+            btnBangQuyDoi.setIcon(new FlatSVGIcon("res/icon/customer.svg"));
+            btnDiemUuTien.setIcon(new FlatSVGIcon("res/icon/supplier.svg"));
+            btnNguyenVong.setIcon(new FlatSVGIcon("res/icon/staff.svg"));
+            btnXetTuyen.setIcon(new FlatSVGIcon("res/icon/statistical.svg"));
+            btnDangXuat.setIcon(new FlatSVGIcon("res/icon/log_out.svg"));
+        } catch (Exception e) {
+            System.err.println("Không tìm thấy file icon SVG: " + e.getMessage());
+        }
+
+        // Căn lề trái toàn bộ nút
+        for (AbstractButton btn : java.util.Arrays.asList(btnTrangChu, btnNganh, btnToHopMon, btnThiSinh,
+                btnDiemThi, btnBangQuyDoi, btnDiemUuTien, btnNguyenVong, btnXetTuyen, btnBaoCao)) {
+            btn.setHorizontalAlignment(SwingConstants.LEFT);
+        }
     }
 
     private void setUT() {
