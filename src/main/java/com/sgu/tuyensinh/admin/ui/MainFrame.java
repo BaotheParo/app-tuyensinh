@@ -19,7 +19,7 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-@Component
+// @Component
 public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;

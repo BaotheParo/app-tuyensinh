@@ -16,15 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Import Bảng Quy đổi Tiếng Anh / Ngoại ngữ từ Excel.
- * Đặt tại: service/impl/QuyDoiTiengAnhServiceImpl.java
- *
- * Lưu ý: code gốc có lỗi cú pháp (thiếu method wrapper, dùng bangQuyDoiRepository.save()
- * từng dòng). Đã sửa thành saveAll(validList) theo chuẩn PRD v3.0.
+ * Service import bảng quy đổi (overwrite + tối ưu batch)
  */
 @Service
 @RequiredArgsConstructor
@@ -44,15 +39,16 @@ public class BangQuyDoiServiceImpl implements IImportService {
         }
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null || sheet.getLastRowNum() < 1) {
-                log.warn("File Excel BảngQuyĐổi không có dữ liệu");
+                log.warn("File Excel không có dữ liệu");
                 return result;
             }
 
             List<BangQuyDoi> validList = new ArrayList<>();
 
-            // Bước 1: Đọc toàn bộ → validate từng dòng → gom lỗi
+            // ===== 1. READ + VALIDATE =====
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
@@ -69,24 +65,84 @@ public class BangQuyDoiServiceImpl implements IImportService {
                 validList.add(convertToEntity(dto));
             }
 
-            // Bước 2: saveAll danh sách hợp lệ (thay vì save() từng dòng)
-            if (!validList.isEmpty()) {
-                bangQuyDoiRepository.saveAll(validList);
-                validList.forEach(b -> result.incrementSuccess());
-                log.info("Import BảngQuyĐổi: {}", result);
+            if (validList.isEmpty()) {
+                return result;
             }
 
+            // ===== 2. LOAD DATA CŨ =====
+            List<BangQuyDoi> existingList = bangQuyDoiRepository.findAll();
+
+            Map<String, BangQuyDoi> existingMap = new HashMap<>();
+            for (BangQuyDoi e : existingList) {
+                String key = buildKey(
+                        e.getPhuongThuc(),
+                        e.getToHop(),
+                        e.getMon(),
+                        e.getMaQuyDoi()
+                );
+                existingMap.put(key, e);
+            }
+
+            // ===== 3. MERGE (UPDATE / INSERT) =====
+            List<BangQuyDoi> toSave = new ArrayList<>();
+
+            for (BangQuyDoi newEntity : validList) {
+
+                String key = buildKey(
+                        newEntity.getPhuongThuc(),
+                        newEntity.getToHop(),
+                        newEntity.getMon(),
+                        newEntity.getMaQuyDoi()
+                );
+
+                if (existingMap.containsKey(key)) {
+                    // 🔥 UPDATE
+                    BangQuyDoi old = existingMap.get(key);
+
+                    old.setDiemGocA(newEntity.getDiemGocA());
+                    old.setDiemGocB(newEntity.getDiemGocB());
+                    old.setDiemQuyDoiC(newEntity.getDiemQuyDoiC());
+                    old.setDiemQuyDoiD(newEntity.getDiemQuyDoiD());
+                    old.setPhanVi(newEntity.getPhanVi());
+
+                    toSave.add(old);
+                } else {
+                    // 🆕 INSERT
+                    toSave.add(newEntity);
+                }
+
+                result.incrementSuccess();
+            }
+
+            // ===== 4. SAVE BATCH =====
+            bangQuyDoiRepository.saveAll(toSave);
+
+            log.info("Import thành công: {}", result);
+
         } catch (Exception e) {
-            log.error("Lỗi import BảngQuyĐổi từ Excel", e);
+            log.error("Lỗi import Excel", e);
             result.addError("Lỗi hệ thống: " + e.getMessage());
         }
 
         return result;
     }
 
+    // ================= HELPER =================
+
+    private String buildKey(String phuongThuc, String toHop, String mon, String maQuyDoi) {
+        return (safe(phuongThuc) + "|" +
+                safe(toHop) + "|" +
+                safe(mon) + "|" +
+                safe(maQuyDoi)).toLowerCase();
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
+    }
+
     private QuyDoiNNImportDTO readRowToDto(Row row) {
         QuyDoiNNImportDTO dto = new QuyDoiNNImportDTO();
-        // Cột 0: STT (bỏ qua)
+
         dto.setPhuongThuc(ExcelReaderUtil.getSafeString(row.getCell(1)));
         dto.setToHop(ExcelReaderUtil.getSafeString(row.getCell(2)));
         dto.setMon(ExcelReaderUtil.getSafeString(row.getCell(3)));
@@ -96,35 +152,39 @@ public class BangQuyDoiServiceImpl implements IImportService {
         dto.setDiemD(ExcelReaderUtil.getSafeDouble(row.getCell(7)));
         dto.setMaQuyDoi(ExcelReaderUtil.getSafeString(row.getCell(8)));
         dto.setPhanVi(ExcelReaderUtil.getSafeString(row.getCell(9)));
-        // Lưu ý: code gốc set maQuyDoi = cell(8) rồi lại set phanVi = cell(8) — đã sửa:
-        // maQuyDoi nên được sinh tự động hoặc lấy từ cột riêng nếu có
+
         return dto;
     }
 
     private String validate(QuyDoiNNImportDTO dto, int rowNum) {
-        if (dto.getPhuongThuc() == null || dto.getPhuongThuc().isBlank())
+        if (dto.getPhuongThuc() == null || dto.getPhuongThuc().isBlank()) {
             return "Dòng " + rowNum + ": Phương thức không được trống";
-        if (dto.getMon() == null || dto.getMon().isBlank())
-            return "Dòng " + rowNum + ": Môn không được trống (phuongThuc=" + dto.getPhuongThuc() + ")";
-        if (dto.getDiemA() == null)
-            return "Dòng " + rowNum + ": Điểm A không được để trống (mon=" + dto.getMon() + ")";
+        }
+
+        if (dto.getMaQuyDoi() == null || dto.getMaQuyDoi().isBlank()) {
+            return "Dòng " + rowNum + ": Mã quy đổi không được trống";
+        }
+
+        if (dto.getDiemA() == null) {
+            return "Dòng " + rowNum + ": Điểm A không được trống";
+        }
+
         return null;
     }
 
     private BangQuyDoi convertToEntity(QuyDoiNNImportDTO dto) {
         BangQuyDoi entity = new BangQuyDoi();
-        // HOTFIX: Tuyệt đối không set giá trị cho trường Khóa chính (identity) khi import
-        // entity.setMaQuyDoi(dto.getMaQuyDoi()); 
 
-        // HOTFIX: Gán cứng phương thức là NGOAINGU cho module Quy đổi Tiếng Anh theo đúng PRD
-        entity.setPhuongThuc("NGOAINGU"); 
-        entity.setDToHop(dto.getToHop() != null ? dto.getToHop().trim() : null);
-        entity.setMon(dto.getMon().trim());
+        entity.setPhuongThuc(dto.getPhuongThuc().trim());
+        entity.setToHop(dto.getToHop() != null ? dto.getToHop().trim() : null);
+        entity.setMon(dto.getMon() != null ? dto.getMon().trim() : null);
         entity.setDiemGocA(dto.getDiemA());
         entity.setDiemGocB(dto.getDiemB());
         entity.setDiemQuyDoiC(dto.getDiemC());
         entity.setDiemQuyDoiD(dto.getDiemD());
+        entity.setMaQuyDoi(dto.getMaQuyDoi());
         entity.setPhanVi(dto.getPhanVi() != null ? dto.getPhanVi().trim() : null);
+
         return entity;
     }
 }

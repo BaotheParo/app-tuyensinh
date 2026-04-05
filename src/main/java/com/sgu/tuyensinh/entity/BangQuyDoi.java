@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "xt_bangquydoi")
+@Table(
+    name = "xt_bangquydoi",
+    uniqueConstraints = @UniqueConstraint(
+        columnNames = {"d_phuongthuc", "d_tohop", "d_mon", "d_maquydoi"}
+    )
+)
 public class BangQuyDoi {
 
     // HOTFIX: Sử dụng Integer (Object) để Hibernate nhận diện null là record mới, 
@@ -51,7 +57,7 @@ public class BangQuyDoi {
      * Mã tổ hợp (nếu bảng quy đổi có tách theo tổ hợp; có thể null).
      */
     @Column(name = "d_tohop", length = 255)
-    private String dToHop;
+    private String toHop;
 
     /**
      * Môn thi hoặc loại chứng chỉ (ví dụ: IELTS, TOEFL ITP, VSAT..., hoặc mã môn).
@@ -94,5 +100,7 @@ public class BangQuyDoi {
      */
     @Column(name = "d_phanvi", length = 255)
     private String phanVi;
+
+    
 }
 
