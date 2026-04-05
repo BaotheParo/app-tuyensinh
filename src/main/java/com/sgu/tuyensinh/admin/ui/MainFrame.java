@@ -18,7 +18,7 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-@Component
+// @Component
 public class MainFrame extends JFrame {
     // Panel
 //    private SanPham sanphamPanel;
