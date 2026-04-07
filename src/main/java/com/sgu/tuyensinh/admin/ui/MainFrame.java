@@ -4,14 +4,11 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-import com.sgu.tuyensinh.entity.ThiSinh;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -21,7 +18,7 @@ import java.nio.file.Paths;
 /**
  * @author QUAN
  */
-// @Component
+@Component
 public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
@@ -43,7 +40,7 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame() {
+    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
 //        this.nhanVien = nhanVien;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -394,16 +391,16 @@ public class MainFrame extends JFrame {
     }//GEN-LAST:event_btnBaoCaoActionPerformed
 
     private void addIconTaskbar() {
-//        btnDangXuat.setText("<html>&nbsp;&nbsp;&nbsp;Đăng xuất</html>");
-//        btnBangQuyDoi.setText("<html>&nbsp;&nbsp;&nbsp;Bảng Quy Đổi</html>");
-//        btnDiemUuTien.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Ưu Tiên</html>");
-//        btnNguyenVong.setText("<html>&nbsp;&nbsp;&nbsp;Nguyện Vọng</html>");
-//        btnThiSinh.setText("<html>&nbsp;&nbsp;&nbsp;Thí Sinh</html>");
-//        btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
-//        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
-//        btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
-//        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
-//        btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
+        btnDangXuat.setText("<html>&nbsp;&nbsp;&nbsp;Đăng xuất</html>");
+        btnBangQuyDoi.setText("<html>&nbsp;&nbsp;&nbsp;Bảng Quy Đổi</html>");
+        btnDiemUuTien.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Ưu Tiên</html>");
+        btnNguyenVong.setText("<html>&nbsp;&nbsp;&nbsp;Nguyện Vọng</html>");
+        btnThiSinh.setText("<html>&nbsp;&nbsp;&nbsp;Thí Sinh</html>");
+        btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
+        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
+        btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
+        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
+        btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
 
         // Đặt icon và căn chỉnh biểu tượng sang trái cho mỗi button
         btnTrangChu.setIcon(new FlatSVGIcon("icon/home.svg"));
