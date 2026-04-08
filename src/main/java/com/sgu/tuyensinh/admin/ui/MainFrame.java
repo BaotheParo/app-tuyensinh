@@ -18,9 +18,12 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-// @Component
+@Component
 public class MainFrame extends JFrame {
-    // Panel
+    // Inject các Panel do Spring quản lý
+    private final NganhPanel nganhPanel;
+    private final ThiSinhPanel thiSinhPanel;
+    private final ToHopPanel toHopPanel; // Bổ sung
 //    private SanPham sanphamPanel;
 //    private NhaCungCap nhacungcapPanel;
 //    private KhachHang khachHangPanel;
@@ -37,16 +40,23 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame() {
+    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
 //        this.nhanVien = nhanVien;
+        this.nganhPanel = nganhPanel;
+        this.thiSinhPanel = thiSinhPanel;
+        this.toHopPanel = toHopPanel;
+
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Hệ thống quản lý tuyển sinh đại học");
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Init Frame's Components 
-        setUT();
+        // Init Frame's Components
+        // BƯỚC 1: Phải gọi initComponents TRƯỚC để tạo ra các đối tượng UI (mainContent2, v.v.)
         initComponents();
+
+        // BƯỚC 2: Sau đó mới gọi các hàm setup tùy chỉnh (setUT, addIconTaskbar)
+        setUT();
         addIconTaskbar();
 
         // Gán tên và chức vụ
@@ -357,34 +367,30 @@ public class MainFrame extends JFrame {
 //        addTaskBar(mainContent2, khachHangPanel);
     }//GEN-LAST:event_btnBangQuyDoiActionPerformed
 
-    private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThiSinhActionPerformed
-        // TODO add your handling code here:
-//        this.phieuNhapPanel = new PhieuNhap();
-//        addTaskBar(mainContent2, phieuNhapPanel);
-    }//GEN-LAST:event_btnThiSinhActionPerformed
+    private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, toHopPanel); // <-- Chắc chắn chỗ này là toHopPanel chưa?
+    }
 
-    private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnToHopMonActionPerformed
-        // TODO add your handling code here:
-//        this.thuocTinhPanel = new ThuocTinh();
-//        addTaskBar(mainContent2, thuocTinhPanel);
-    }//GEN-LAST:event_btnToHopMonActionPerformed
+    private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, nganhPanel);
+    }
 
-    private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNganhActionPerformed
-        // TODO add your handling code here:
-//        this.sanphamPanel = new SanPham();
-//        addTaskBar(mainContent2, sanphamPanel);
-    }//GEN-LAST:event_btnNganhActionPerformed
+    private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, thiSinhPanel); // <-- Chắc chắn chỗ này là thiSinhPanel chưa?
+    }
 
-    private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTrangChuActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTrangChuActionPerformed
+    private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {
+        // Có thể thêm DashboardPanel vào đây sau
+        mainContent2.removeAll();
+        mainContent2.revalidate();
+        mainContent2.repaint();
+    }
 
     private void btnBaoCaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBaoCaoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnBaoCaoActionPerformed
 
     private void addIconTaskbar() {
-
         btnDangXuat.setText("<html>&nbsp;&nbsp;&nbsp;Đăng xuất</html>");
         btnBangQuyDoi.setText("<html>&nbsp;&nbsp;&nbsp;Bảng Quy Đổi</html>");
         btnDiemUuTien.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Ưu Tiên</html>");
@@ -393,35 +399,44 @@ public class MainFrame extends JFrame {
         btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
         btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
         btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
-        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
+        btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
         btnTrangChu.setText("<html>&nbsp;&nbsp;&nbsp;Trang chủ</html>");
 
         // Đặt icon và căn chỉnh biểu tượng sang trái cho mỗi button
-        btnTrangChu.setIcon(new FlatSVGIcon("res/icon/home.svg"));
+        btnTrangChu.setIcon(new FlatSVGIcon("icon/home.svg"));
         btnTrangChu.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnNganh.setIcon(new FlatSVGIcon("res/icon/product.svg"));
+        btnNganh.setIcon(new FlatSVGIcon("icon/product.svg"));
         btnNganh.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnToHopMon.setIcon(new FlatSVGIcon("res/icon/brand.svg"));
+        btnToHopMon.setIcon(new FlatSVGIcon("icon/brand.svg"));
         btnToHopMon.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnThiSinh.setIcon(new FlatSVGIcon("res/icon/import.svg"));
+        btnThiSinh.setIcon(new FlatSVGIcon("icon/import.svg"));
         btnThiSinh.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnBangQuyDoi.setIcon(new FlatSVGIcon("res/icon/customer.svg"));
+        btnBangQuyDoi.setIcon(new FlatSVGIcon("icon/customer.svg"));
         btnBangQuyDoi.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnDiemUuTien.setIcon(new FlatSVGIcon("res/icon/supplier.svg"));
+        btnDiemUuTien.setIcon(new FlatSVGIcon("icon/area.svg"));
         btnDiemUuTien.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnNguyenVong.setIcon(new FlatSVGIcon("res/icon/staff.svg"));
+        btnNguyenVong.setIcon(new FlatSVGIcon("icon/staff.svg"));
         btnNguyenVong.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnXetTuyen.setIcon(new FlatSVGIcon("res/icon/statistical.svg"));
+        btnXetTuyen.setIcon(new FlatSVGIcon("icon/ghinhangopy.svg"));
         btnXetTuyen.setHorizontalAlignment(SwingConstants.LEFT);
 
-        btnDangXuat.setIcon(new FlatSVGIcon("res/icon/log_out.svg"));
+        btnDiemThi.setIcon(new FlatSVGIcon("icon/nhomquyen.svg"));
+        btnDiemThi.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnToHopMon.setIcon(new FlatSVGIcon("icon/permission.svg"));
+        btnToHopMon.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnBaoCao.setIcon(new FlatSVGIcon("icon/statistical.svg"));
+        btnBaoCao.setHorizontalAlignment(SwingConstants.LEFT);
+
+        btnDangXuat.setIcon(new FlatSVGIcon("icon/log_out.svg"));
         btnDangXuat.setHorizontalAlignment(SwingConstants.LEFT);
     }
 
@@ -459,15 +474,15 @@ public class MainFrame extends JFrame {
         btnTrangChuActionPerformed(null);
     }
 
-//    private void addTaskBar(Container mainContent, JPanel panel) {
-//        mainContent.setLayout(new BorderLayout());
-//        panel.setSize(mainContent.getSize());
-//        mainContent.removeAll();
-//        mainContent.add(panel, BorderLayout.CENTER);
-//        mainContent.setVisible(true);
-//        mainContent.revalidate();
-//        mainContent.repaint();
-//    }
+    private void addTaskBar(Container mainContent, JPanel panel) {
+        mainContent.setLayout(new BorderLayout());
+        panel.setSize(mainContent.getSize());
+        mainContent.removeAll();
+        mainContent.add(panel, BorderLayout.CENTER);
+        mainContent.setVisible(true);
+        mainContent.revalidate();
+        mainContent.repaint();
+    }
 
 //    private void phanQuyenTheoVaiTro() {
 //        int role = nhanVien.getRoleGroupId();
