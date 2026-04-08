@@ -3,6 +3,9 @@ package com.sgu.tuyensinh.service;
 import com.sgu.tuyensinh.entity.BangQuyDoi;
 import com.sgu.tuyensinh.repository.BangQuyDoiRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
 
@@ -197,4 +200,14 @@ public Double calculateInterpolation(String phuongThuc, String identifier, doubl
     return 0.0;
 }
 
+    /**
+     * Lấy danh sách quy đổi có phân trang (Read-only UI)
+     */
+    public Page<BangQuyDoi> layDanhSachPhanTrang(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return repository.findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(keyword, keyword, pageable);
+        }
+        return repository.findAll(pageable);
+    }
 }

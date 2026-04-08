@@ -23,7 +23,10 @@ public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
     private final ThiSinhPanel thiSinhPanel;
-    private final ToHopPanel toHopPanel; // Bổ sung
+    private final ToHopPanel toHopPanel;
+    private final BangQuyDoiPanel bangQuyDoiPanel;
+    private final DiemUuTienPanel diemUuTienPanel;
+    private final NguyenVongPanel nguyenVongPanel;
 //    private SanPham sanphamPanel;
 //    private NhaCungCap nhacungcapPanel;
 //    private KhachHang khachHangPanel;
@@ -40,11 +43,14 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
-//        this.nhanVien = nhanVien;
+    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel, 
+                     BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel) {
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
         this.toHopPanel = toHopPanel;
+        this.bangQuyDoiPanel = bangQuyDoiPanel;
+        this.diemUuTienPanel = diemUuTienPanel;
+        this.nguyenVongPanel = nguyenVongPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -349,26 +355,17 @@ public class MainFrame extends JFrame {
 //        addTaskBar(mainContent2, thongKePanel);
     }//GEN-LAST:event_btnXetTuyenActionPerformed
 
-    private void btnNguyenVongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNguyenVongActionPerformed
-        // TODO add your handling code here:
-//        this.nhanVienPanel = new NhanVien();
-//        addTaskBar(mainContent2, nhanVienPanel);
-    }//GEN-LAST:event_btnNguyenVongActionPerformed
-
-    private void btnDiemUuTienActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDiemUuTienActionPerformed
-        // TODO add your handling code here:
-//        this.nhacungcapPanel = new NhaCungCap();
-//        addTaskBar(mainContent2, nhacungcapPanel);
-    }//GEN-LAST:event_btnDiemUuTienActionPerformed
-
-    private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBangQuyDoiActionPerformed
-        // TODO add your handling code here:
-//        this.khachHangPanel = new KhachHang();
-//        addTaskBar(mainContent2, khachHangPanel);
-    }//GEN-LAST:event_btnBangQuyDoiActionPerformed
+    private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, bangQuyDoiPanel);
+    }
+//GEN-LAST:event_btnBangQuyDoiActionPerformed
 
     private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, toHopPanel); // <-- Chắc chắn chỗ này là toHopPanel chưa?
+        addTaskBar(mainContent2, toHopPanel);
+    }
+
+    private void btnDiemUuTienActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, diemUuTienPanel);
     }
 
     private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {
@@ -376,7 +373,11 @@ public class MainFrame extends JFrame {
     }
 
     private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, thiSinhPanel); // <-- Chắc chắn chỗ này là thiSinhPanel chưa?
+        addTaskBar(mainContent2, thiSinhPanel);
+    }
+
+    private void btnNguyenVongActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, nguyenVongPanel);
     }
 
     private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {
