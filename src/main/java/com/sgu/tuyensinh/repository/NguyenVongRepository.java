@@ -10,8 +10,10 @@ import org.springframework.data.domain.Pageable;
  */
 public interface NguyenVongRepository extends JpaRepository<NguyenVong, Integer> {
     boolean existsByNvManganh(String nvManganh);
-    boolean existsByTtThm(String nvMaToHop);
 
+    boolean existsByTtThm(String nvMaToHop);
+    
     // BỔ SUNG: Truy vấn phân trang cho UI Read-only
-    Page<NguyenVong> findByNnCccdContainingIgnoreCaseOrNvManganhContainingIgnoreCase(String nnCccd, String nvManganh, Pageable pageable);
+    Page<NguyenVong> findByNnCccdContainingIgnoreCaseOrNvManganhContainingIgnoreCase(String nnCccd, String nvManganh,
+            Pageable pageable);
 }
