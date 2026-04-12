@@ -1,6 +1,7 @@
 package com.sgu.tuyensinh.admin.ui;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.sgu.tuyensinh.admin.ui.common.ExportPanel;
 import com.sgu.tuyensinh.service.BaoCaoService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -12,13 +13,15 @@ import org.jfree.data.statistics.HistogramDataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.Map;
-
+import java.io.File;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.io.PrintWriter;
 import java.util.Calendar;
+import java.util.List;
 
 @Component
 public class BaoCaoPanel extends JPanel {
@@ -74,9 +77,9 @@ public class BaoCaoPanel extends JPanel {
                 pnlContent.setBorder(new EmptyBorder(20, 0, 0, 0));
 
                 pnlContent.add(createBC01Chart());
-                // pnlContent.add(createBC02Histogram());
-                // pnlContent.add(createBC03PieChart());
-                // pnlContent.add(createExportCard());
+                pnlContent.add(createBC02Histogram());
+                pnlContent.add(createBC03PieChart());
+                pnlContent.add(createExportCard());
 
                 add(pnlContent, BorderLayout.CENTER);
         }
@@ -130,8 +133,33 @@ public class BaoCaoPanel extends JPanel {
                 btnDetail.addActionListener(e -> JOptionPane.showMessageDialog(this,
                                 "Có " + thongKe.size() + " ngành đang mở tuyển."));
                 JButton btnExport = new JButton("Xuất báo cáo ngành");
-                btnExport.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                                "Chức năng xuất báo cáo ngành sẽ tạo file thống kê chi tiết."));
+                btnExport.addActionListener(e -> {
+                        // Tạo dialog chứa ExportPanel
+                        JDialog dialog = new JDialog((Frame) null, "Xuất báo cáo ngành", true);
+
+                        ExportPanel exportPanel = new ExportPanel(folder -> {
+                                try {
+                                        File file = new File(folder, "bao_cao_nganh.csv");
+                                        PrintWriter writer = new PrintWriter(file);
+
+                                        writer.println("Ngành, Số lượng đăng ký");
+                                        for (Map.Entry<String, Long> entry : thongKe.entrySet()) {
+                                                writer.println(entry.getKey() + "," + entry.getValue());
+                                        }
+
+                                        writer.close();
+                                        JOptionPane.showMessageDialog(dialog, "Xuất báo cáo ngành thành công!");
+                                } catch (Exception ex) {
+                                        JOptionPane.showMessageDialog(dialog, "Lỗi khi xuất: " + ex.getMessage());
+                                }
+                        });
+
+                        dialog.add(exportPanel);
+                        dialog.pack();
+                        dialog.setLocationRelativeTo(this);
+                        dialog.setVisible(true);
+                });
+
                 pnlBtns.add(btnDetail);
                 pnlBtns.add(btnExport);
 
@@ -144,65 +172,132 @@ public class BaoCaoPanel extends JPanel {
                 return card;
         }
 
-        // // BC-02: Biểu đồ phổ điểm
-        // private JPanel createBC02Histogram() {
-        //         HistogramDataset dataset = new HistogramDataset();
-        //         dataset.addSeries("Điểm số", baoCaoService.getDiemMonHoc("Toán"), 10);
+        // BC-02: Biểu đồ phổ điểm từ Service
+        private JPanel createBC02Histogram() {
+                // Lấy danh sách môn từ service
+                List<String> dsMon = baoCaoService.getDanhSachMonHoc();
+                if (dsMon.isEmpty()) {
+                        // Nếu chưa có dữ liệu môn thì trả về panel rỗng
+                        return new JPanel(new BorderLayout());
+                }
 
-        //         JFreeChart histogram = ChartFactory.createHistogram("", "Điểm", "Số lượng",
-        //                         dataset, PlotOrientation.VERTICAL, false, true, false);
+                // Dataset ban đầu cho môn đầu tiên
+                String monDauTien = dsMon.get(0);
+                HistogramDataset dataset = new HistogramDataset();
+                double[] diem = baoCaoService.getDiemMonHoc(monDauTien);
+                dataset.addSeries("Điểm số", diem, 10);
 
-        //         JPanel card = createStyledCard("Phổ điểm tuyển sinh");
-        //         card.add(new ChartPanel(histogram), BorderLayout.CENTER);
+                JFreeChart histogram = ChartFactory.createHistogram(
+                                "", "Điểm", "Số lượng",
+                                dataset, PlotOrientation.VERTICAL, false, true, false);
 
-        //         JComboBox<String> cbMon = new JComboBox<>(new String[] { "Toán", "Văn", "Anh" });
-        //         cbMon.addActionListener(e -> JOptionPane.showMessageDialog(this,
-        //                         "Cập nhật phổ điểm môn " + cbMon.getSelectedItem()));
+                JPanel card = createStyledCard("Phổ điểm tuyển sinh");
+                ChartPanel chartPanel = new ChartPanel(histogram);
+                card.add(chartPanel, BorderLayout.CENTER);
 
-        //         JPanel pnlBottom = new JPanel(new FlowLayout());
-        //         pnlBottom.add(new JLabel("Chọn môn:"));
-        //         pnlBottom.add(cbMon);
-        //         card.add(pnlBottom, BorderLayout.SOUTH);
+                // Combobox lấy từ service
+                JComboBox<String> cbMon = new JComboBox<>(dsMon.toArray(new String[0]));
+                cbMon.addActionListener(e -> {
+                        String mon = (String) cbMon.getSelectedItem();
+                        double[] diemMon = baoCaoService.getDiemMonHoc(mon);
 
-        //         return card;
-        // }
+                        HistogramDataset newDataset = new HistogramDataset();
+                        newDataset.addSeries("Điểm số", diemMon, 10);
 
-        // // BC-03: Tỷ lệ Đậu/Rớt
-        // private JPanel createBC03PieChart() {
-        //         DefaultPieDataset dataset = new DefaultPieDataset();
-        //         dataset.setValue("Đậu", baoCaoService.getTongDau());
-        //         dataset.setValue("Rớt", baoCaoService.getTongRot());
+                        JFreeChart newHistogram = ChartFactory.createHistogram(
+                                        "", "Điểm", "Số lượng",
+                                        newDataset, PlotOrientation.VERTICAL, false, true, false);
 
-        //         JFreeChart pieChart = ChartFactory.createPieChart("", dataset, true, true, false);
-        //         JPanel card = createStyledCard("Tỷ lệ trúng tuyển toàn khóa");
-        //         card.add(new ChartPanel(pieChart), BorderLayout.CENTER);
+                        chartPanel.setChart(newHistogram);
+                });
 
-        //         JLabel lblDetail = new JLabel("<html><center>Đậu: " + baoCaoService.getTongDau() +
-        //                         " | Rớt: " + baoCaoService.getTongRot() + "</center></html>", SwingConstants.CENTER);
-        //         card.add(lblDetail, BorderLayout.SOUTH);
+                JPanel pnlBottom = new JPanel(new FlowLayout());
+                pnlBottom.add(new JLabel("Chọn môn:"));
+                pnlBottom.add(cbMon);
+                card.add(pnlBottom, BorderLayout.SOUTH);
 
-        //         return card;
-        // }
+                return card;
+        }
 
-        // // BC-04: Bảng kết quả trúng tuyển
-        // private JPanel createExportCard() {
-        //         JPanel card = createStyledCard("Danh sách trúng tuyển");
-        //         card.setBorder(new TitledBorder(new LineBorder(new Color(46, 204, 113), 2), "Kết quả trúng tuyển"));
+        // BC-03: Tỷ lệ Đậu/Rớt theo ngành
+        private JPanel createBC03PieChart() {
+                // Lấy thống kê theo ngành từ service
+                Map<String, BaoCaoService.KetQuaTheoNganhDTO> ketQuaTheoNganh = baoCaoService.thongKeKetQuaTheoNganh();
 
-        //         String[] cols = { "Mã TS", "Họ tên", "Ngành", "Điểm", "Trạng thái" };
-        //         JTable table = new JTable(baoCaoService.getDanhSachTrungTuyen(), cols);
-        //         card.add(new JScrollPane(table), BorderLayout.CENTER);
+                // Tạo combobox chọn ngành
+                JComboBox<String> cbNganh = new JComboBox<>(ketQuaTheoNganh.keySet().toArray(new String[0]));
 
-        //         JButton btnExcel = new JButton("Xuất Excel", new FlatSVGIcon("icon/excel.svg", 16, 16));
-        //         btnExcel.addActionListener(e -> JOptionPane.showMessageDialog(this,
-        //                         "Đã xuất danh sách " + table.getRowCount() + " thí sinh."));
+                // Dataset ban đầu cho ngành đầu tiên
+                String nganhDauTien = cbNganh.getItemAt(0);
+                BaoCaoService.KetQuaTheoNganhDTO dto = ketQuaTheoNganh.get(nganhDauTien);
 
-        //         JPanel pnlBottom = new JPanel(new FlowLayout());
-        //         pnlBottom.add(btnExcel);
-        //         card.add(pnlBottom, BorderLayout.SOUTH);
+                DefaultPieDataset dataset = new DefaultPieDataset();
+                dataset.setValue("Đậu", dto.soDau());
+                dataset.setValue("Rớt", dto.soRot());
 
-        //         return card;
-        // }
+                JFreeChart pieChart = ChartFactory.createPieChart(
+                                "", dataset, true, true, false);
+
+                JPanel card = createStyledCard("Tỷ lệ trúng tuyển theo ngành");
+                ChartPanel chartPanel = new ChartPanel(pieChart);
+                card.add(chartPanel, BorderLayout.CENTER);
+
+                // Label chi tiết
+                JLabel lblDetail = new JLabel(
+                                "<html><center>Ngành: " + dto.tenNganh() +
+                                                " | Đậu: " + dto.soDau() +
+                                                " | Rớt: " + dto.soRot() + "</center></html>",
+                                SwingConstants.CENTER);
+                card.add(lblDetail, BorderLayout.SOUTH);
+
+                // Sự kiện chọn ngành
+                cbNganh.addActionListener(e -> {
+                        String nganh = (String) cbNganh.getSelectedItem();
+                        BaoCaoService.KetQuaTheoNganhDTO kq = ketQuaTheoNganh.get(nganh);
+
+                        DefaultPieDataset newDataset = new DefaultPieDataset();
+                        newDataset.setValue("Đậu", kq.soDau());
+                        newDataset.setValue("Rớt", kq.soRot());
+
+                        JFreeChart newPie = ChartFactory.createPieChart(
+                                        "", newDataset, true, true, false);
+                        chartPanel.setChart(newPie);
+
+                        lblDetail.setText("<html><center>Ngành: " + kq.tenNganh() +
+                                        " | Đậu: " + kq.soDau() +
+                                        " | Rớt: " + kq.soRot() + "</center></html>");
+                });
+
+                // Panel chọn ngành
+                JPanel pnlTop = new JPanel(new FlowLayout());
+                pnlTop.add(new JLabel("Chọn ngành:"));
+                pnlTop.add(cbNganh);
+                card.add(pnlTop, BorderLayout.NORTH);
+
+                return card;
+        }
+
+        // BC-04: Bảng kết quả trúng tuyển
+        private JPanel createExportCard() {
+        JPanel card = createStyledCard("Danh sách trúng tuyển");
+        card.setBorder(new TitledBorder(new LineBorder(new Color(46, 204, 113), 2),
+        "Kết quả trúng tuyển"));
+
+        String[] cols = { "Mã TS", "Họ tên", "Ngành", "Điểm", "Trạng thái" };
+        JTable table = new JTable(baoCaoService.getDanhSachTrungTuyen(), cols);
+        card.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JButton btnExcel = new JButton("Xuất Excel", new
+        FlatSVGIcon("icon/excel.svg", 16, 16));
+        btnExcel.addActionListener(e -> JOptionPane.showMessageDialog(this,
+        "Đã xuất danh sách " + table.getRowCount() + " thí sinh."));
+
+        JPanel pnlBottom = new JPanel(new FlowLayout());
+        pnlBottom.add(btnExcel);
+        card.add(pnlBottom, BorderLayout.SOUTH);
+
+        return card;
+        }
 
         // Helper tạo Card layout chung
         private JPanel createStyledCard(String title) {
