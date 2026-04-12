@@ -24,7 +24,8 @@ public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
     private final ThiSinhPanel thiSinhPanel;
-    private final ToHopPanel toHopPanel; // Bổ sung
+    private final ToHopPanel toHopPanel;
+    private final TrangChuPanel trangChuPanel;// Bổ sung
 //    private SanPham sanphamPanel;
 //    private NhaCungCap nhacungcapPanel;
 //    private KhachHang khachHangPanel;
@@ -41,11 +42,12 @@ public class MainFrame extends JFrame {
      *
      *
      */
-    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel) {
+    public MainFrame(NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel, TrangChuPanel trangChuPanel) {
 //        this.nhanVien = nhanVien;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
         this.toHopPanel = toHopPanel;
+        this.trangChuPanel = trangChuPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -382,6 +384,7 @@ public class MainFrame extends JFrame {
 
     private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {
         // Có thể thêm DashboardPanel vào đây sau
+        addTaskBar(mainContent2, trangChuPanel);
         mainContent2.removeAll();
         mainContent2.revalidate();
         mainContent2.repaint();
