@@ -5,6 +5,9 @@ import com.sgu.tuyensinh.repository.DiemCongRepository;
 import com.sgu.tuyensinh.repository.ThiSinhRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,5 +72,16 @@ public class DiemCongService {
             throw new EntityNotFoundException("Không tìm thấy bản ghi điểm cộng ID: " + id);
         }
         diemCongRepository.deleteById(id);
+    }
+
+    /**
+     * Lấy danh sách điểm cộng có phân trang (Read-only UI)
+     */
+    public Page<DiemCong> layDanhSachPhanTrang(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return diemCongRepository.findByTsCccdContainingIgnoreCase(keyword, pageable);
+        }
+        return diemCongRepository.findAll(pageable);
     }
 }

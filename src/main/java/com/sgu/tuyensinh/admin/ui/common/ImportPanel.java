@@ -1,15 +1,20 @@
 package com.sgu.tuyensinh.admin.ui.common;
 
 import javax.swing.*;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.Sheet;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileInputStream;
 
 public class ImportPanel extends JPanel {
     private JTextField filePathField;
     private JButton browseButton;
     private JButton importButton;
-    private JProgressBar progressBar;
+    private ProgressPanel progressPanel;
 
     public ImportPanel() {
         setLayout(new BorderLayout());
@@ -25,13 +30,12 @@ public class ImportPanel extends JPanel {
         importButton = new JButton("Import");
 
         // Thanh tiến trình
-        progressBar = new JProgressBar(0, 100);
-        progressBar.setStringPainted(true);
+        progressPanel = new ProgressPanel(100); // khởi tẹo mặc địng :)))
 
         // Thêm vào panel chính
         add(filePanel, BorderLayout.NORTH);
         add(importButton, BorderLayout.CENTER);
-        add(progressBar, BorderLayout.SOUTH);
+        add(progressPanel, BorderLayout.SOUTH);
 
         // Sự kiện chọn file
         browseButton.addActionListener((ActionEvent e) -> {
@@ -50,8 +54,18 @@ public class ImportPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn file Excel!");
                 return;
             }
+
+            // Đếm số dòng trong file Excel
+            int totalRows = ExcelUtils.countRows(path);
+
+            // Khởi tạo lại ProgressPanel với số dòng thực tế
+            progressPanel = new ProgressPanel(totalRows);
+            add(progressPanel, BorderLayout.SOUTH);
+            revalidate();
+            repaint();
+
             // Chạy worker
-            ImportWorker worker = new ImportWorker(path, progressBar);
+            ImportWorker worker = new ImportWorker(path, progressPanel);
             worker.execute();
         });
     }

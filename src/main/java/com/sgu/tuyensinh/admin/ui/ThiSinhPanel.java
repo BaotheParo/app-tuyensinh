@@ -23,7 +23,8 @@ public class ThiSinhPanel extends JPanel {
     private BaseTablePanel tablePanel;
     private JTextField txtCCCD, txtHoTen, txtNgaySinh, txtMaTruong, txtMaTinh;
     private JComboBox<String> cbGioiTinh, cbDoiTuong, cbKhuVuc;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnPrev, btnNext;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnPrev, btnNext, btnSearch;
+    private JTextField txtSearch;
     private JLabel lblPage;
 
     // Phân trang
@@ -43,7 +44,8 @@ public class ThiSinhPanel extends JPanel {
     }
 
     private void initComponents() {
-        String[] columns = {"CCCD", "Họ Tên", "Ngày Sinh", "Giới Tính", "Mã Trường", "Mã Tỉnh", "Đối Tượng ƯT", "Khu Vực ƯT"};
+        String[] columns = { "CCCD", "Họ Tên", "Ngày Sinh", "Giới Tính", "Mã Trường", "Mã Tỉnh", "Đối Tượng ƯT",
+                "Khu Vực ƯT" };
         tablePanel = new BaseTablePanel(columns);
         tablePanel.getTable().setRowHeight(30);
 
@@ -54,9 +56,9 @@ public class ThiSinhPanel extends JPanel {
         txtMaTinh = new JTextField(10);
 
         // Setup Combo box options theo chuẩn PRD thường thấy
-        cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
-        cbDoiTuong = new JComboBox<>(new String[]{"", "01", "02", "03", "04", "05", "06", "07"});
-        cbKhuVuc = new JComboBox<>(new String[]{"", "KV1", "KV2", "KV2-NT", "KV3"});
+        cbGioiTinh = new JComboBox<>(new String[] { "Nam", "Nữ" });
+        cbDoiTuong = new JComboBox<>(new String[] { "", "01", "02", "03", "04", "05", "06", "07" });
+        cbKhuVuc = new JComboBox<>(new String[] { "", "KV1", "KV2", "KV2-NT", "KV3" });
 
         btnAdd = new JButton("Thêm Mới");
         btnUpdate = new JButton("Cập Nhật");
@@ -66,6 +68,9 @@ public class ThiSinhPanel extends JPanel {
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
+
+        txtSearch = new JTextField(20);
+        btnSearch = new JButton("Tìm Kiếm");
     }
 
     private void layoutComponents() {
@@ -73,14 +78,22 @@ public class ThiSinhPanel extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(4, 4, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin Thí sinh"));
 
-        formPanel.add(new JLabel("CCCD:")); formPanel.add(txtCCCD);
-        formPanel.add(new JLabel("Họ Tên:")); formPanel.add(txtHoTen);
-        formPanel.add(new JLabel("Ngày Sinh (dd/MM/yyyy):")); formPanel.add(txtNgaySinh);
-        formPanel.add(new JLabel("Giới Tính:")); formPanel.add(cbGioiTinh);
-        formPanel.add(new JLabel("Mã Trường:")); formPanel.add(txtMaTruong);
-        formPanel.add(new JLabel("Mã Tỉnh:")); formPanel.add(txtMaTinh);
-        formPanel.add(new JLabel("Đối Tượng ƯT:")); formPanel.add(cbDoiTuong);
-        formPanel.add(new JLabel("Khu Vực ƯT:")); formPanel.add(cbKhuVuc);
+        formPanel.add(new JLabel("CCCD:"));
+        formPanel.add(txtCCCD);
+        formPanel.add(new JLabel("Họ Tên:"));
+        formPanel.add(txtHoTen);
+        formPanel.add(new JLabel("Ngày Sinh (dd/MM/yyyy):"));
+        formPanel.add(txtNgaySinh);
+        formPanel.add(new JLabel("Giới Tính:"));
+        formPanel.add(cbGioiTinh);
+        formPanel.add(new JLabel("Mã Trường:"));
+        formPanel.add(txtMaTruong);
+        formPanel.add(new JLabel("Mã Tỉnh:"));
+        formPanel.add(txtMaTinh);
+        formPanel.add(new JLabel("Đối Tượng ƯT:"));
+        formPanel.add(cbDoiTuong);
+        formPanel.add(new JLabel("Khu Vực ƯT:"));
+        formPanel.add(cbKhuVuc);
 
         // Khối nút bấm
         JPanel actionPanel = new JPanel(new GridLayout(4, 1, 5, 5));
@@ -89,10 +102,18 @@ public class ThiSinhPanel extends JPanel {
         actionPanel.add(btnDelete);
         actionPanel.add(btnClear);
 
-        // Gắn vào Top Panel
-        JPanel topPanel = new JPanel(new BorderLayout(10, 10));
+        // Khối Tìm kiếm (Search Bar)
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Bộ lọc tìm kiếm"));
+        searchPanel.add(new JLabel("Tìm theo CCCD hoặc Họ Tên:"));
+        searchPanel.add(txtSearch);
+        searchPanel.add(btnSearch);
+
+        // Gắn vào Top Panel (Bao gồm Form và Search)
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(actionPanel, BorderLayout.EAST);
+        topPanel.add(searchPanel, BorderLayout.SOUTH);
 
         // Khối phân trang
         JPanel pagingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -132,13 +153,34 @@ public class ThiSinhPanel extends JPanel {
         btnClear.addActionListener(e -> clearForm());
 
         // Nút phân trang
-        btnPrev.addActionListener(e -> { if (currentPage > 0) { currentPage--; loadData(); } });
-        btnNext.addActionListener(e -> { if (currentPage < totalPages - 1) { currentPage++; loadData(); } });
+        btnPrev.addActionListener(e -> {
+            if (currentPage > 0) {
+                currentPage--;
+                loadData();
+            }
+        });
+        btnNext.addActionListener(e -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                loadData();
+            }
+        });
+
+        // Tìm kiếm
+        btnSearch.addActionListener(e -> {
+            currentPage = 0;
+            loadData();
+        });
+
+        txtSearch.addActionListener(e -> {
+            currentPage = 0;
+            loadData();
+        });
     }
 
     private void loadData() {
-        // Hàm layDanhSachPhanTrang cần được định nghĩa trong ThiSinhServiceImpl
-        Page<ThiSinh> pageData = thiSinhService.layDanhSachPhanTrang(currentPage, pageSize, "");
+        String keyword = txtSearch.getText().trim();
+        Page<ThiSinh> pageData = thiSinhService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
         lblPage.setText("Trang: " + (currentPage + 1) + " / " + totalPages);
 
@@ -147,7 +189,7 @@ public class ThiSinhPanel extends JPanel {
 
         for (ThiSinh ts : pageData.getContent()) {
             String ngaySinhStr = ts.getNgaySinh() != null ? ts.getNgaySinh().format(dateFormatter) : "";
-            tablePanel.addRow(new Object[]{
+            tablePanel.addRow(new Object[] {
                     ts.getId(), ts.getHoTen(), ngaySinhStr, ts.getGioiTinh(),
                     ts.getMaTruong(), ts.getMaTinh(), ts.getDoiTuongUt(), ts.getKhuVucUt()
             });
@@ -184,7 +226,8 @@ public class ThiSinhPanel extends JPanel {
             clearForm();
             loadData();
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh phải theo định dạng dd/MM/yyyy", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ngày sinh phải theo định dạng dd/MM/yyyy", "Lỗi nhập liệu",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
@@ -197,7 +240,8 @@ public class ThiSinhPanel extends JPanel {
             return;
         }
         String cccd = tablePanel.getTable().getValueAt(row, 0).toString();
-        if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa CCCD: " + cccd + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa CCCD: " + cccd + "?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             try {
                 // Hàm xoaThiSinh cần được định nghĩa trong ThiSinhServiceImpl
                 thiSinhService.xoaThiSinh(cccd);
@@ -206,7 +250,8 @@ public class ThiSinhPanel extends JPanel {
                 clearForm();
                 loadData();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Không thể xóa do thí sinh đã có điểm thi/nguyện vọng.", "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Không thể xóa do thí sinh đã có điểm thi/nguyện vọng.",
+                        "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
