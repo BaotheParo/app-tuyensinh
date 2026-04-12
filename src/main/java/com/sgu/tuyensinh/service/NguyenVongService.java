@@ -80,4 +80,9 @@ public class NguyenVongService {
         System.out.println("   - Thanh cong: " + success);
         System.out.println("   - LLoi: " + fail);
     }
+
+    @Transactional(readOnly = true)
+    public List<NguyenVong> getDanhSachTrungTuyen(String maNganh) {
+        return repository.findByNvManganhAndNvKetQua(maNganh, "TRUNG_TUYEN");
+    }
 }

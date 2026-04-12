@@ -4,6 +4,8 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -18,7 +20,8 @@ import java.awt.*;
 /**
  * @author QUAN
  */
-// @Component
+@Component
+@Profile("!test") 
 public class MainFrame extends JFrame {
     // Inject các Panel do Spring quản lý
     private final NganhPanel nganhPanel;
