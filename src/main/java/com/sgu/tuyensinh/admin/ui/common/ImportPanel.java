@@ -13,13 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 /**
- * TUẦN 1 — ImportPanel  (đã cập nhật package com.sgu.tuyensinh)
- *
- * Nằm cùng folder với: ImportWorker, MessageDialog, BaseTablePanel
- * Package: com.sgu.tuyensinh.admin.ui.common
- *
- * Sử dụng ImportWorker sẵn có của team để chạy nền.
- * Thêm: ComboBox loại dữ liệu, Spinner năm học, style SGU.
+ * TUẦN 1 — ImportPanel  (Phiên bản đã sửa lỗi tương thích ProgressPanel)
  */
 public class ImportPanel extends JPanel {
 
@@ -35,10 +29,6 @@ public class ImportPanel extends JPanel {
     private static final Font  FONT_LABEL_B  = new Font("Segoe UI", Font.BOLD, 13);
     private static final Font  FONT_SMALL    = new Font("Segoe UI", Font.PLAIN, 11);
 
-    /**
-     * Danh sách loại dữ liệu — khớp đúng với tên file thực tế trong Phụ lục B.
-     * Index 0 là placeholder, không import được.
-     */
     private static final String[] DATA_TYPES = {
             "-- Chọn loại dữ liệu --",
             "Thí sinh (Ds_thi_sinh.xlsx)            → xt_thisinhxettuyen25 + xt_diemthixettuyen",
@@ -50,7 +40,6 @@ public class ImportPanel extends JPanel {
             "Nguyện vọng (Nguyenvong.xlsx)          → xt_nguyenvongxettuyen"
     };
 
-    // Mapping index → API endpoint (dùng bởi ImportWorker)
     private static final String[] API_ENDPOINTS = {
             null,
             "http://localhost:8080/api/import/thisinh",
@@ -63,25 +52,22 @@ public class ImportPanel extends JPanel {
     };
 
     // ── Widgets ───────────────────────────────────────────────────
-    private JTextField   filePathField;   // tên giống ImportPanel gốc của team
+    private JTextField   filePathField;
     private JButton      browseButton;
     private JButton      importButton;
-    private JProgressBar progressBar;
+    private ProgressPanel progressPanel; // ĐÃ ĐỔI: Sử dụng ProgressPanel thay vì JProgressBar
     private JComboBox<String> cboDataType;
     private JSpinner     spnNamHoc;
     private JLabel       lblStatus;
     private JLabel       lblFileInfo;
 
-    // ── State ─────────────────────────────────────────────────────
     private File selectedFile = null;
 
-    // ─────────────────────────────────────────────────────────────
     public ImportPanel() {
         initUI();
         wireEvents();
     }
 
-    // ─────────────────────────────────────────────────────────────
     private void initUI() {
         setBackground(BG_GRAY);
         setLayout(new BorderLayout(0, 0));
@@ -90,7 +76,6 @@ public class ImportPanel extends JPanel {
         add(buildStatusBar(), BorderLayout.SOUTH);
     }
 
-    // ── Header ────────────────────────────────────────────────────
     private JPanel buildHeader() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(SGU_BLUE);
@@ -114,7 +99,6 @@ public class ImportPanel extends JPanel {
         return p;
     }
 
-    // ── Main form card ────────────────────────────────────────────
     private JPanel buildFormCard() {
         JPanel outer = new JPanel(new GridBagLayout());
         outer.setBackground(BG_GRAY);
@@ -161,7 +145,6 @@ public class ImportPanel extends JPanel {
         return l;
     }
 
-    // ── File row — giữ nguyên tên biến filePathField, browseButton ──
     private JPanel buildFileRow() {
         JPanel row = new JPanel(new BorderLayout(8, 0));
         row.setOpaque(false);
@@ -203,7 +186,6 @@ public class ImportPanel extends JPanel {
         return p;
     }
 
-    // ── Config row: ComboBox + Spinner năm học ─────────────────────
     private JPanel buildConfigRow() {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         row.setOpaque(false); row.setAlignmentX(LEFT_ALIGNMENT);
@@ -228,7 +210,6 @@ public class ImportPanel extends JPanel {
         spnNamHoc.setFont(FONT_LABEL);
         spnNamHoc.setPreferredSize(new Dimension(86, 34));
 
-        // Tắt định dạng hàng nghìn (dấu phẩy) bằng pattern "#"
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spnNamHoc, "#");
         editor.getTextField().setHorizontalAlignment(JTextField.CENTER);
         spnNamHoc.setEditor(editor);
@@ -240,32 +221,24 @@ public class ImportPanel extends JPanel {
         return row;
     }
 
-    // ── Progress bar — giữ nguyên tên biến progressBar ────────────
     private JPanel buildProgressSection() {
         JPanel p = new JPanel();
         p.setOpaque(false); p.setAlignmentX(LEFT_ALIGNMENT);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 
-        progressBar = new JProgressBar(0, 100);    // tên giữ nguyên
-        progressBar.setValue(0);
-        progressBar.setStringPainted(true);
-        progressBar.setString("Chờ import...");
-        progressBar.setFont(FONT_SMALL);
-        progressBar.setForeground(SGU_BLUE);
-        progressBar.setBackground(new Color(230, 235, 245));
-        progressBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));
+        // ĐÃ SỬA: Khởi tạo ProgressPanel của team
+        progressPanel = new ProgressPanel(100);
 
         JLabel hint = new JLabel("Thanh tiến trình sẽ chạy khi ImportWorker hoạt động.");
         hint.setFont(FONT_SMALL);
         hint.setForeground(Color.GRAY);
 
-        p.add(progressBar);
+        p.add(progressPanel); // ĐÃ SỬA: Thêm component mới vào panel
         p.add(Box.createVerticalStrut(5));
         p.add(hint);
         return p;
     }
 
-    // ── Button row — giữ nguyên tên importButton ─────────────────
     private JPanel buildButtonRow() {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         row.setOpaque(false); row.setAlignmentX(LEFT_ALIGNMENT);
@@ -280,7 +253,7 @@ public class ImportPanel extends JPanel {
         btnReset.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnReset.addActionListener(e -> resetForm());
 
-        importButton = new JButton("Import");         // tên giữ nguyên
+        importButton = new JButton("Import");
         importButton.setFont(FONT_LABEL_B);
         importButton.setPreferredSize(new Dimension(110, 36));
         importButton.setBackground(new Color(160, 160, 160));
@@ -295,7 +268,6 @@ public class ImportPanel extends JPanel {
         return row;
     }
 
-    // ── Status bar ─────────────────────────────────────────────────
     private JPanel buildStatusBar() {
         JPanel bar = new JPanel(new BorderLayout());
         bar.setBackground(new Color(235, 238, 245));
@@ -315,11 +287,7 @@ public class ImportPanel extends JPanel {
         return bar;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Events — giữ logic tương tự ImportPanel gốc của team
-    // ─────────────────────────────────────────────────────────────
     private void wireEvents() {
-        // Browse: giữ nguyên logic JFileChooser của ImportPanel gốc
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Chọn file Excel");
@@ -330,7 +298,7 @@ public class ImportPanel extends JPanel {
             int result = chooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 selectedFile = chooser.getSelectedFile();
-                filePathField.setText(selectedFile.getAbsolutePath()); // giống gốc
+                filePathField.setText(selectedFile.getAbsolutePath());
                 filePathField.setForeground(Color.BLACK);
 
                 long sizeKB = selectedFile.length() / 1024;
@@ -343,7 +311,6 @@ public class ImportPanel extends JPanel {
 
         cboDataType.addActionListener(e -> refreshImportButton());
 
-        // Import: gọi ImportWorker của team, truyền thêm endpoint
         importButton.addActionListener(e -> {
             String path = filePathField.getText();
             if (path == null || path.isEmpty()) {
@@ -355,21 +322,18 @@ public class ImportPanel extends JPanel {
                 return;
             }
 
-            progressBar.setValue(0);
-            progressBar.setString("Đang import...");
-            progressBar.setForeground(SGU_BLUE);
+            // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm không có trong ProgressPanel
             importButton.setEnabled(false);
             browseButton.setEnabled(false);
             cboDataType.setEnabled(false);
             setStatus("Đang xử lý: " + selectedFile.getName());
 
-            // Dùng ImportWorker của team — chỉ cần truyền path + progressBar
-            ImportWorker worker = new ImportWorker(path, progressBar) {
+            // ĐÃ SỬA: Truyền progressPanel (thay vì progressBar cũ) vào ImportWorker
+            ImportWorker worker = new ImportWorker(path, progressPanel) {
                 @Override
                 protected void done() {
-                    super.done(); // gọi done() gốc (hiện dialog hoàn tất)
-                    progressBar.setString("Hoàn thành!");
-                    progressBar.setForeground(SUCCESS_GREEN);
+                    super.done();
+                    // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm của JProgressBar cũ
                     importButton.setEnabled(true);
                     browseButton.setEnabled(true);
                     cboDataType.setEnabled(true);
@@ -380,7 +344,6 @@ public class ImportPanel extends JPanel {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────
     private void refreshImportButton() {
         boolean ok = selectedFile != null && selectedFile.exists()
                 && cboDataType.getSelectedIndex() > 0;
@@ -395,9 +358,7 @@ public class ImportPanel extends JPanel {
         filePathField.setForeground(Color.GRAY);
         cboDataType.setSelectedIndex(0);
         spnNamHoc.setValue(2026);
-        progressBar.setValue(0);
-        progressBar.setString("Chờ import...");
-        progressBar.setForeground(SGU_BLUE);
+        // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm JProgressBar cũ
         lblFileInfo.setText("Hỗ trợ: .xlsx, .xls  |  Tối đa 50 MB");
         lblFileInfo.setForeground(Color.GRAY);
         importButton.setEnabled(false);
@@ -409,7 +370,6 @@ public class ImportPanel extends JPanel {
         lblStatus.setText(msg);
     }
 
-    // ── Getters cho controller / worker dùng ──────────────────────
     public File getSelectedFile()  { return selectedFile; }
     public String getDataType()    { return (String) cboDataType.getSelectedItem(); }
     public int    getNamHoc()      { return (Integer) spnNamHoc.getValue(); }
@@ -418,7 +378,6 @@ public class ImportPanel extends JPanel {
         return (idx > 0 && idx < API_ENDPOINTS.length) ? API_ENDPOINTS[idx] : null;
     }
 
-    // ─────────────────────────────────────────────────────────────
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }
