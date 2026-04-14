@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.Optional;
 
 /**
@@ -14,6 +17,10 @@ import java.util.Optional;
 public interface DiemThiRepository extends JpaRepository<DiemThi, Long> {
 
     Optional<DiemThi> findByCccd(String cccd);
+
+    // Lấy danh sách điểm phân trang, tìm kiếm theo CCCD hoặc Tên thí sinh
+    @Query("SELECT d FROM DiemThi d JOIN ThiSinh ts ON d.cccd = ts.id WHERE ts.id LIKE %:cccd% OR LOWER(ts.hoTen) LIKE LOWER(CONCAT('%', :hoTen, '%'))")
+    Page<DiemThi> findByThiSinh_CccdContainingOrThiSinh_HoTenContainingIgnoreCase(@Param("cccd") String cccd, @Param("hoTen") String hoTen, Pageable pageable);
 
 
 

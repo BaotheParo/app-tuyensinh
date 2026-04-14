@@ -26,13 +26,14 @@ public class MainFrame extends JFrame {
     private final NguyenVongPanel nguyenVongPanel;
     private final BaoCaoPanel baoCaoPanel;
     private final QuanLyUserPanel quanlyUserPanel;
+    private final DiemThiPanel diemThiPanel;
 
     /**
      * Creates new form Main
      */
     public MainFrame(TrangChuPanel trangChuPanel, NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel,
             BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
-            BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel) {
+            BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel) {
         this.trangChuPanel = trangChuPanel;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -42,6 +43,7 @@ public class MainFrame extends JFrame {
         this.nguyenVongPanel = nguyenVongPanel;
         this.baoCaoPanel = baoCaoPanel;
         this.quanlyUserPanel = quanlyUserPanel;
+        this.diemThiPanel = diemThiPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -364,7 +366,8 @@ public class MainFrame extends JFrame {
     }// GEN-LAST:event_btnDangXuatActionPerformed
 
     private void btnDiemThiActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnDiemThiActionPerformed
-        // TODO add your handling code here:
+        addTaskBar(mainContent2, diemThiPanel);
+        diemThiPanel.loadData();
     }// GEN-LAST:event_btnDiemThiActionPerformed
 
     private void btnXetTuyenActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXetTuyenActionPerformed
