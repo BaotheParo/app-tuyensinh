@@ -31,4 +31,18 @@ public interface BangQuyDoiRepository extends JpaRepository<BangQuyDoi, Integer>
 
     // BỔ SUNG: Truy vấn phân trang cho UI Read-only
     Page<BangQuyDoi> findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(String phuongThuc, String mon, Pageable pageable);
+
+
+ // ✅ BỔ SUNG: Lọc theo năm học
+    List<BangQuyDoi> findByNamHoc(Integer namHoc);
+
+    // ✅ BỔ SUNG: Lọc theo năm + phương thức
+    List<BangQuyDoi> findByNamHocAndPhuongThuc(Integer namHoc, String phuongThuc);
+
+    // ✅ BỔ SUNG: Lọc theo năm + phương thức + môn
+    List<BangQuyDoi> findByNamHocAndPhuongThucAndMon(Integer namHoc, String phuongThuc, String mon);
+
+
+
+
 }
