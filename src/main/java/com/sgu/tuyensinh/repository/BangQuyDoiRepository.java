@@ -4,6 +4,8 @@ import com.sgu.tuyensinh.entity.BangQuyDoi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Repository thao tác bảng {@code xt_bangquydoi}.
@@ -26,4 +28,21 @@ public interface BangQuyDoiRepository extends JpaRepository<BangQuyDoi, Integer>
             String toHop);
     // Tìm 
     List<BangQuyDoi> findByPhuongThuc(String phuongThuc);
+
+    // BỔ SUNG: Truy vấn phân trang cho UI Read-only
+    Page<BangQuyDoi> findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(String phuongThuc, String mon, Pageable pageable);
+
+
+ // ✅ BỔ SUNG: Lọc theo năm học
+    List<BangQuyDoi> findByNamHoc(Integer namHoc);
+
+    // ✅ BỔ SUNG: Lọc theo năm + phương thức
+    List<BangQuyDoi> findByNamHocAndPhuongThuc(Integer namHoc, String phuongThuc);
+
+    // ✅ BỔ SUNG: Lọc theo năm + phương thức + môn
+    List<BangQuyDoi> findByNamHocAndPhuongThucAndMon(Integer namHoc, String phuongThuc, String mon);
+
+
+
+
 }

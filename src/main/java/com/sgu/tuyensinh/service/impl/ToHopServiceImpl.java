@@ -130,4 +130,50 @@ public class ToHopServiceImpl implements IImportService {
         toHop.setMon3(dto.getMon3() != null ? dto.getMon3().trim() : null);
         return toHop;
     }
+
+    // =========================================================
+    // CÁC HÀM CRUD PHỤC VỤ TRỰC TIẾP CHO GIAO DIỆN (JAVA SWING)
+    // =========================================================
+
+    /**
+     * Lấy danh sách Tổ hợp có phân trang
+     */
+    public org.springframework.data.domain.Page<ToHop> layDanhSachPhanTrang(int page, int size, String keyword) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return toHopRepository.findByMaToHopContainingIgnoreCaseOrTenToHopContainingIgnoreCase(keyword, keyword, pageable);
+        }
+        return toHopRepository.findAll(pageable);
+    }
+
+    /**
+     * Lưu mới hoặc Cập nhật Tổ Hợp
+     */
+    @Transactional
+    public ToHop luuToHop(ToHop toHop) {
+        if (toHop.getMaToHop() == null || toHop.getMaToHop().isBlank()) {
+            throw new IllegalArgumentException("Mã tổ hợp không được để trống!");
+        }
+        if (toHop.getMon1() == null || toHop.getMon2() == null || toHop.getMon3() == null) {
+            throw new IllegalArgumentException("Phải nhập đủ 3 môn thi!");
+        }
+
+        // Kiểm tra trùng lặp nếu là Thêm mới (idtohop == null)
+        if (toHop.getIdtohop() == null && toHopRepository.existsByMaToHop(toHop.getMaToHop())) {
+            throw new IllegalArgumentException("Mã tổ hợp này đã tồn tại!");
+        }
+
+        return toHopRepository.save(toHop);
+    }
+
+    /**
+     * Xóa Tổ Hợp theo ID
+     */
+    @Transactional
+    public void xoaToHop(Integer id) {
+        if (!toHopRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy tổ hợp với ID: " + id);
+        }
+        toHopRepository.deleteById(id);
+    }
 }

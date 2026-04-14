@@ -108,4 +108,45 @@ public class NganhServiceImpl implements IImportService {
         nganh.setDiemSan(dto.getDiemSan());
         return nganh;
     }
+
+    // =========================================================
+    // CÁC HÀM CRUD PHỤC VỤ TRỰC TIẾP CHO GIAO DIỆN (JAVA SWING)
+    // =========================================================
+
+    /**
+     * Lấy danh sách ngành có phân trang
+     */
+    public org.springframework.data.domain.Page<Nganh> layDanhSachPhanTrang(int page, int size, String keyword) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return nganhRepository.findByMaNganhContainingOrTenNganhContainingIgnoreCase(keyword, keyword, pageable);
+        }
+        return nganhRepository.findAll(pageable);
+    }
+
+    /**
+     * Lưu mới hoặc Cập nhật Ngành
+     */
+    @Transactional
+    public Nganh luuNganh(Nganh nganh) {
+        // Validate cơ bản
+        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank()) {
+            throw new IllegalArgumentException("Mã ngành không được để trống!");
+        }
+        if (nganh.getTenNganh() == null || nganh.getTenNganh().isBlank()) {
+            throw new IllegalArgumentException("Tên ngành không được để trống!");
+        }
+        return nganhRepository.save(nganh);
+    }
+
+    /**
+     * Xóa Ngành theo Mã
+     */
+    @Transactional
+    public void xoaNganh(String maNganh) {
+        if (!nganhRepository.existsById(maNganh)) {
+            throw new IllegalArgumentException("Không tìm thấy mã ngành: " + maNganh);
+        }
+        nganhRepository.deleteById(maNganh);
+    }
 }

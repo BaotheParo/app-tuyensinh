@@ -5,17 +5,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 import javax.swing.*;
 
-/**
- * Điểm khởi chạy của ứng dụng Spring Boot.
- *
- * Lưu ý cho nhóm:
- * - Đây là class "main", chạy lên là Spring sẽ tự quét các component trong package `com.sgu.tuyensinh` trở xuống.
- * - Vì vậy các controller/service/repository/config/util/... nên nằm dưới package này để Spring nhận diện tự động.
- */
 @SpringBootApplication
+
 public class AppTuyenSinhApplication {
 
     public static void main(String[] args) {
@@ -26,10 +21,12 @@ public class AppTuyenSinhApplication {
     }
 
     @Bean
-    public CommandLineRunner run() {
+    @Profile("!test") // Chỉ chạy MainFrame khi không ở profile test
+
+    public CommandLineRunner run(MainFrame mainFrame) {
         return args -> {
             SwingUtilities.invokeLater(() -> {
-                new MainFrame().setVisible(true);
+                mainFrame.setVisible(true);
             });
         };
     }

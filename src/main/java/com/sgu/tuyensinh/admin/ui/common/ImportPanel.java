@@ -3,9 +3,14 @@ package com.sgu.tuyensinh.admin.ui.common;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.Sheet;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * TUẦN 1 — ImportPanel  (đã cập nhật package com.sgu.tuyensinh)
@@ -225,7 +230,7 @@ public class ImportPanel extends JPanel {
 
         // Tắt định dạng hàng nghìn (dấu phẩy) bằng pattern "#"
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spnNamHoc, "#");
-        editor.getTextField().setHorizontalAlignment(JTextField.CENTER); 
+        editor.getTextField().setHorizontalAlignment(JTextField.CENTER);
         spnNamHoc.setEditor(editor);
         pNam.add(lblNam, BorderLayout.NORTH);
         pNam.add(spnNamHoc, BorderLayout.CENTER);
