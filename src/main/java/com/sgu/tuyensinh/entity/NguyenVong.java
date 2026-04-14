@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;   
 
 /**
  * Entity Nguyện vọng (map với bảng {@code xt_nguyenvongxettuyen}).
@@ -25,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicUpdate
 @Entity
 @Table(name = "xt_nguyenvongxettuyen")
 public class NguyenVong {

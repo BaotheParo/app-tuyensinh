@@ -4,6 +4,8 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -11,6 +13,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 @Component
+@Profile("!test") 
 public class MainFrame extends JFrame {
 
     // Inject TẤT CẢ các Panel do Spring quản lý (Của bạn + Của nhóm)

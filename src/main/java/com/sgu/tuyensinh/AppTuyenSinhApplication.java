@@ -5,10 +5,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 import javax.swing.*;
 
 @SpringBootApplication
+
 public class AppTuyenSinhApplication {
 
     public static void main(String[] args) {
@@ -19,6 +21,8 @@ public class AppTuyenSinhApplication {
     }
 
     @Bean
+    @Profile("!test") // Chỉ chạy MainFrame khi không ở profile test
+
     public CommandLineRunner run(MainFrame mainFrame) {
         return args -> {
             SwingUtilities.invokeLater(() -> {
