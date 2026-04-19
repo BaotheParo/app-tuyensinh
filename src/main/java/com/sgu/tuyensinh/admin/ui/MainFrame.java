@@ -27,13 +27,15 @@ public class MainFrame extends JFrame {
     private final BaoCaoPanel baoCaoPanel;
     private final QuanLyUserPanel quanlyUserPanel;
     private final DiemThiPanel diemThiPanel;
-
+    private final DashboardPanel      dashboardPanel;
+    private final DiemCongFormPanel   diemCongFormPanel;
+    private final BangQuyDoiFormPanel bangQuyDoiFormPanel;
     /**
      * Creates new form Main
      */
     public MainFrame(TrangChuPanel trangChuPanel, NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel,
-            BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
-            BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel) {
+                     BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
+                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, DiemCongFormPanel diemCongFormPanel, BangQuyDoiFormPanel bangQuyDoiFormPanel) {
         this.trangChuPanel = trangChuPanel;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -44,6 +46,9 @@ public class MainFrame extends JFrame {
         this.baoCaoPanel = baoCaoPanel;
         this.quanlyUserPanel = quanlyUserPanel;
         this.diemThiPanel = diemThiPanel;
+        this.dashboardPanel = dashboardPanel;
+        this.diemCongFormPanel = diemCongFormPanel;
+        this.bangQuyDoiFormPanel = bangQuyDoiFormPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -375,7 +380,7 @@ public class MainFrame extends JFrame {
     }// GEN-LAST:event_btnXetTuyenActionPerformed
 
     private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, bangQuyDoiPanel);
+        addTaskBar(mainContent2, bangQuyDoiFormPanel);
     }
 
     private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -383,7 +388,7 @@ public class MainFrame extends JFrame {
     }
 
     private void btnDiemUuTienActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, diemUuTienPanel);
+        addTaskBar(mainContent2, diemCongFormPanel);
     }
 
     private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {
@@ -403,7 +408,8 @@ public class MainFrame extends JFrame {
     }
 
     private void btnBaoCaoActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, baoCaoPanel);
+        addTaskBar(mainContent2, dashboardPanel);
+        dashboardPanel.loadData();
     }
 
     private void btnUserActionPerformed(java.awt.event.ActionEvent evt) {

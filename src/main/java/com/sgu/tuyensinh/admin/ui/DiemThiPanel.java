@@ -27,7 +27,7 @@ public class DiemThiPanel extends JPanel {
     private JButton btnSearch;
     private BaseTablePanel tablePanel;
     private JLabel lblPagination;
-    private JButton btnPrev, btnNext, btnEdit, btnClear;
+    private JButton btnPrev, btnNext, btnEdit, btnClear, btnNhapTay ;
 
     private int currentPage = 0;
     private final int pageSize = 20;
@@ -74,14 +74,26 @@ public class DiemThiPanel extends JPanel {
         
         btnEdit = new JButton("Sửa Điểm");
         btnClear = new JButton("Xóa Điểm");
+        JButton btnNhapTay = new JButton("Nhập điểm");
         
         btnEdit.setBackground(new Color(41, 128, 185));
         btnEdit.setForeground(Color.WHITE);
         btnClear.setBackground(new Color(192, 57, 43));
         btnClear.setForeground(Color.WHITE);
+        btnNhapTay.setBackground(new Color(142, 68, 173));
+        btnNhapTay.setForeground(Color.WHITE);
+        btnNhapTay.addActionListener(e -> {
+            int row = tablePanel.getTable().getSelectedRow();
+            String cccd = row >= 0
+                    ? tablePanel.getTable().getValueAt(row, 0).toString()
+                    : "";
+            DiemThiFormPanel.showDialog((Component) this, diemThiService, cccd);
+            loadData(); // refresh sau khi dialog đóng
+        });
 
         actionPanel.add(btnEdit);
         actionPanel.add(btnClear);
+        actionPanel.add(btnNhapTay);
 
         // Pagination Buttons (Center)
         JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
