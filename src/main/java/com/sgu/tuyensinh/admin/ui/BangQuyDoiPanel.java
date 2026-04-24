@@ -1,6 +1,7 @@
 package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
+import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.BangQuyDoi;
 import com.sgu.tuyensinh.service.BangQuyDoiService;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ public class BangQuyDoiPanel extends JPanel {
     private JTextField txtSearch;
     private JButton btnSearch, btnPrev, btnNext;
     private JLabel lblPage;
+    private JButton btnImport;
 
     private int currentPage = 0;
     private final int pageSize = 20;
@@ -39,14 +41,19 @@ public class BangQuyDoiPanel extends JPanel {
     }
 
     private void initComponents() {
-        String[] columns = {"ID", "Phương Thức", "Môn/Tổ Hợp", "Điểm Gốc A", "Điểm Gốc B", "Quy Đổi C", "Quy Đổi D", "Ghi Chú"};
+        String[] columns = { "ID", "Phương Thức", "Môn/Tổ Hợp", "Điểm Gốc A", "Điểm Gốc B", "Quy Đổi C", "Quy Đổi D",
+                "Ghi Chú" };
         tablePanel = new BaseTablePanel(columns);
-        
+
         txtSearch = new JTextField(20);
         btnSearch = new JButton("Tìm Kiếm");
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
+
+        btnImport = new JButton("Import");
+        btnImport.setBackground(new Color(30, 144, 255));
+        btnImport.setForeground(Color.WHITE);
     }
 
     private void layoutComponents() {
@@ -61,16 +68,58 @@ public class BangQuyDoiPanel extends JPanel {
         pagingPanel.add(lblPage);
         pagingPanel.add(btnNext);
 
+        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        importWrap.add(btnImport);
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(pagingPanel, BorderLayout.CENTER);
+        bottomPanel.add(importWrap, BorderLayout.EAST);
+
         add(searchPanel, BorderLayout.NORTH);
         add(tablePanel, BorderLayout.CENTER);
-        add(pagingPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private void addEventHandlers() {
-        btnSearch.addActionListener(e -> { currentPage = 0; loadData(); });
-        txtSearch.addActionListener(e -> { currentPage = 0; loadData(); });
-        btnPrev.addActionListener(e -> { if (currentPage > 0) { currentPage--; loadData(); } });
-        btnNext.addActionListener(e -> { if (currentPage < totalPages - 1) { currentPage++; loadData(); } });
+        btnSearch.addActionListener(e -> {
+            currentPage = 0;
+            loadData();
+        });
+        txtSearch.addActionListener(e -> {
+            currentPage = 0;
+            loadData();
+        });
+        btnPrev.addActionListener(e -> {
+            if (currentPage > 0) {
+                currentPage--;
+                loadData();
+            }
+        });
+        btnNext.addActionListener(e -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                loadData();
+            }
+        });
+
+        // // FIX: truyền parent window vào JDialog để định vị đúng
+        // btnImport.addActionListener(e -> {
+        //     Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        //     JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
+        //     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        //     ImportPanel importPanel = new ImportPanel(
+        //             inputStream -> bangQuyDoiService.importFromExcel(inputStream));
+
+        //     dialog.add(importPanel);
+        //     dialog.pack();
+        //     dialog.setMinimumSize(new Dimension(500, 280));
+        //     dialog.setLocationRelativeTo(this);
+        //     dialog.setVisible(true);
+
+        //     // Sau khi dialog đóng → reload lại bảng
+        //     loadData();
+        // });
     }
 
     private void loadData() {
@@ -83,12 +132,12 @@ public class BangQuyDoiPanel extends JPanel {
         model.setRowCount(0);
 
         for (BangQuyDoi b : pageData.getContent()) {
-            tablePanel.addRow(new Object[]{
-                b.getMaQuyDoi(), b.getPhuongThuc(), 
-                (b.getMon() != null ? b.getMon() : b.getToHop()),
-                b.getDiemGocA(), b.getDiemGocB(),
-                b.getDiemQuyDoiC(), b.getDiemQuyDoiD(),
-                b.getPhanVi()
+            tablePanel.addRow(new Object[] {
+                    b.getMaQuyDoi(), b.getPhuongThuc(),
+                    (b.getMon() != null ? b.getMon() : b.getToHop()),
+                    b.getDiemGocA(), b.getDiemGocB(),
+                    b.getDiemQuyDoiC(), b.getDiemQuyDoiD(),
+                    b.getPhanVi()
             });
         }
     }

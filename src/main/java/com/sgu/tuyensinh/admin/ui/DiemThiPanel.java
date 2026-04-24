@@ -1,6 +1,7 @@
 package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
+import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.admin.ui.common.MessageDialog;
 import com.sgu.tuyensinh.entity.DiemThi;
 import com.sgu.tuyensinh.service.DiemThiService;
@@ -28,6 +29,8 @@ public class DiemThiPanel extends JPanel {
     private BaseTablePanel tablePanel;
     private JLabel lblPagination;
     private JButton btnPrev, btnNext, btnEdit, btnClear;
+
+    private JButton btnImport;
 
     private int currentPage = 0;
     private final int pageSize = 20;
@@ -59,7 +62,7 @@ public class DiemThiPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // --- CENTER PANEL: Table ---
-        String[] columns = {"CCCD", "Họ Tên", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "V-SAT", "ĐGNL"};
+        String[] columns = { "CCCD", "Họ Tên", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "V-SAT", "ĐGNL" };
         tablePanel = new BaseTablePanel(columns);
         add(tablePanel, BorderLayout.CENTER);
 
@@ -71,10 +74,10 @@ public class DiemThiPanel extends JPanel {
         // Action Buttons (Right)
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         actionPanel.setBackground(Color.WHITE);
-        
+
         btnEdit = new JButton("Sửa Điểm");
         btnClear = new JButton("Xóa Điểm");
-        
+
         btnEdit.setBackground(new Color(41, 128, 185));
         btnEdit.setForeground(Color.WHITE);
         btnClear.setBackground(new Color(192, 57, 43));
@@ -86,17 +89,25 @@ public class DiemThiPanel extends JPanel {
         // Pagination Buttons (Center)
         JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         paginationPanel.setBackground(Color.WHITE);
-        
+
         btnPrev = new JButton("|< Trước");
         btnNext = new JButton("Sau >|");
         lblPagination = new JLabel("Trang 1 / 1");
-        
+
+        btnImport = new JButton("Import");
+        btnImport.setBackground(new Color(30, 144, 255));
+        btnImport.setForeground(Color.WHITE);
+
         paginationPanel.add(btnPrev);
         paginationPanel.add(lblPagination);
         paginationPanel.add(btnNext);
 
         bottomPanel.add(paginationPanel, BorderLayout.CENTER);
         bottomPanel.add(actionPanel, BorderLayout.EAST);
+
+        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        importWrap.add(btnImport);
+        actionPanel.add(importWrap);
 
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -122,15 +133,39 @@ public class DiemThiPanel extends JPanel {
 
         btnEdit.addActionListener(e -> openEditDialog());
         btnClear.addActionListener(e -> handleClearAction());
+
+
+
+
+        //         // FIX: truyền parent window vào JDialog để định vị đúng
+        // btnImport.addActionListener(e -> {
+        //     Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        //     JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
+        //     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        //     ImportPanel importPanel = new ImportPanel(
+        //         inputStream -> diemThiService.importFromExcel(inputStream)
+        //     );
+
+        //     dialog.add(importPanel);
+        //     dialog.pack();
+        //     dialog.setMinimumSize(new Dimension(500, 280));
+        //     dialog.setLocationRelativeTo(this);
+        //     dialog.setVisible(true);
+
+        //     // Sau khi dialog đóng → reload lại bảng
+        //     loadData();
+        // });
     }
 
     /**
-     * Dùng SwingWorker gọi API bất đồng bộ để tránh đơ giao diện UI (Yêu cầu Clean Code / Threading).
+     * Dùng SwingWorker gọi API bất đồng bộ để tránh đơ giao diện UI (Yêu cầu Clean
+     * Code / Threading).
      */
     public void loadData() {
         String keyword = txtSearch.getText().trim();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        
+
         SwingWorker<Page<DiemThi>, Void> worker = new SwingWorker<>() {
             @Override
             protected Page<DiemThi> doInBackground() throws Exception {
@@ -144,25 +179,25 @@ public class DiemThiPanel extends JPanel {
                     Page<DiemThi> page = get();
                     totalPages = page.getTotalPages() == 0 ? 1 : page.getTotalPages();
                     lblPagination.setText("Trang " + (currentPage + 1) + " / " + totalPages);
-                    
+
                     // Reset table
                     DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
                     model.setRowCount(0);
-                    
+
                     for (DiemThi dt : page.getContent()) {
                         String hoTen = (dt.getThiSinh() != null) ? dt.getThiSinh().getHoTen() : "Không tìm thấy";
                         // Cột: CCCD, Họ Tên, Toán, Văn, Anh, Lý, Hóa, Sinh, V-SAT (nk1), ĐGNL (nk2)
-                        model.addRow(new Object[]{
+                        model.addRow(new Object[] {
                                 dt.getCccd(), hoTen,
                                 dt.getToan(), dt.getVan(), dt.getAnh(),
                                 dt.getLy(), dt.getHoa(), dt.getSinh(),
                                 dt.getNk1(), dt.getNk2()
                         });
                     }
-                    
+
                     btnPrev.setEnabled(currentPage > 0);
                     btnNext.setEnabled(currentPage < totalPages - 1);
-                    
+
                 } catch (InterruptedException | ExecutionException ex) {
                     MessageDialog.showError("Lỗi kết nối CSDL: " + ex.getMessage());
                 }
@@ -193,17 +228,27 @@ public class DiemThiPanel extends JPanel {
         JTextField txtDgnl = createNumberField(table.getValueAt(selectedRow, 9));
 
         JPanel panel = new JPanel(new GridLayout(8, 2, 5, 5));
-        panel.add(new JLabel("Toán:")); panel.add(txtToan);
-        panel.add(new JLabel("Văn:")); panel.add(txtVan);
-        panel.add(new JLabel("Ngoại Ngữ:")); panel.add(txtAnh);
-        panel.add(new JLabel("Lý:")); panel.add(txtLy);
-        panel.add(new JLabel("Hóa:")); panel.add(txtHoa);
-        panel.add(new JLabel("Sinh:")); panel.add(txtSinh);
-        panel.add(new JLabel("V-SAT:")); panel.add(txtVsat);
-        panel.add(new JLabel("ĐGNL:")); panel.add(txtDgnl);
+        panel.add(new JLabel("Toán:"));
+        panel.add(txtToan);
+        panel.add(new JLabel("Văn:"));
+        panel.add(txtVan);
+        panel.add(new JLabel("Ngoại Ngữ:"));
+        panel.add(txtAnh);
+        panel.add(new JLabel("Lý:"));
+        panel.add(txtLy);
+        panel.add(new JLabel("Hóa:"));
+        panel.add(txtHoa);
+        panel.add(new JLabel("Sinh:"));
+        panel.add(txtSinh);
+        panel.add(new JLabel("V-SAT:"));
+        panel.add(txtVsat);
+        panel.add(new JLabel("ĐGNL:"));
+        panel.add(txtDgnl);
 
-        int confirm = JOptionPane.showConfirmDialog(this, panel, "Phạm vi chỉnh sửa điểm - " + hoTen + " (" + cccd + ")", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        
+        int confirm = JOptionPane.showConfirmDialog(this, panel,
+                "Phạm vi chỉnh sửa điểm - " + hoTen + " (" + cccd + ")", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+
         if (confirm == JOptionPane.OK_OPTION) {
             try {
                 DiemThi diemMoi = new DiemThi();
@@ -255,10 +300,11 @@ public class DiemThiPanel extends JPanel {
         String cccd = tablePanel.getTable().getValueAt(selectedRow, 0).toString();
         String hoTen = tablePanel.getTable().getValueAt(selectedRow, 1).toString();
 
-        int confirm = JOptionPane.showConfirmDialog(this, 
-                "Bạn có chắc muốn làm rỗng toàn bộ điểm của thí sinh " + hoTen + "\nChú ý: Hành động này thao tác trực tiếp vào hệ thống!", 
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc muốn làm rỗng toàn bộ điểm của thí sinh " + hoTen
+                        + "\nChú ý: Hành động này thao tác trực tiếp vào hệ thống!",
                 "Xác nhận xóa điểm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                
+
         if (confirm == JOptionPane.YES_OPTION) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             SwingWorker<Void, Void> worker = new SwingWorker<>() {
