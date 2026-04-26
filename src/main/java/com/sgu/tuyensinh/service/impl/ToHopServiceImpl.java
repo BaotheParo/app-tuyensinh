@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class ToHopServiceImpl implements IImportService {
 
     @Override
     @Transactional
-    public ImportResultDTO importFromExcel(InputStream inputStream) {
+    public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
         ImportResultDTO result = new ImportResultDTO();
 
         if (inputStream == null) {

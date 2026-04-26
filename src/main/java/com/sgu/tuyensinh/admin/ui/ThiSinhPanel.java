@@ -4,6 +4,7 @@ import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.ThiSinh;
 import com.sgu.tuyensinh.service.impl.ThiSinhServiceImpl;
+import com.sgu.tuyensinh.service.ThiSinhImportService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +73,7 @@ public class ThiSinhPanel extends JPanel {
         lblPage = new JLabel("Trang: 1/1");
 
         btnImport = new JButton("Import");
-        btnImport.setBackground(new Color(30,144,255));
+        btnImport.setBackground(new Color(30, 144, 255));
         btnImport.setForeground(Color.WHITE);
 
         txtSearch = new JTextField(20);
@@ -132,7 +133,7 @@ public class ThiSinhPanel extends JPanel {
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(pagingPanel, BorderLayout.CENTER);
-        bottomPanel.add(importWrap,  BorderLayout.EAST);
+        bottomPanel.add(importWrap, BorderLayout.EAST);
 
         add(topPanel, BorderLayout.NORTH);
         add(tablePanel, BorderLayout.CENTER);
@@ -190,15 +191,14 @@ public class ThiSinhPanel extends JPanel {
             loadData();
         });
 
-        //         // FIX: truyền parent window vào JDialog để định vị đúng
+        // // FIX: truyền parent window vào JDialog để định vị đúng
         // btnImport.addActionListener(e -> {
         //     Window parentWindow = SwingUtilities.getWindowAncestor(this);
         //     JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
         //     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        //     // ImportPanel importPanel = new ImportPanel(
-        //     //     // inputStream -> thiSinhService.importFromExcel(inputStream)
-        //     // );
+        //     ImportPanel importPanel = new ImportPanel(
+        //             inputStream -> importService.importThiSinhFromExcel(inputStream));
 
         //     dialog.add(importPanel);
         //     dialog.pack();

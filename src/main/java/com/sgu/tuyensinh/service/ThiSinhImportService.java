@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,44 +26,89 @@ public class ThiSinhImportService {
     /**
      * Senior Backend Architect: Refactor MVC & Performance
      * Hàm này xử lý logic import, tách biệt hoàn toàn với UI.
-     * Sử dụng kỹ thuật Batch Insert (Chunking) để xử lý 43,000 dòng mà không làm treo máy.
+     * Sử dụng kỹ thuật Batch Insert (Chunking) để xử lý 43,000 dòng mà không làm
+     * treo máy.
      */
-    @Transactional
-    public List<String> importThiSinhFromExcel(String filePath) {
-        List<String> errors = new ArrayList<>();
-        File file = new File(filePath);
+    // @Transactional
+    // public List<String> importThiSinhFromExcel(String filePath) {
+    // List<String> errors = new ArrayList<>();
+    // File file = new File(filePath);
 
-        if (!file.exists()) {
-            errors.add("File không tồn tại: " + filePath);
+    // if (!file.exists()) {
+    // errors.add("File không tồn tại: " + filePath);
+    // return errors;
+    // }
+
+    // // 1. Đọc toàn bộ DTO từ Excel qua Util của Lead
+    // List<ThiSinhImportDTO> dtos = ThiSinhExcelReaderUtil.read(file);
+    // List<ThiSinh> entitiesToSave = new ArrayList<>();
+
+    // // 2. Validate và chuyển đổi sang Entity
+    // for (int i = 0; i < dtos.size(); i++) {
+    // ThiSinhImportDTO dto = dtos.get(i);
+    // List<String> validationErrors = validate(dto);
+
+    // if (validationErrors.isEmpty()) {
+    // entitiesToSave.add(toEntity(dto));
+    // } else {
+    // errors.add("Dòng " + (i + 1) + ": " + String.join(", ", validationErrors));
+    // }
+    // }
+
+    // // 3. Kỹ thuật Chunking (Chia để trị):
+    // // Thay vì gọi saveAll(43000), ta chia thành từng nhóm 1000 dòng.
+    // // Việc này giúp Hibernate và DB handle transaction mượt mà hơn, tránh lỗi
+    // tràn bộ nhớ đệm (Cache).
+    // int chunkSize = 1000;
+    // for (int i = 0; i < entitiesToSave.size(); i += chunkSize) {
+    // int end = Math.min(i + chunkSize, entitiesToSave.size());
+    // List<ThiSinh> chunk = entitiesToSave.subList(i, end);
+
+    // repository.saveAll(chunk);
+    // // repository.flush(); // Có thể dùng nếu cần giải phóng persist context ngay
+    // lập tức
+    // }
+
+    // return errors;
+    // }
+    @Transactional
+    public List<String> importThiSinhFromExcel(InputStream inputStream) {
+        List<String> errors = new ArrayList<>();
+
+        if (inputStream == null) {
+            errors.add("InputStream null (không có dữ liệu file)");
             return errors;
         }
 
-        // 1. Đọc toàn bộ DTO từ Excel qua Util của Lead
-        List<ThiSinhImportDTO> dtos = ThiSinhExcelReaderUtil.read(file);
-        List<ThiSinh> entitiesToSave = new ArrayList<>();
+        try {
+            // 1. Đọc DTO từ Excel (cần sửa Util để nhận InputStream)
+            List<ThiSinhImportDTO> dtos = ThiSinhExcelReaderUtil.read(inputStream);
+            List<ThiSinh> entitiesToSave = new ArrayList<>();
 
-        // 2. Validate và chuyển đổi sang Entity
-        for (int i = 0; i < dtos.size(); i++) {
-            ThiSinhImportDTO dto = dtos.get(i);
-            List<String> validationErrors = validate(dto);
-            
-            if (validationErrors.isEmpty()) {
-                entitiesToSave.add(toEntity(dto));
-            } else {
-                errors.add("Dòng " + (i + 1) + ": " + String.join(", ", validationErrors));
+            // 2. Validate + map
+            for (int i = 0; i < dtos.size(); i++) {
+                ThiSinhImportDTO dto = dtos.get(i);
+                List<String> validationErrors = validate(dto);
+
+                if (validationErrors.isEmpty()) {
+                    entitiesToSave.add(toEntity(dto));
+                } else {
+                    errors.add("Dòng " + (i + 1) + ": " + String.join(", ", validationErrors));
+                }
             }
-        }
 
-        // 3. Kỹ thuật Chunking (Chia để trị):
-        // Thay vì gọi saveAll(43000), ta chia thành từng nhóm 1000 dòng.
-        // Việc này giúp Hibernate và DB handle transaction mượt mà hơn, tránh lỗi tràn bộ nhớ đệm (Cache).
-        int chunkSize = 1000;
-        for (int i = 0; i < entitiesToSave.size(); i += chunkSize) {
-            int end = Math.min(i + chunkSize, entitiesToSave.size());
-            List<ThiSinh> chunk = entitiesToSave.subList(i, end);
-            
-            repository.saveAll(chunk);
-            // repository.flush(); // Có thể dùng nếu cần giải phóng persist context ngay lập tức
+            // 3. Chunking
+            int chunkSize = 1000;
+            for (int i = 0; i < entitiesToSave.size(); i += chunkSize) {
+                int end = Math.min(i + chunkSize, entitiesToSave.size());
+                List<ThiSinh> chunk = entitiesToSave.subList(i, end);
+
+                repository.saveAll(chunk);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            errors.add("Lỗi đọc file: " + e.getMessage());
         }
 
         return errors;
@@ -78,7 +124,7 @@ public class ThiSinhImportService {
             errors.add("Họ tên bị trống");
         }
         return errors;
-    }   
+    }
 
     // ====== MAP DTO -> ENTITY ======
     public ThiSinh toEntity(ThiSinhImportDTO dto) {

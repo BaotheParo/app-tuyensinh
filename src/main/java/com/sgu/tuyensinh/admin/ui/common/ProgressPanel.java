@@ -7,23 +7,20 @@ import java.awt.*;
 public class ProgressPanel extends JPanel {
 
     private static final Color BG         = new Color(0xF3F2EE);
-    private static final Color TRACK      = new Color(0xDDDBD4);
-    private static final Color FILL       = new Color(0x1874D2);
     private static final Color TEXT_MAIN  = new Color(0x1A1A1A);
     private static final Color TEXT_MUTED = new Color(0x6B6B68);
 
-    private final JLabel lblStatus;
-    private final JLabel lblPercent;
-    private final JLabel lblDetail;
+    private final JLabel   lblStatus;
+    private final JLabel   lblPercent;
+    private final JLabel   lblDetail;
     private final SmoothBar bar;
 
     public ProgressPanel() {
         setBackground(BG);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createCompoundBorder(
-            new ImportPanel.RoundedBorder(8, BG),
-            new EmptyBorder(12, 14, 12, 14)
-        ));
+                new ImportPanel.RoundedBorder(8, BG),
+                new EmptyBorder(12, 14, 12, 14)));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
         setAlignmentX(LEFT_ALIGNMENT);
 
@@ -57,23 +54,21 @@ public class ProgressPanel extends JPanel {
         add(lblDetail);
     }
 
+    /** Gọi từ SwingWorker.process() — luôn chạy trên EDT */
     public void updateProgress(int current, int total) {
-        int pct = total > 0 ? (int)((current * 100.0) / total) : 0;
-        SwingUtilities.invokeLater(() -> {
-            bar.setValue(pct);
-            lblPercent.setText(pct + "%");
-            lblStatus.setText("Đang nhập...");
-            lblDetail.setText(current + " / " + total + " dòng");
-        });
+        int pct = total > 0 ? (int) ((current * 100.0) / total) : 0;
+        bar.setValue(pct);
+        lblPercent.setText(pct + "%");
+        lblStatus.setText("Đang nhập...");
+        lblDetail.setText(current + " / " + total + " dòng");
+        paintImmediately(0, 0, getWidth(), getHeight());
     }
 
     public void finish(int total) {
-        SwingUtilities.invokeLater(() -> {
-            bar.setValue(100);
-            lblPercent.setText("100%");
-            lblStatus.setText("Hoàn tất");
-            lblDetail.setText(total + " dòng đã xử lý");
-        });
+        bar.setValue(100);
+        lblPercent.setText("100%");
+        lblStatus.setText("Hoàn tất");
+        lblDetail.setText(total + " dòng đã xử lý");
     }
 
     public void reset() {
@@ -97,17 +92,15 @@ public class ProgressPanel extends JPanel {
             repaint();
         }
 
-        @Override protected void paintComponent(Graphics g) {
+        @Override
+        protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
             int w = getWidth(), h = getHeight();
-            // track
             g2.setColor(new Color(0xDDDBD4));
             g2.fillRoundRect(0, 0, w, h, h, h);
-            // fill
             if (value > 0) {
-                int filled = (int)(w * (value / 100.0));
+                int filled = (int) (w * (value / 100.0));
                 g2.setColor(new Color(0x1874D2));
                 g2.fillRoundRect(0, 0, filled, h, h, h);
             }

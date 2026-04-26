@@ -5,6 +5,8 @@ import com.sgu.tuyensinh.entity.NganhToHop;
 import com.sgu.tuyensinh.repository.NganhToHopRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import com.sgu.tuyensinh.service.interfaces.IImportService;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
+
 import com.sgu.tuyensinh.util.ExcelReaderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +69,7 @@ public class NganhToHopServiceImpl implements IImportService {
     //     return result;
     // }
 @Transactional
-public ImportResultDTO importFromExcel(InputStream inputStream) {
+public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
     ImportResultDTO result = new ImportResultDTO();
     try (Workbook workbook = WorkbookFactory.create(inputStream)) {
         Sheet sheet = workbook.getSheetAt(0);

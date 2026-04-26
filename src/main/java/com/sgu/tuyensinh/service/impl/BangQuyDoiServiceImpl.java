@@ -5,6 +5,8 @@ import com.sgu.tuyensinh.entity.BangQuyDoi;
 import com.sgu.tuyensinh.repository.BangQuyDoiRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import com.sgu.tuyensinh.service.interfaces.IImportService;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
+
 import com.sgu.tuyensinh.util.ExcelReaderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,7 @@ public class BangQuyDoiServiceImpl implements IImportService {
 
     @Override
     @Transactional
-    public ImportResultDTO importFromExcel(InputStream inputStream) {
+    public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
         ImportResultDTO result = new ImportResultDTO();
 
         if (inputStream == null) {

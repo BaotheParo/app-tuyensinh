@@ -30,14 +30,10 @@ public class NganhService {
     }
 
     public Nganh createNganh(Nganh nganh) {
-        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank()) {
+        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank())
             throw new IllegalArgumentException("Mã ngành không được để trống");
-        }
-
-        if (nganhRepository.existsById(nganh.getMaNganh())) {
+        if (nganhRepository.existsById(nganh.getMaNganh()))
             throw new IllegalArgumentException("Mã ngành đã tồn tại");
-        }
-
         return nganhRepository.save(nganh);
     }
 
@@ -45,10 +41,8 @@ public class NganhService {
         Nganh old = nganhRepository.findById(maNganh)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ngành với mã: " + maNganh));
 
-        // ❌ Không cho đổi mã ngành
-        if (!old.getMaNganh().equals(newData.getMaNganh())) {
+        if (!old.getMaNganh().equals(newData.getMaNganh()))
             throw new IllegalStateException("Không được thay đổi mã ngành");
-        }
 
         old.setTenNganh(newData.getTenNganh());
         old.setDiemSan(newData.getDiemSan());
@@ -62,14 +56,11 @@ public class NganhService {
         Nganh nganh = nganhRepository.findById(maNganh)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ngành với mã: " + maNganh));
 
-        // check logic trước
-        if (nguyenVongRepository.existsByNvManganh(maNganh)) {
+        if (nguyenVongRepository.existsByNvManganh(maNganh))
             throw new IllegalStateException("Không thể xóa vì có nguyện vọng liên quan");
-        }
 
-        if (nganhToHopRepository.existsByMaNganh(maNganh)) {
+        if (nganhToHopRepository.existsByMaNganh(maNganh))
             throw new IllegalStateException("Không thể xóa vì có tổ hợp liên quan");
-        }
 
         try {
             nganhRepository.delete(nganh);

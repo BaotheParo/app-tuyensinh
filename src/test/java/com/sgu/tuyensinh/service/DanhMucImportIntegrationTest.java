@@ -38,7 +38,7 @@ public class DanhMucImportIntegrationTest {
         
         // Act (Thực thi): Gọi hàm Import từ Service của Vinh
         try (InputStream is = new FileInputStream(filePath)) {
-            ImportResultDTO result = bangQuyDoiService.importFromExcel(is);
+            ImportResultDTO result = bangQuyDoiService.importFromExcel(is, null);
             System.out.println("Kết quả import: " + result);
         }
 

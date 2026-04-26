@@ -49,7 +49,7 @@ class ToHopServiceImplTest {
             FileInputStream is = new FileInputStream(file);
             
             // Thực hiện import
-            ImportResultDTO result = toHopService.importFromExcel(is);
+            ImportResultDTO result = toHopService.importFromExcel(is, null);
 
             // Kiểm tra kết quả
             assertNotNull(result);

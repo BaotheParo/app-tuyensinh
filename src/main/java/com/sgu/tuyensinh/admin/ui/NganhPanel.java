@@ -51,10 +51,10 @@ public class NganhPanel extends JPanel {
         txtChiTieu = new JTextField(10);
         txtDiemSan = new JTextField(10);
 
-        btnAdd    = new JButton("Thêm Mới");
+        btnAdd = new JButton("Thêm Mới");
         btnUpdate = new JButton("Cập Nhật");
         btnDelete = new JButton("Xóa");
-        btnClear  = new JButton("Làm Mới Form");
+        btnClear = new JButton("Làm Mới Form");
 
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
@@ -70,11 +70,16 @@ public class NganhPanel extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(3, 4, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin Ngành"));
 
-        formPanel.add(new JLabel("Mã Ngành:"));   formPanel.add(txtMaNganh);
-        formPanel.add(new JLabel("Tên Ngành:"));  formPanel.add(txtTenNganh);
-        formPanel.add(new JLabel("Tổ Hợp Gốc:")); formPanel.add(txtToHopGoc);
-        formPanel.add(new JLabel("Chỉ Tiêu:"));   formPanel.add(txtChiTieu);
-        formPanel.add(new JLabel("Điểm Sàn:"));   formPanel.add(txtDiemSan);
+        formPanel.add(new JLabel("Mã Ngành:"));
+        formPanel.add(txtMaNganh);
+        formPanel.add(new JLabel("Tên Ngành:"));
+        formPanel.add(txtTenNganh);
+        formPanel.add(new JLabel("Tổ Hợp Gốc:"));
+        formPanel.add(txtToHopGoc);
+        formPanel.add(new JLabel("Chỉ Tiêu:"));
+        formPanel.add(txtChiTieu);
+        formPanel.add(new JLabel("Điểm Sàn:"));
+        formPanel.add(txtDiemSan);
 
         // ── Action Buttons ───────────────────────────────────────
         JPanel actionPanel = new JPanel(new GridLayout(4, 1, 5, 5));
@@ -84,7 +89,7 @@ public class NganhPanel extends JPanel {
         actionPanel.add(btnClear);
 
         JPanel topPanel = new JPanel(new BorderLayout(10, 10));
-        topPanel.add(formPanel,   BorderLayout.CENTER);
+        topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(actionPanel, BorderLayout.EAST);
 
         // ── Bottom: Phân trang + Import ──────────────────────────
@@ -99,11 +104,11 @@ public class NganhPanel extends JPanel {
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(pagingPanel, BorderLayout.CENTER);
-        bottomPanel.add(importWrap,  BorderLayout.EAST);
+        bottomPanel.add(importWrap, BorderLayout.EAST);
 
         // ── Assemble ─────────────────────────────────────────────
-        add(topPanel,    BorderLayout.NORTH);
-        add(tablePanel,  BorderLayout.CENTER);
+        add(topPanel, BorderLayout.NORTH);
+        add(tablePanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
@@ -122,16 +127,22 @@ public class NganhPanel extends JPanel {
             }
         });
 
-        btnAdd.addActionListener(e    -> executeSave(true));
+        btnAdd.addActionListener(e -> executeSave(true));
         btnUpdate.addActionListener(e -> executeSave(false));
         btnDelete.addActionListener(e -> executeDelete());
-        btnClear.addActionListener(e  -> clearForm());
+        btnClear.addActionListener(e -> clearForm());
 
         btnPrev.addActionListener(e -> {
-            if (currentPage > 0) { currentPage--; loadData(); }
+            if (currentPage > 0) {
+                currentPage--;
+                loadData();
+            }
         });
         btnNext.addActionListener(e -> {
-            if (currentPage < totalPages - 1) { currentPage++; loadData(); }
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                loadData();
+            }
         });
 
         // FIX: truyền parent window vào JDialog để định vị đúng
@@ -141,8 +152,7 @@ public class NganhPanel extends JPanel {
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             ImportPanel importPanel = new ImportPanel(
-                inputStream -> nganhService.importFromExcel(inputStream)
-            );
+                    (inputStream, callback) -> nganhService.importFromExcel(inputStream, callback));
 
             dialog.add(importPanel);
             dialog.pack();
@@ -164,9 +174,9 @@ public class NganhPanel extends JPanel {
         model.setRowCount(0);
 
         for (Nganh n : pageData.getContent()) {
-            tablePanel.addRow(new Object[]{
-                n.getMaNganh(), n.getTenNganh(), n.getToHopGoc(),
-                n.getChiTieu(), n.getDiemSan()
+            tablePanel.addRow(new Object[] {
+                    n.getMaNganh(), n.getTenNganh(), n.getToHopGoc(),
+                    n.getChiTieu(), n.getDiemSan()
             });
         }
     }
@@ -190,10 +200,10 @@ public class NganhPanel extends JPanel {
             loadData();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Chỉ tiêu và Điểm sàn phải là số!",
-                "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+                    "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(),
-                "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                    "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -213,8 +223,8 @@ public class NganhPanel extends JPanel {
                 loadData();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this,
-                    "Không thể xóa do dữ liệu đang được liên kết ở Tổ Hợp/Thí Sinh.",
-                    "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+                        "Không thể xóa do dữ liệu đang được liên kết ở Tổ Hợp/Thí Sinh.",
+                        "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

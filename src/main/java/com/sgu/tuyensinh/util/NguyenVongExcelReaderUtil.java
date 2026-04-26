@@ -2,19 +2,18 @@ package com.sgu.tuyensinh.util;
 
 import com.sgu.tuyensinh.dto.NguyenVongImportDTO;
 import org.apache.poi.ss.usermodel.*;
+import java.io.InputStream;
 
-import java.io.File;
-import java.io.FileInputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class NguyenVongExcelReaderUtil {
 
-    public static List<NguyenVongImportDTO> read(File file) {
+    public static List<NguyenVongImportDTO> read(InputStream is) {
         List<NguyenVongImportDTO> list = new ArrayList<>();
-
-        try (FileInputStream fis = new FileInputStream(file);
-                Workbook workbook = WorkbookFactory.create(fis)) {
+            
+        try (Workbook workbook = WorkbookFactory.create(is)) {
 
             // Duyệt qua tất cả các sheet trong file
             for (int s = 0; s < workbook.getNumberOfSheets(); s++) {

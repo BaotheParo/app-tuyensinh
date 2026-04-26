@@ -48,7 +48,7 @@ class BangQuyDoiServiceImplTest {
         try (InputStream is = new FileInputStream(file)) {
             log.info("🚀 Bắt đầu import file Excel...");
             
-            ImportResultDTO result = bangQuyDoiService.importFromExcel(is);
+            ImportResultDTO result = bangQuyDoiService.importFromExcel(is, null);
 
             assertNotNull(result, "Kết quả import không được null");
             log.info("✅ Import hoàn tất!");

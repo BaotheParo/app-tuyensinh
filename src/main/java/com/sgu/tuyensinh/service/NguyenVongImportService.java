@@ -3,16 +3,76 @@ package com.sgu.tuyensinh.service;
 import com.sgu.tuyensinh.dto.NguyenVongImportDTO;
 import com.sgu.tuyensinh.entity.NguyenVong;
 import com.sgu.tuyensinh.repository.NguyenVongRepository;
+import com.sgu.tuyensinh.service.dto.ImportResultDTO;
+import com.sgu.tuyensinh.util.NguyenVongExcelReaderUtil;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
+    
+@Service
 public class NguyenVongImportService {
 
     private final NguyenVongRepository repository;
 
     public NguyenVongImportService(NguyenVongRepository repository) {
         this.repository = repository;
+    }
+
+    @Transactional
+    public ImportResultDTO importNguyenVongFromExcel(InputStream inputStream, ProgressCallback callback) {
+        ImportResultDTO result = new ImportResultDTO();
+
+        // 0. Check inputStream
+        if (inputStream == null) {
+            result.addError("InputStream null (không có dữ liệu file)");
+            return result;
+        }
+
+        try {
+            // 1. Đọc Excel → DTO
+            List<NguyenVongImportDTO> dtos = NguyenVongExcelReaderUtil.read(inputStream);
+            List<NguyenVong> entitiesToSave = new ArrayList<>();
+
+            if (dtos == null || dtos.isEmpty()) {
+                result.addError("File Excel không có dữ liệu");
+                return result;
+            }
+
+            // 2. Validate + map
+            for (int i = 0; i < dtos.size(); i++) {
+                NguyenVongImportDTO dto = dtos.get(i);
+
+                List<String> validationErrors = validate(dto);
+
+                if (validationErrors.isEmpty()) {
+                    entitiesToSave.add(toEntity(dto));
+                    result.incrementSuccess(); // hợp lệ
+                } else {
+                    result.incrementSkip(); // bỏ qua
+                    result.addError("Dòng " + (i + 1) + ": " + String.join(", ", validationErrors));
+                }
+            }
+
+            // 3. Chunking save DB
+            int chunkSize = 1000;
+
+            for (int i = 0; i < entitiesToSave.size(); i += chunkSize) {
+                int end = Math.min(i + chunkSize, entitiesToSave.size());
+                List<NguyenVong> chunk = entitiesToSave.subList(i, end);
+
+                repository.saveAll(chunk);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.addError("Lỗi hệ thống: " + e.getMessage());
+        }
+
+        return result;
     }
 
     // ===== VALIDATE =====
@@ -33,7 +93,6 @@ public class NguyenVongImportService {
 
         return errors;
     }
-
     // ===== MAP DTO -> ENTITY =====
     public NguyenVong toEntity(NguyenVongImportDTO dto) {
         NguyenVong nv = new NguyenVong();

@@ -156,7 +156,7 @@ public class ToHopPanel extends JPanel {
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             ImportPanel importPanel = new ImportPanel(
-                inputStream -> toHopService.importFromExcel(inputStream)
+                (inputStream, callback) -> toHopService.importFromExcel(inputStream, callback)
             );
 
             dialog.add(importPanel);
