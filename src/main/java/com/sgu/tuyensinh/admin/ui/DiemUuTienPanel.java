@@ -3,7 +3,7 @@ package com.sgu.tuyensinh.admin.ui;
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.DiemCong;
-import com.sgu.tuyensinh.service.DiemCongService;
+import com.sgu.tuyensinh.service.impl.DiemCongServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import java.awt.*;
 @Component
 public class DiemUuTienPanel extends JPanel {
 
-    private final DiemCongService diemCongService;
+    private final DiemCongServiceImpl diemCongService;
 
     private BaseTablePanel tablePanel;
     private JTextField txtSearch;
@@ -29,7 +29,7 @@ public class DiemUuTienPanel extends JPanel {
     private final int pageSize = 20;
     private int totalPages = 1;
 
-    public DiemUuTienPanel(DiemCongService diemCongService) {
+    public DiemUuTienPanel(DiemCongServiceImpl diemCongService) {
         this.diemCongService = diemCongService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -102,24 +102,21 @@ public class DiemUuTienPanel extends JPanel {
             }
         });
 
-        // // FIX: truyền parent window vào JDialog để định vị đúng
-        // btnImport.addActionListener(e -> {
-        //     Window parentWindow = SwingUtilities.getWindowAncestor(this);
-        //     JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
-        //     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        btnImport.addActionListener(e -> {
+            Window parentWindow = SwingUtilities.getWindowAncestor(this);
+            JDialog dialog = new JDialog(parentWindow, "Import Điểm Ưu Tiên", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        //     ImportPanel importPanel = new ImportPanel(
-        //             inputStream -> diemCongService.importFromExcel(inputStream));
+            ImportPanel importPanel = new ImportPanel(
+                    (inputStream, callback) -> diemCongService.importFromExcel(inputStream, callback));
 
-        //     dialog.add(importPanel);
-        //     dialog.pack();
-        //     dialog.setMinimumSize(new Dimension(500, 280));
-        //     dialog.setLocationRelativeTo(this);
-        //     dialog.setVisible(true);
-
-        //     // Sau khi dialog đóng → reload lại bảng
-        //     loadData();
-        // });
+            dialog.add(importPanel);
+            dialog.pack();
+            dialog.setMinimumSize(new Dimension(500, 280));
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+            loadData();
+        });
     }
 
     private void loadData() {

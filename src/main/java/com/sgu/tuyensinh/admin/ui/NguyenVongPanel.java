@@ -3,10 +3,9 @@ package com.sgu.tuyensinh.admin.ui;
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.NguyenVong;
-import com.sgu.tuyensinh.service.NguyenVongService;
+import com.sgu.tuyensinh.service.impl.NguyenVongServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-import com.sgu.tuyensinh.service.NguyenVongImportService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,8 +18,7 @@ import java.math.BigDecimal;
 @Component
 public class NguyenVongPanel extends JPanel {
 
-    private final NguyenVongService nguyenVongService;
-    private final NguyenVongImportService importService;
+    private final NguyenVongServiceImpl nguyenVongService;
     private BaseTablePanel tablePanel;
     private JTextField txtSearch;
     private JButton btnSearch, btnPrev, btnNext;
@@ -31,9 +29,8 @@ public class NguyenVongPanel extends JPanel {
     private final int pageSize = 20;
     private int totalPages = 1;
 
-    public NguyenVongPanel(NguyenVongService nguyenVongService, NguyenVongImportService importService) {
+    public NguyenVongPanel(NguyenVongServiceImpl nguyenVongService) {
         this.nguyenVongService = nguyenVongService;
-        this.importService = importService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -111,7 +108,7 @@ public class NguyenVongPanel extends JPanel {
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             ImportPanel importPanel = new ImportPanel(
-                    (inputStream, callback) -> importService.importNguyenVongFromExcel(inputStream, callback)
+                    (inputStream, callback) -> nguyenVongService.importFromExcel(inputStream, callback)
             );
 
             dialog.add(importPanel);

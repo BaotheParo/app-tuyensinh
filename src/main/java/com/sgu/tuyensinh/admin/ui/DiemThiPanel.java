@@ -4,7 +4,7 @@ import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.admin.ui.common.MessageDialog;
 import com.sgu.tuyensinh.entity.DiemThi;
-import com.sgu.tuyensinh.service.DiemThiService;
+import com.sgu.tuyensinh.service.impl.DiemThiServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class DiemThiPanel extends JPanel {
 
-    private final DiemThiService diemThiService;
+    private final DiemThiServiceImpl diemThiService;
 
     private JTextField txtSearch;
     private JButton btnSearch;
@@ -37,7 +37,7 @@ public class DiemThiPanel extends JPanel {
     private int totalPages = 1;
 
     @Autowired
-    public DiemThiPanel(DiemThiService diemThiService) {
+    public DiemThiPanel(DiemThiServiceImpl  diemThiService) {
         this.diemThiService = diemThiService;
         initUI();
         loadData();
@@ -134,28 +134,21 @@ public class DiemThiPanel extends JPanel {
         btnEdit.addActionListener(e -> openEditDialog());
         btnClear.addActionListener(e -> handleClearAction());
 
+        btnImport.addActionListener(e -> {
+            Window parentWindow = SwingUtilities.getWindowAncestor(this);
+            JDialog dialog = new JDialog(parentWindow, "Import Điểm Thi", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
+            ImportPanel importPanel = new ImportPanel(
+                    (inputStream, callback) -> diemThiService.importFromExcel(inputStream, callback));
 
-
-        //         // FIX: truyền parent window vào JDialog để định vị đúng
-        // btnImport.addActionListener(e -> {
-        //     Window parentWindow = SwingUtilities.getWindowAncestor(this);
-        //     JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
-        //     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        //     ImportPanel importPanel = new ImportPanel(
-        //         inputStream -> diemThiService.importFromExcel(inputStream)
-        //     );
-
-        //     dialog.add(importPanel);
-        //     dialog.pack();
-        //     dialog.setMinimumSize(new Dimension(500, 280));
-        //     dialog.setLocationRelativeTo(this);
-        //     dialog.setVisible(true);
-
-        //     // Sau khi dialog đóng → reload lại bảng
-        //     loadData();
-        // });
+            dialog.add(importPanel);
+            dialog.pack();
+            dialog.setMinimumSize(new Dimension(500, 280));
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+            loadData();
+        });
     }
 
     /**

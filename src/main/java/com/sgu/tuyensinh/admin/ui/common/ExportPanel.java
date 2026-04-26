@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.function.Consumer;
-
+// Panel con để xuất file, được đặt trong JDialog. Chỉ lo phần giao diện, còn logic xử lí dữ liệu sẽ nằm ở bên ngoài (được truyền vào qua callback)
 public class ExportPanel extends JPanel {
     private JTextField folderPathField;
     private JButton btnChooseFolder;

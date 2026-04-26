@@ -178,8 +178,7 @@ public class ImportPanel extends JPanel {
         btn.addActionListener(e -> {
             String path = filePathField.getText().trim();
             if (path.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "Vui lòng chọn file trước!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                MessageDialog.showWarning("Vui lòng chọn file trước!");
                 return;
             }
 
@@ -207,8 +206,7 @@ public class ImportPanel extends JPanel {
                             ErrorLogDialog.showIfNeeded(w, filePathField.getText(), result.getErrors());
                         }
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(ImportPanel.this,
-                                "Lỗi: " + ex.getMessage(), "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                        MessageDialog.showError("Lỗi: " + ex.getMessage());
                     }
                 }
             };

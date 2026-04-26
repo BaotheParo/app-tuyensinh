@@ -1,8 +1,8 @@
 package com.sgu.tuyensinh.service.impl;
 
-import com.sgu.tuyensinh.dto.ThiSinhImportDTO;
-import com.sgu.tuyensinh.entity.ThiSinh;
-import com.sgu.tuyensinh.repository.ThiSinhRepository;
+import com.sgu.tuyensinh.dto.NguyenVongImportDTO;
+import com.sgu.tuyensinh.entity.NguyenVong;
+import com.sgu.tuyensinh.repository.NguyenVongRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import com.sgu.tuyensinh.service.interfaces.IImportService;
 import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
@@ -20,15 +20,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ThiSinhServiceImpl implements IImportService {
+public class NguyenVongServiceImpl implements IImportService {
 
-    private final ThiSinhRepository thiSinhRepository;
+    private final NguyenVongRepository repository;
 
     // ── Import ───────────────────────────────────────────────
     @Override
@@ -59,15 +59,12 @@ public class ThiSinhServiceImpl implements IImportService {
                 current++;
 
                 // ── Parse DTO ───────────────────────────────
-                ThiSinhImportDTO dto = new ThiSinhImportDTO();
+                NguyenVongImportDTO dto = new NguyenVongImportDTO();
                 dto.setCccd(ExcelReaderUtil.getSafeString(row.getCell(0)));
-                dto.setHoTen(ExcelReaderUtil.getSafeString(row.getCell(1)));
-                dto.setGioiTinh(ExcelReaderUtil.getSafeString(row.getCell(2)));
-                dto.setNgaySinh(ExcelReaderUtil.getSafeString(row.getCell(3)));
-                dto.setMaTinh(ExcelReaderUtil.getSafeString(row.getCell(4)));
-                dto.setMaTruong(ExcelReaderUtil.getSafeString(row.getCell(5)));
-                dto.setDoiTuongUt(ExcelReaderUtil.getSafeString(row.getCell(6)));
-                dto.setKhuVucUt(ExcelReaderUtil.getSafeString(row.getCell(7)));
+                dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(1)));
+                dto.setThuTu(ExcelReaderUtil.getSafeInteger(row.getCell(2)));
+                dto.setPhuongThuc(ExcelReaderUtil.getSafeString(row.getCell(3)));
+                dto.setToHopMon(ExcelReaderUtil.getSafeString(row.getCell(4)));
 
                 // ── Validate ────────────────────────────────
                 String error = validate(dto, i + 1);
@@ -75,7 +72,7 @@ public class ThiSinhServiceImpl implements IImportService {
                     result.addError(i + 1, dto.getCccd(), "INVALID_DATA", error);
                     result.incrementSkip();
                 } else {
-                    thiSinhRepository.save(toEntity(dto));
+                    repository.save(toEntity(dto));
                     result.incrementSuccess();
                 }
 
@@ -83,7 +80,7 @@ public class ThiSinhServiceImpl implements IImportService {
             }
 
         } catch (Exception e) {
-            log.error("Lỗi import thí sinh", e);
+            log.error("Lỗi import nguyện vọng", e);
             result.addError("Lỗi hệ thống: " + e.getMessage());
         }
 
@@ -91,63 +88,51 @@ public class ThiSinhServiceImpl implements IImportService {
     }
 
     // ── Validate ─────────────────────────────────────────────
-    private String validate(ThiSinhImportDTO dto, int rowNum) {
+    private String validate(NguyenVongImportDTO dto, int rowNum) {
         if (dto.getCccd() == null || dto.getCccd().isBlank())
             return "Dòng " + rowNum + ": CCCD không được trống";
-        if (dto.getCccd().trim().length() < 9)
-            return "Dòng " + rowNum + ": CCCD không hợp lệ (phải từ 9-12 số)";
-        if (dto.getHoTen() == null || dto.getHoTen().isBlank())
-            return "Dòng " + rowNum + ": Họ tên không được trống (cccd=" + dto.getCccd() + ")";
+        if (dto.getMaNganh() == null || dto.getMaNganh().isBlank())
+            return "Dòng " + rowNum + ": Mã ngành không được trống (cccd=" + dto.getCccd() + ")";
+        if (dto.getThuTu() == null)
+            return "Dòng " + rowNum + ": Thứ tự NV không được trống (cccd=" + dto.getCccd() + ")";
         return null;
     }
 
     // ── Convert ──────────────────────────────────────────────
-    private ThiSinh toEntity(ThiSinhImportDTO dto) {
-        ThiSinh ts = new ThiSinh();
-        ts.setId(dto.getCccd().trim());
-        ts.setHoTen(dto.getHoTen().trim());
-        ts.setGioiTinh(dto.getGioiTinh());
-        ts.setMaTinh(dto.getMaTinh());
-        ts.setMaTruong(dto.getMaTruong());
-        ts.setDoiTuongUt(dto.getDoiTuongUt());
-        ts.setKhuVucUt(dto.getKhuVucUt());
-        ts.setNgaySinh(parseDate(dto.getNgaySinh()));
-        return ts;
-    }
-
-    private LocalDate parseDate(String date) {
-        try {
-            return LocalDate.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        } catch (Exception e) {
-            return null;
-        }
+    private NguyenVong toEntity(NguyenVongImportDTO dto) {
+        NguyenVong nv = new NguyenVong();
+        nv.setNnCccd(dto.getCccd());
+        nv.setNvManganh(dto.getMaNganh());
+        nv.setNvTt(dto.getThuTu());
+        nv.setTtPhuongthuc(dto.getPhuongThuc());
+        nv.setTtThm(dto.getToHopMon());
+        nv.setDiemThxt(dto.getDiemThxt());
+        nv.setDiemUtqd(dto.getDiemUtqd());
+        nv.setDiemCong(dto.getDiemCong());
+        nv.setDiemXetTuyen(dto.getDiemXetTuyen());
+        nv.setNvKetQua(null);
+        nv.setNvKeys(dto.getCccd() + "_" + dto.getMaNganh() + "_" + dto.getThuTu());
+        return nv;
     }
 
     // ── CRUD ─────────────────────────────────────────────────
-    public Page<ThiSinh> layDanhSachPhanTrang(int page, int size, String keyword) {
+    public Page<NguyenVong> layDanhSachPhanTrang(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         if (keyword != null && !keyword.trim().isEmpty()) {
-            return thiSinhRepository.findByIdContainingIgnoreCaseOrHoTenContainingIgnoreCase(
+            return repository.findByNnCccdContainingIgnoreCaseOrNvManganhContainingIgnoreCase(
                 keyword, keyword, pageable);
         }
-        return thiSinhRepository.findAll(pageable);
+        return repository.findAll(pageable);
+    }
+
+    public List<NguyenVong> getByCccd(String cccd) {
+        return repository.findAll().stream()
+                .filter(nv -> nv.getNnCccd().equals(cccd))
+                .toList();
     }
 
     @Transactional
-    public ThiSinh luuThiSinh(ThiSinh thiSinh) {
-        if (thiSinh.getId() == null || thiSinh.getId().trim().length() < 9)
-            throw new IllegalArgumentException("CCCD không hợp lệ (phải từ 9-12 số)!");
-        if (thiSinh.getHoTen() == null || thiSinh.getHoTen().trim().isEmpty())
-            throw new IllegalArgumentException("Họ tên không được để trống!");
-        thiSinh.setId(thiSinh.getId().trim());
-        thiSinh.setHoTen(thiSinh.getHoTen().trim());
-        return thiSinhRepository.save(thiSinh);
-    }
-
-    @Transactional
-    public void xoaThiSinh(String cccd) {
-        if (!thiSinhRepository.existsById(cccd.trim()))
-            throw new IllegalArgumentException("Không tìm thấy thí sinh với CCCD: " + cccd);
-        thiSinhRepository.deleteById(cccd.trim());
+    public List<NguyenVong> getDanhSachTrungTuyen(String maNganh) {
+        return repository.findByNvManganhAndNvKetQua(maNganh, "TRUNG_TUYEN");
     }
 }

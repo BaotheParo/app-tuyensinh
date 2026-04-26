@@ -2,15 +2,26 @@ package com.sgu.tuyensinh.service.impl;
 
 import com.sgu.tuyensinh.entity.DiemThi;
 import com.sgu.tuyensinh.repository.DiemThiRepository;
-import com.sgu.tuyensinh.service.DiemThiService;
+import com.sgu.tuyensinh.service.dto.ImportResultDTO;
+import com.sgu.tuyensinh.service.interfaces.IImportService;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
+import com.sgu.tuyensinh.util.ExcelReaderUtil;
+
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.apache.poi.ss.usermodel.Sheet;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,57 +30,129 @@ import java.util.Map;
  * Service implementation cho các nghiệp vụ quản lý và thống kê Điểm Thi.
  */
 @Service
-public class DiemThiServiceImpl implements DiemThiService {
+@RequiredArgsConstructor
+@Slf4j
+public class DiemThiServiceImpl implements IImportService {
 
-    @Autowired
-    private DiemThiRepository diemThiRepository;
+    private final DiemThiRepository diemThiRepository;
 
     @Override
+    @Transactional
+    public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
+
+        ImportResultDTO result = new ImportResultDTO();
+
+        if (inputStream == null) {
+            result.addError("InputStream null");
+            return result;
+        }
+
+        try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null || sheet.getLastRowNum() < 1) {
+                result.addError("File không có dữ liệu");
+                return result;
+            }
+
+            int total = sheet.getLastRowNum();
+            int current = 0;
+
+            for (int i = 1; i <= total; i++) {
+                Row row = sheet.getRow(i);
+                if (row == null)
+                    continue;
+
+                current++;
+
+                try {
+                    DiemThi diem = new DiemThi();
+
+                    // ⚠️ bạn phải map đúng cột Excel
+                    diem.setToan(ExcelReaderUtil.getSafeDouble(row.getCell(1)));
+                    diem.setVan(ExcelReaderUtil.getSafeDouble(row.getCell(2)));
+                    diem.setLy(ExcelReaderUtil.getSafeDouble(row.getCell(3)));
+                    diem.setHoa(ExcelReaderUtil.getSafeDouble(row.getCell(4)));
+                    diem.setSinh(ExcelReaderUtil.getSafeDouble(row.getCell(5)));
+                    diem.setAnh(ExcelReaderUtil.getSafeDouble(row.getCell(6)));
+
+                    // TODO: set CCCD / liên kết thí sinh
+                    // diem.setThiSinh(...)
+
+                    diemThiRepository.save(diem);
+                    result.incrementSuccess();
+
+                } catch (Exception e) {
+                    result.addError("Dòng " + (i + 1) + ": " + e.getMessage());
+                    result.incrementSkip();
+                }
+
+                // cập nhật progress
+                if (callback != null) {
+                    callback.onProgress(current, total);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Lỗi import điểm thi", e);
+            result.addError("Lỗi hệ thống: " + e.getMessage());
+        }
+
+        return result;
+    }
+
     public Page<DiemThi> getDanhSachDiemThi(String keyword, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        // Nếu không có keyword, lấy toàn bộ
+
         if (keyword == null || keyword.trim().isEmpty()) {
             return diemThiRepository.findAll(pageable);
         }
-        // Có keyword -> Gọi custom Query tìm qua CCCD / Tên
-        return diemThiRepository.findByThiSinh_CccdContainingOrThiSinh_HoTenContainingIgnoreCase(keyword, keyword, pageable);
+
+        return diemThiRepository
+                .findByThiSinh_CccdContainingOrThiSinh_HoTenContainingIgnoreCase(
+                        keyword, keyword, pageable);
     }
 
-    @Override
-    @Transactional
-    public DiemThi updateDiemThi(String cccd, DiemThi diemMoi) {
-        DiemThi existing = diemThiRepository.findByCccd(cccd)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy điểm thi của thí sinh: " + cccd));
-        
-        // Copy giá trị điểm từ form nhập sang Entity cũ
-        existing.setToan(diemMoi.getToan());
-        existing.setVan(diemMoi.getVan());
-        existing.setLy(diemMoi.getLy());
-        existing.setHoa(diemMoi.getHoa());
-        existing.setSinh(diemMoi.getSinh());
-        existing.setSu(diemMoi.getSu());
-        existing.setDia(diemMoi.getDia());
-        existing.setAnh(diemMoi.getAnh());
-        // Cập nhật điểm năng khiếu (nếu có)
-        existing.setNk1(diemMoi.getNk1());
-        existing.setNk2(diemMoi.getNk2());
-        existing.setNk3(diemMoi.getNk3());
-        existing.setNk4(diemMoi.getNk4());
-        existing.setNk5(diemMoi.getNk5());
-        existing.setNk6(diemMoi.getNk6());
-        existing.setNk7(diemMoi.getNk7());
-        existing.setNk8(diemMoi.getNk8());
-        
-        return diemThiRepository.save(existing);
-    }
 
-    @Override
+
+
+
+@Transactional
+public DiemThi updateDiemThi(String cccd, DiemThi diemMoi) {
+
+    DiemThi existing = diemThiRepository.findByCccd(cccd)
+            .orElseThrow(() -> new EntityNotFoundException(
+                    "Không tìm thấy điểm thi của thí sinh: " + cccd));
+
+    existing.setToan(diemMoi.getToan());
+    existing.setVan(diemMoi.getVan());
+    existing.setLy(diemMoi.getLy());
+    existing.setHoa(diemMoi.getHoa());
+    existing.setSinh(diemMoi.getSinh());
+    existing.setSu(diemMoi.getSu());
+    existing.setDia(diemMoi.getDia());
+    existing.setAnh(diemMoi.getAnh());
+
+    // năng khiếu
+    existing.setNk1(diemMoi.getNk1());
+    existing.setNk2(diemMoi.getNk2());
+    existing.setNk3(diemMoi.getNk3());
+    existing.setNk4(diemMoi.getNk4());
+    existing.setNk5(diemMoi.getNk5());
+    existing.setNk6(diemMoi.getNk6());
+    existing.setNk7(diemMoi.getNk7());
+    existing.setNk8(diemMoi.getNk8());
+
+    return diemThiRepository.save(existing);
+}
+
+
     @Transactional
     public void clearDiemThi(String cccd) {
         DiemThi existing = diemThiRepository.findByCccd(cccd)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy điểm thi của thí sinh: " + cccd));
-        
-        // Reset tất cả các môn về null
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Không tìm thấy điểm thi của thí sinh: " + cccd));
+
         existing.setToan(null);
         existing.setVan(null);
         existing.setLy(null);
@@ -78,6 +161,8 @@ public class DiemThiServiceImpl implements DiemThiService {
         existing.setSu(null);
         existing.setDia(null);
         existing.setAnh(null);
+
+        // năng khiếu
         existing.setNk1(null);
         existing.setNk2(null);
         existing.setNk3(null);
@@ -86,59 +171,7 @@ public class DiemThiServiceImpl implements DiemThiService {
         existing.setNk6(null);
         existing.setNk7(null);
         existing.setNk8(null);
-        
+
         diemThiRepository.save(existing);
-    }
-
-    @Override
-    public Map<String, Long> thongKePhoDiem(String monHoc) {
-        List<Double> diemList;
-        
-        // Router để lấy List điểm từ DB dựa theo input môn học
-        switch (monHoc.toLowerCase()) {
-            case "toan": diemList = diemThiRepository.findAllDiemToan(); break;
-            case "van": diemList = diemThiRepository.findAllDiemVan(); break;
-            case "ly": diemList = diemThiRepository.findAllDiemLy(); break;
-            case "hoa": diemList = diemThiRepository.findAllDiemHoa(); break;
-            case "sinh": diemList = diemThiRepository.findAllDiemSinh(); break;
-            case "su": diemList = diemThiRepository.findAllDiemSu(); break;
-            case "dia": diemList = diemThiRepository.findAllDiemDia(); break;
-            case "anh": diemList = diemThiRepository.findAllDiemAnh(); break;
-            case "nk1": diemList = diemThiRepository.findAllDiemNk1(); break;
-            case "nk2": diemList = diemThiRepository.findAllDiemNk2(); break;
-            case "nk3": diemList = diemThiRepository.findAllDiemNk3(); break;
-            case "nk4": diemList = diemThiRepository.findAllDiemNk4(); break;
-            case "nk5": diemList = diemThiRepository.findAllDiemNk5(); break;
-            case "nk6": diemList = diemThiRepository.findAllDiemNk6(); break;
-            case "nk7": diemList = diemThiRepository.findAllDiemNk7(); break;
-            case "nk8": diemList = diemThiRepository.findAllDiemNk8(); break;
-            default: throw new IllegalArgumentException("Môn học không hỗ trợ thống kê: " + monHoc);
-        }
-
-        long kem = 0, trungBinh = 0, kha = 0, gioi = 0;
-
-        // Phân nhóm phổ điểm
-        for (Double diem : diemList) {
-            if (diem == null) continue;
-            
-            if (diem < 5.0) {
-                kem++;
-            } else if (diem >= 5.0 && diem < 6.5) {
-                trungBinh++;
-            } else if (diem >= 6.5 && diem < 8.0) {
-                kha++;
-            } else {
-                gioi++; // >= 8.0
-            }
-        }
-
-        // Sử dụng LinkedHashMap để duy trì thứ tự chèn, tiện cho việc hiển thị Dashboard đúng thứ tự từ Thấp đến Cao
-        Map<String, Long> ketQua = new LinkedHashMap<>();
-        ketQua.put("Kém (< 5.0)", kem);
-        ketQua.put("Trung bình (5.0 - 6.5)", trungBinh);
-        ketQua.put("Khá (6.5 - 8.0)", kha);
-        ketQua.put("Giỏi (> 8.0)", gioi);
-
-        return ketQua;
-    }
+}
 }

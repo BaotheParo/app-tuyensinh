@@ -7,7 +7,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
-
+// Dialog hiện lỗi sau khi import xong, có thể xuất lỗi ra file Excel
 public class ErrorLogDialog extends JDialog {
 
     private static final Color BG = new Color(0xF9F9F8);
@@ -48,38 +48,41 @@ public class ErrorLogDialog extends JDialog {
     }
 
     // ── Table ────────────────────────────────────────────────
-// ── Table ────────────────────────────────────────────────
-private JScrollPane buildTable() {
-    String[] cols = {"Dòng", "CCCD / Mã", "Mã lỗi", "Chi tiết"};  // ← 4 cột
-    DefaultTableModel model = new DefaultTableModel(cols, 0) {
-        @Override public boolean isCellEditable(int r, int c) { return false; }
-    };
+    // ── Table ────────────────────────────────────────────────
+    private JScrollPane buildTable() {
+        String[] cols = { "Dòng", "CCCD / Mã", "Mã lỗi", "Chi tiết" }; // ← 4 cột
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
 
-    for (RowErrorDTO e : errors) {                          // ← dùng RowErrorDTO
-        model.addRow(new Object[]{
-            e.getRowNumber(),
-            e.getIdentifier(),
-            e.getErrorCode(),
-            e.getDetail()
-        });
+        for (RowErrorDTO e : errors) { // ← dùng RowErrorDTO
+            model.addRow(new Object[] {
+                    e.getRowNumber(),
+                    e.getIdentifier(),
+                    e.getErrorCode(),
+                    e.getDetail()
+            });
+        }
+
+        JTable table = new JTable(model);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setRowHeight(24);
+        table.getTableHeader().setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setGridColor(BORDER);
+        table.setShowGrid(true);
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+        table.getColumnModel().getColumn(1).setPreferredWidth(120);
+        table.getColumnModel().getColumn(2).setPreferredWidth(160);
+        table.getColumnModel().getColumn(3).setPreferredWidth(220);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        return scroll;
     }
-
-    JTable table = new JTable(model);
-    table.setFont(new Font("SansSerif", Font.PLAIN, 12));
-    table.setRowHeight(24);
-    table.getTableHeader().setFont(new Font("SansSerif", Font.PLAIN, 12));
-    table.setGridColor(BORDER);
-    table.setShowGrid(true);
-
-    table.getColumnModel().getColumn(0).setPreferredWidth(50);
-    table.getColumnModel().getColumn(1).setPreferredWidth(120);
-    table.getColumnModel().getColumn(2).setPreferredWidth(160);
-    table.getColumnModel().getColumn(3).setPreferredWidth(220);
-
-    JScrollPane scroll = new JScrollPane(table);
-    scroll.setBorder(BorderFactory.createEmptyBorder());
-    return scroll;
-}
 
     // ── Footer ───────────────────────────────────────────────
     private JPanel buildFooter() {
@@ -135,12 +138,11 @@ private JScrollPane buildTable() {
                 wb.write(fos);
             }
 
-            JOptionPane.showMessageDialog(this,
-                    "Đã xuất file thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            MessageDialog.showInfo("Đã xuất file thành công!");
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Xuất file thất bại: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            MessageDialog.showError("Xuất file thất bại: " + ex.getMessage());
+
         }
     }
 

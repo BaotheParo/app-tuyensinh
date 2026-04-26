@@ -217,7 +217,7 @@ public class NganhPanel extends JPanel {
         if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa ngành: " + maNganh + "?",
                 "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             try {
-                nganhService.xoaNganh(maNganh);
+                nganhService.deleteNganh(maNganh);
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 clearForm();
                 loadData();
