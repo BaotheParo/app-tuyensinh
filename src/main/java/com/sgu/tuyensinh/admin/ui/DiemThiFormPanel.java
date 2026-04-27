@@ -4,7 +4,7 @@ import com.sgu.tuyensinh.admin.ui.common.MessageDialog;
 import com.sgu.tuyensinh.entity.DiemThi;
 import com.sgu.tuyensinh.service.DiemThiService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,7 +24,7 @@ import java.awt.*;
  *   JButton btnNhapTay = new JButton("Nhập tay điểm");
  *   btnNhapTay.addActionListener(e -> DiemThiFormPanel.showDialog(this, diemThiService, cccd));
  */
-@Component
+@org.springframework.stereotype.Component
 public class DiemThiFormPanel extends JPanel {
 
     // ── Colors / Fonts ────────────────────────────────────────────

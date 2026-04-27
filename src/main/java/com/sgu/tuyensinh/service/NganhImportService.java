@@ -1,4 +1,4 @@
-package com.sgu.tuyensinh.service.impl;
+package com.sgu.tuyensinh.service;
 
 import com.sgu.tuyensinh.dto.NganhImportDTO;
 import com.sgu.tuyensinh.entity.Nganh;
@@ -22,12 +22,12 @@ import java.util.List;
 
 /**
  * Import Ngành từ Excel.
- * Đặt tại: service/impl/NganhServiceImpl.java
+ * Đặt tại: service/impl/NganhImportService.java
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class NganhServiceImpl implements IImportService {
+public class NganhImportService implements IImportService {
 
     private final NganhRepository nganhRepository;
 

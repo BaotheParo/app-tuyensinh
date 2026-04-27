@@ -24,13 +24,11 @@ public class NguyenVongService {
 
     private final NguyenVongRepository repository;
 
-    public Page<NguyenVong> layDanhSachPhanTrang(int page, int size, String keyword) {
+    public Page<NguyenVong> layDanhSachPhanTrang(int page, int size, String keyword, String status) {
         Pageable pageable = PageRequest.of(page, size);
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            return repository.findByNnCccdContainingIgnoreCaseOrNvManganhContainingIgnoreCase(keyword, keyword,
-                    pageable);
-        }
-        return repository.findAll(pageable);
+        String kw = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+        String st = (status != null && !status.trim().isEmpty() && !status.equals("Tất cả")) ? status.trim() : null;
+        return repository.searchWithFilter(kw, st, pageable);
     }
 
     public List<NguyenVong> getByCccd(String cccd) {

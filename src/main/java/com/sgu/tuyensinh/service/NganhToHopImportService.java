@@ -1,4 +1,4 @@
-package com.sgu.tuyensinh.service.impl;
+package com.sgu.tuyensinh.service;
 
 import com.sgu.tuyensinh.dto.NganhToHopImportDTO;
 import com.sgu.tuyensinh.entity.NganhToHop;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class NganhToHopServiceImpl implements IImportService {
+public class NganhToHopImportService implements IImportService {
 
     private final NganhToHopRepository nganhToHopRepository;
 

@@ -2,7 +2,7 @@ package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.entity.Nganh;
-import com.sgu.tuyensinh.service.impl.NganhServiceImpl;
+import com.sgu.tuyensinh.service.NganhImportService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Component
 public class NganhPanel extends JPanel {
 
-    private final NganhServiceImpl nganhService;
+    private final NganhImportService nganhService;
 
     // Components
     private BaseTablePanel tablePanel;
@@ -27,7 +27,7 @@ public class NganhPanel extends JPanel {
     private final int pageSize = 15;
     private int totalPages = 1;
 
-    public NganhPanel(NganhServiceImpl nganhService) {
+    public NganhPanel(NganhImportService nganhService) {
         this.nganhService = nganhService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

@@ -2,7 +2,7 @@ package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.entity.ThiSinh;
-import com.sgu.tuyensinh.service.impl.ThiSinhServiceImpl;
+import com.sgu.tuyensinh.service.ThiSinhService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ import java.time.format.DateTimeParseException;
 @Component
 public class ThiSinhPanel extends JPanel {
 
-    private final ThiSinhServiceImpl thiSinhService;
+    private final ThiSinhService thiSinhService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // UI Components
@@ -32,7 +32,7 @@ public class ThiSinhPanel extends JPanel {
     private final int pageSize = 15;
     private int totalPages = 1;
 
-    public ThiSinhPanel(ThiSinhServiceImpl thiSinhService) {
+    public ThiSinhPanel(ThiSinhService thiSinhService) {
         this.thiSinhService = thiSinhService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -219,7 +219,7 @@ public class ThiSinhPanel extends JPanel {
             Object objKhuVuc = cbKhuVuc.getSelectedItem();
             ts.setKhuVucUt(objKhuVuc != null && !objKhuVuc.toString().isEmpty() ? objKhuVuc.toString() : null);
 
-            // Hàm luuThiSinh cần được định nghĩa trong ThiSinhServiceImpl
+            // Hàm luuThiSinh cần được định nghĩa trong ThiSinhService
             thiSinhService.luuThiSinh(ts);
 
             JOptionPane.showMessageDialog(this, (isNew ? "Thêm" : "Cập nhật") + " thành công!");
@@ -243,7 +243,7 @@ public class ThiSinhPanel extends JPanel {
         if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa CCCD: " + cccd + "?", "Xác nhận",
                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             try {
-                // Hàm xoaThiSinh cần được định nghĩa trong ThiSinhServiceImpl
+                // Hàm xoaThiSinh cần được định nghĩa trong ThiSinhService
                 thiSinhService.xoaThiSinh(cccd);
 
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");

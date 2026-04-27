@@ -2,13 +2,12 @@ package com.sgu.tuyensinh.repository;
 
 import com.sgu.tuyensinh.entity.NguyenVong;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 
-/**
- * Repository thao tác bảng nguyện vọng {@code xt_nguyenvongxettuyen}.
- */
 public interface NguyenVongRepository extends JpaRepository<NguyenVong, Integer> {
 
     boolean existsByNvManganh(String nvManganh);
@@ -19,4 +18,9 @@ public interface NguyenVongRepository extends JpaRepository<NguyenVong, Integer>
             String nnCccd, String nvManganh, Pageable pageable);
 
     List<NguyenVong> findByNvManganhAndNvKetQua(String nvManganh, String nvKetQua);
+    
+    long countByNvKetQua(String nvKetQua);
+
+    @Query("SELECT n FROM NguyenVong n WHERE (:status IS NULL OR :status = '' OR n.nvKetQua = :status) AND (:keyword IS NULL OR :keyword = '' OR n.nnCccd LIKE CONCAT('%', :keyword, '%') OR n.nvManganh LIKE CONCAT('%', :keyword, '%'))")
+    Page<NguyenVong> searchWithFilter(@Param("keyword") String keyword, @Param("status") String status, Pageable pageable);
 }

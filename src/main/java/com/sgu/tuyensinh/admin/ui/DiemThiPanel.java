@@ -6,7 +6,7 @@ import com.sgu.tuyensinh.entity.DiemThi;
 import com.sgu.tuyensinh.service.DiemThiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Component;
+
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Giao diện Quản lý Điểm Thi (Task 6).
  */
-@Component
+@org.springframework.stereotype.Component
 public class DiemThiPanel extends JPanel {
 
     private final DiemThiService diemThiService;

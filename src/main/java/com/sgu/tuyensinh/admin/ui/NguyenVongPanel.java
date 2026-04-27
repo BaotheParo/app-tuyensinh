@@ -20,6 +20,7 @@ public class NguyenVongPanel extends JPanel {
 
     private BaseTablePanel tablePanel;
     private JTextField txtSearch;
+    private JComboBox<String> cbStatusFilter;
     private JButton btnSearch, btnPrev, btnNext;
     private JLabel lblPage;
 
@@ -44,6 +45,7 @@ public class NguyenVongPanel extends JPanel {
         
         txtSearch = new JTextField(20);
         btnSearch = new JButton("Tìm Kiếm");
+        cbStatusFilter = new JComboBox<>(new String[]{"Tất cả", "TRUNG_TUYEN", "TRUOT", "DANG_XET", "ERROR", "KHONG_HOP_LE"});
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
@@ -54,6 +56,8 @@ public class NguyenVongPanel extends JPanel {
         searchPanel.setBorder(BorderFactory.createTitledBorder("Bộ lọc dữ liệu Nguyện Vọng"));
         searchPanel.add(new JLabel("Tìm theo CCCD / Mã Ngành:"));
         searchPanel.add(txtSearch);
+        searchPanel.add(new JLabel("  Trạng thái:"));
+        searchPanel.add(cbStatusFilter);
         searchPanel.add(btnSearch);
 
         JPanel pagingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -75,7 +79,8 @@ public class NguyenVongPanel extends JPanel {
 
     private void loadData() {
         String keyword = txtSearch.getText().trim();
-        Page<NguyenVong> pageData = nguyenVongService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
+                            String status = cbStatusFilter.getSelectedItem().toString();
+                    Page<NguyenVong> pageData = nguyenVongService.layDanhSachPhanTrang(currentPage, pageSize, keyword, status);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
         lblPage.setText("Trang: " + (currentPage + 1) + " / " + totalPages);
 

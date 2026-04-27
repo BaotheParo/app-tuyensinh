@@ -1,4 +1,4 @@
-package com.sgu.tuyensinh.service.impl;
+package com.sgu.tuyensinh.service;
 
 import com.sgu.tuyensinh.dto.ToHopMonImportDTO;
 import com.sgu.tuyensinh.entity.ToHop;
@@ -24,7 +24,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ToHopServiceImpl implements IImportService {
+public class ToHopImportService implements IImportService {
 
     private final ToHopRepository toHopRepository;
 

@@ -6,6 +6,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 import org.springframework.context.annotation.Profile;
+import com.sgu.tuyensinh.admin.ui.xettuyen.XetTuyenPanel;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -30,12 +31,13 @@ public class MainFrame extends JFrame {
     private final DashboardPanel      dashboardPanel;
     private final DiemCongFormPanel   diemCongFormPanel;
     private final BangQuyDoiFormPanel bangQuyDoiFormPanel;
+    private final XetTuyenPanel xetTuyenPanel;
     /**
      * Creates new form Main
      */
     public MainFrame(TrangChuPanel trangChuPanel, NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel,
                      BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
-                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, DiemCongFormPanel diemCongFormPanel, BangQuyDoiFormPanel bangQuyDoiFormPanel) {
+                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, DiemCongFormPanel diemCongFormPanel, BangQuyDoiFormPanel bangQuyDoiFormPanel, XetTuyenPanel xetTuyenPanel) {
         this.trangChuPanel = trangChuPanel;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -49,6 +51,7 @@ public class MainFrame extends JFrame {
         this.dashboardPanel = dashboardPanel;
         this.diemCongFormPanel = diemCongFormPanel;
         this.bangQuyDoiFormPanel = bangQuyDoiFormPanel;
+        this.xetTuyenPanel = xetTuyenPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -376,7 +379,7 @@ public class MainFrame extends JFrame {
     }// GEN-LAST:event_btnDiemThiActionPerformed
 
     private void btnXetTuyenActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXetTuyenActionPerformed
-        // TODO add your handling code here:
+        addTaskBar(mainContent2, xetTuyenPanel);
     }// GEN-LAST:event_btnXetTuyenActionPerformed
 
     private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {

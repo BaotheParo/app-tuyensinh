@@ -1,7 +1,7 @@
 package com.sgu.tuyensinh;
 
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
-import com.sgu.tuyensinh.service.impl.NganhToHopServiceImpl;
+import com.sgu.tuyensinh.service.NganhToHopImportService;
 import com.sgu.tuyensinh.repository.NganhToHopRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ class NganhToHopServiceImplTest {
     private static final Logger log = LoggerFactory.getLogger(NganhToHopServiceImplTest.class);
 
     @Autowired
-    private NganhToHopServiceImpl nganhToHopService;
+    private NganhToHopImportService nganhToHopService;
 
     @Autowired
     private NganhToHopRepository nganhToHopRepository;

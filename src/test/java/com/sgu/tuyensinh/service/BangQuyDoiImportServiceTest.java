@@ -1,7 +1,7 @@
 package com.sgu.tuyensinh;
 
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
-import com.sgu.tuyensinh.service.impl.BangQuyDoiServiceImpl;
+import com.sgu.tuyensinh.service.BangQuyDoiImportService;
 import com.sgu.tuyensinh.repository.BangQuyDoiRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ class BangQuyDoiServiceImplTest {
     private static final Logger log = LoggerFactory.getLogger(BangQuyDoiServiceImplTest.class);
 
     @Autowired
-    private BangQuyDoiServiceImpl bangQuyDoiService;
+    private BangQuyDoiImportService bangQuyDoiService;
 
     @Autowired
     private BangQuyDoiRepository bangQuyDoiRepository;

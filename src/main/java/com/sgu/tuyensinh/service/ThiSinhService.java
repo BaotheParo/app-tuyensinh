@@ -22,9 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service xử lý logic và cung cấp API nội bộ cho UI (Desktop Admin: Java
+ * Service xá»­ lÃ½ logic vÃ  cung cáº¥p API ná»™i bá»™ cho UI (Desktop Admin: Java
  * Swing).
- * Không sử dụng Controller REST vì giao diện gọi trực tiếp hàm (Mô hình
+ * KhÃ´ng sá»­ dá»¥ng Controller REST vÃ¬ giao diá»‡n gá»i trá»±c tiáº¿p hÃ m (MÃ´ hÃ¬nh
  * Monolith).
  */
 @Service
@@ -40,25 +40,25 @@ public class ThiSinhService {
     private ThiSinhCustomRepository repo;
 
     /**
-     * 1. Lấy danh sách phân trang và ngăn chặn N+1 query.
-     * Sử dụng PageRequest để lấy đúng lượng dữ liệu (VD: 20 dòng/trang).
+     * 1. Láº¥y danh sÃ¡ch phÃ¢n trang vÃ  ngÄƒn cháº·n N+1 query.
+     * Sá»­ dá»¥ng PageRequest Ä‘á»ƒ láº¥y Ä‘Ãºng lÆ°á»£ng dá»¯ liá»‡u (VD: 20 dÃ²ng/trang).
      */
     public Page<ThiSinh> getDanhSachThiSinhPhanTrang(int pageNumber, int pageSize) {
         return thiSinhRepository.findAllWithDiemThi(PageRequest.of(pageNumber, pageSize));
     }
 
     /**
-     * 2. Cập nhật đè điểm số cho một thí sinh.
-     * Dùng Annotation @Transactional để bảo đảm tính toàn vẹn,
-     * nếu có lỗi văng ra hệ thống sẽ rollback dữ liệu.
+     * 2. Cáº­p nháº­t Ä‘Ã¨ Ä‘iá»ƒm sá»‘ cho má»™t thÃ­ sinh.
+     * DÃ¹ng Annotation @Transactional Ä‘á»ƒ báº£o Ä‘áº£m tÃ­nh toÃ n váº¹n,
+     * náº¿u cÃ³ lá»—i vÄƒng ra há»‡ thá»‘ng sáº½ rollback dá»¯ liá»‡u.
      */
     @Transactional
     public DiemThi capNhatDiemThi(String cccd, DiemThi diemMoi) {
-        // Kiểm tra thi sinh có thực sự tồn tại trong DB không
+        // Kiá»ƒm tra thi sinh cÃ³ thá»±c sá»± tá»“n táº¡i trong DB khÃ´ng
         thiSinhRepository.findById(cccd)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thí sinh với CCCD: " + cccd));
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y thÃ­ sinh vá»›i CCCD: " + cccd));
 
-        // Lấy DiemThi hiện tại, nếu chưa nhập bao giờ (null) thì tạo record trắng
+        // Láº¥y DiemThi hiá»‡n táº¡i, náº¿u chÆ°a nháº­p bao giá» (null) thÃ¬ táº¡o record tráº¯ng
         DiemThi diemHienTai = diemThiRepository.findByCccd(cccd)
                 .orElse(new DiemThi());
 
@@ -66,7 +66,7 @@ public class ThiSinhService {
             diemHienTai.setCccd(cccd);
         }
 
-        // Cập nhật các điểm môn văn hóa cơ bản
+        // Cáº­p nháº­t cÃ¡c Ä‘iá»ƒm mÃ´n vÄƒn hÃ³a cÆ¡ báº£n
         diemHienTai.setToan(diemMoi.getToan());
         diemHienTai.setVan(diemMoi.getVan());
         diemHienTai.setLy(diemMoi.getLy());
@@ -76,7 +76,7 @@ public class ThiSinhService {
         diemHienTai.setDia(diemMoi.getDia());
         diemHienTai.setAnh(diemMoi.getAnh());
 
-        // Cập nhật các điểm năng khiếu (nếu môn trống, null vẫn được lưu hợp lệ theo
+        // Cáº­p nháº­t cÃ¡c Ä‘iá»ƒm nÄƒng khiáº¿u (náº¿u mÃ´n trá»‘ng, null váº«n Ä‘Æ°á»£c lÆ°u há»£p lá»‡ theo
         // PRD)
         diemHienTai.setNk1(diemMoi.getNk1());
         diemHienTai.setNk2(diemMoi.getNk2());
@@ -87,11 +87,11 @@ public class ThiSinhService {
         diemHienTai.setNk7(diemMoi.getNk7());
         diemHienTai.setNk8(diemMoi.getNk8());
 
-        // Lưu vào JPA repository
+        // LÆ°u vÃ o JPA repository
         return diemThiRepository.save(diemHienTai);
     }
 
-    // 3. Lấy chi tiết thí sinh kèm điểm thi & điểm cộng
+    // 3. Láº¥y chi tiáº¿t thÃ­ sinh kÃ¨m Ä‘iá»ƒm thi & Ä‘iá»ƒm cá»™ng
 
     public List<ThiSinhDetailDTO> getThiSinhDetailsForScoring() {
 
@@ -161,7 +161,7 @@ public class ThiSinhService {
 
         return thiSinhRepository.searchThiSinh(keywordTrim, pageable);
     }
-    //4. Tìm kiếm thí sinh theo CCCD hoặc Họ tên (có phân trang)
+    //4. TÃ¬m kiáº¿m thÃ­ sinh theo CCCD hoáº·c Há» tÃªn (cÃ³ phÃ¢n trang)
     public Page<ThiSinh> findByIdContainingIgnoreCaseOrHoTenContainingIgnoreCase (String keyword, Pageable pageable) {
 
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -172,5 +172,36 @@ public class ThiSinhService {
 
         return thiSinhRepository.findByIdContainingIgnoreCaseOrHoTenContainingIgnoreCase(
                 keywordTrim, keywordTrim, pageable);
+    }
+    public Page<ThiSinh> layDanhSachPhanTrang(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return thiSinhRepository.findByIdContainingIgnoreCaseOrHoTenContainingIgnoreCase(keyword.trim(), keyword.trim(), pageable);
+        }
+        return thiSinhRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public ThiSinh luuThiSinh(ThiSinh thiSinh) {
+        if (thiSinh.getId() == null || thiSinh.getId().trim().length() < 9) {
+            throw new IllegalArgumentException("CCCD khong hop le (phai tu 9-12 so)!");
+        }
+        if (thiSinh.getHoTen() == null || thiSinh.getHoTen().trim().isEmpty()) {
+            throw new IllegalArgumentException("Ho ten khong duoc de trong!");
+        }
+        thiSinh.setId(thiSinh.getId().trim());
+        thiSinh.setHoTen(thiSinh.getHoTen().trim());
+        if (thiSinh.getMaTruong() != null) thiSinh.setMaTruong(thiSinh.getMaTruong().trim());
+        if (thiSinh.getMaTinh() != null) thiSinh.setMaTinh(thiSinh.getMaTinh().trim());
+        return thiSinhRepository.save(thiSinh);
+    }
+
+    @Transactional
+    public void xoaThiSinh(String cccd) {
+        String idClean = cccd.trim();
+        if (!thiSinhRepository.existsById(idClean)) {
+            throw new IllegalArgumentException("Khong tim thay thi sinh voi CCCD: " + idClean);
+        }
+        thiSinhRepository.deleteById(idClean);
     }
 }

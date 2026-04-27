@@ -1,7 +1,7 @@
 package com.sgu.tuyensinh;
 
 import com.sgu.tuyensinh.entity.ToHop;
-import com.sgu.tuyensinh.service.impl.ToHopServiceImpl;
+import com.sgu.tuyensinh.service.ToHopImportService;
 import com.sgu.tuyensinh.repository.ToHopRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ToHopServiceImplTest {
 
     @Autowired
-    private ToHopServiceImpl toHopService;
+    private ToHopImportService toHopService;
 
     @Autowired
     private ToHopRepository toHopRepository;

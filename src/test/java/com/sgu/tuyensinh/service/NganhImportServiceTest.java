@@ -1,7 +1,7 @@
 package com.sgu.tuyensinh;
 
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
-import com.sgu.tuyensinh.service.impl.NganhServiceImpl;
+import com.sgu.tuyensinh.service.NganhImportService;
 import com.sgu.tuyensinh.repository.NganhRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ class NganhServiceImplTest {
 
     // 1. Khai báo các Bean ở đây (NGOÀI hàm test)
     @Autowired
-    private NganhServiceImpl nganhService;
+    private NganhImportService nganhService;
 
     @Autowired // Dùng Autowired để lưu vào DB thật
     private NganhRepository nganhRepository;

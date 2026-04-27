@@ -1,4 +1,4 @@
-package com.sgu.tuyensinh.service.impl;
+package com.sgu.tuyensinh.service;
 
 import com.sgu.tuyensinh.dto.QuyDoiNNImportDTO;
 import com.sgu.tuyensinh.entity.BangQuyDoi;
@@ -24,7 +24,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BangQuyDoiServiceImpl implements IImportService {
+public class BangQuyDoiImportService implements IImportService {
 
     private final BangQuyDoiRepository bangQuyDoiRepository;
 

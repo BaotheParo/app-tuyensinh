@@ -2,7 +2,7 @@ package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.entity.ToHop;
-import com.sgu.tuyensinh.service.impl.ToHopServiceImpl;
+import com.sgu.tuyensinh.service.ToHopImportService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.awt.*;
 @Component
 public class ToHopPanel extends JPanel {
 
-    private final ToHopServiceImpl toHopService;
+    private final ToHopImportService toHopService;
 
     // Components
     private BaseTablePanel tablePanel;
@@ -28,7 +28,7 @@ public class ToHopPanel extends JPanel {
     private final int pageSize = 15;
     private int totalPages = 1;
 
-    public ToHopPanel(ToHopServiceImpl toHopService) {
+    public ToHopPanel(ToHopImportService toHopService) {
         this.toHopService = toHopService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

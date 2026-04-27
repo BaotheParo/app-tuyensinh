@@ -8,9 +8,9 @@ import java.io.InputStream;
  * Interface chung cho tất cả các service import Excel.
  *
  * Các class implement:
- *  - NganhServiceImpl          (import Ngành)
- *  - ToHopServiceImpl          (import Tổ hợp môn)
- *  - NganhToHopServiceImpl     (import Bảng ngành–tổ hợp)
+ *  - NganhImportService          (import Ngành)
+ *  - ToHopImportService          (import Tổ hợp môn)
+ *  - NganhToHopImportService     (import Bảng ngành–tổ hợp)
  *  - QuyDoiTiengAnhServiceImpl (import Bảng quy đổi ngoại ngữ)
  *
  * Flow chuẩn năm 3 (theo PRD v3.0):

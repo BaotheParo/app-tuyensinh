@@ -4,7 +4,7 @@ import com.sgu.tuyensinh.admin.ui.MainFrame;
 import com.sgu.tuyensinh.entity.BangQuyDoi;
 import com.sgu.tuyensinh.repository.BangQuyDoiRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
-import com.sgu.tuyensinh.service.impl.BangQuyDoiServiceImpl;
+import com.sgu.tuyensinh.service.BangQuyDoiImportService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +26,7 @@ public class DanhMucImportIntegrationTest {
     private MainFrame mainFrame;
 
     @Autowired
-    private BangQuyDoiServiceImpl bangQuyDoiService;
+    private BangQuyDoiImportService bangQuyDoiService;
 
     @Autowired
     private BangQuyDoiRepository bangQuyDoiRepository;

@@ -132,7 +132,8 @@ public record KetQuaTheoNganhDTO(String maNganh, String tenNganh, long soDau, lo
  * Lấy danh sách thí sinh trúng tuyển để hiển thị trong bảng BC-04
  * Trả về mảng 2 chiều Object[][] cho JTable
  */
-public Object[][] getDanhSachTrungTuyen() {
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public Object[][] getDanhSachTrungTuyen() {
     List<NguyenVong> dsTrungTuyen = nguyenVongRepository.findAll().stream()
             .filter(nv -> "TRUNG_TUYEN".equalsIgnoreCase(nv.getNvKetQua()))
             .toList();
