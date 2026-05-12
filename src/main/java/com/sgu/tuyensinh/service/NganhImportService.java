@@ -3,8 +3,11 @@ package com.sgu.tuyensinh.service;
 import com.sgu.tuyensinh.dto.NganhImportDTO;
 import com.sgu.tuyensinh.entity.Nganh;
 import com.sgu.tuyensinh.repository.NganhRepository;
+import com.sgu.tuyensinh.repository.NganhToHopRepository;
+import com.sgu.tuyensinh.repository.NguyenVongRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import com.sgu.tuyensinh.service.interfaces.IImportService;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
 import com.sgu.tuyensinh.util.ExcelReaderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +15,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.List;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+// ✅ KHÔNG import ImportWorker — tránh phụ thuộc ngược từ service → UI
 
 /**
  * Import Ngành từ Excel.
@@ -29,32 +35,38 @@ import java.util.List;
 @Slf4j
 public class NganhImportService implements IImportService {
 
-    private final NganhRepository nganhRepository;
-
+// Thêm vào phần field
+private final NganhRepository nganhRepository;
+private final NguyenVongRepository nguyenVongRepository;    // ← thêm
+private final NganhToHopRepository nganhToHopRepository;    // ← thêm
     @Override
-    @Transactional
-    public ImportResultDTO importFromExcel(InputStream inputStream) {
+    public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
+
         ImportResultDTO result = new ImportResultDTO();
 
         if (inputStream == null) {
-            result.addError("InputStream không được để null");
+            result.addError("InputStream null");
             return result;
         }
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null || sheet.getLastRowNum() < 1) {
-                log.warn("File Excel Ngành không có dữ liệu");
+                result.addError("File không có dữ liệu");
                 return result;
             }
 
-            List<Nganh> validList = new ArrayList<>();
+            int total   = sheet.getLastRowNum(); // tổng số dòng dữ liệu (bỏ header)
+            int current = 0;
 
-            // Bước 1: Đọc toàn bộ → validate từng dòng → gom lỗi
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 1; i <= total; i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
+                current++;
+
+                // ── Parse DTO ───────────────────────────────
                 NganhImportDTO dto = new NganhImportDTO();
                 dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(1)));
                 dto.setTenNganh(ExcelReaderUtil.getSafeString(row.getCell(2)));
@@ -62,31 +74,33 @@ public class NganhImportService implements IImportService {
                 dto.setChiTieu(ExcelReaderUtil.getSafeInteger(row.getCell(4)));
                 dto.setDiemSan(ExcelReaderUtil.getSafeBigDecimal(row.getCell(5)));
 
+                // ── Validate ────────────────────────────────
                 String error = validate(dto, i + 1);
                 if (error != null) {
                     result.addError(error);
                     result.incrementSkip();
-                    continue;
+                } else {
+                    // ✅ Lưu ngay từng dòng hợp lệ thay vì batch cuối
+                    // -> progress bar phản ánh đúng tiến trình DB
+                    nganhRepository.save(convertToEntity(dto));
+                    result.incrementSuccess();
                 }
 
-                validList.add(convertToEntity(dto));
-            }
-
-            // Bước 2: saveAll danh sách hợp lệ
-            if (!validList.isEmpty()) {
-                nganhRepository.saveAll(validList);
-                validList.forEach(n -> result.incrementSuccess());
-                log.info("Import Ngành: {}", result);
+                // ✅ Callback sau mỗi dòng để UI cập nhật real-time
+                if (callback != null) {
+                    callback.onProgress(current, total);
+                }
             }
 
         } catch (Exception e) {
-            log.error("Lỗi import Ngành từ Excel", e);
+            log.error("Lỗi import ngành", e);
             result.addError("Lỗi hệ thống: " + e.getMessage());
         }
 
         return result;
     }
 
+    // ── Validate ─────────────────────────────────────────────
     private String validate(NganhImportDTO dto, int rowNum) {
         if (dto.getMaNganh() == null || dto.getMaNganh().isBlank())
             return "Dòng " + rowNum + ": Mã ngành không được trống";
@@ -99,6 +113,7 @@ public class NganhImportService implements IImportService {
         return null;
     }
 
+    // ── Convert ──────────────────────────────────────────────
     private Nganh convertToEntity(NganhImportDTO dto) {
         Nganh nganh = new Nganh();
         nganh.setMaNganh(dto.getMaNganh().trim());
@@ -110,43 +125,82 @@ public class NganhImportService implements IImportService {
     }
 
     // =========================================================
-    // CÁC HÀM CRUD PHỤC VỤ TRỰC TIẾP CHO GIAO DIỆN (JAVA SWING)
+    // CRUD PHỤC VỤ GIAO DIỆN SWING
     // =========================================================
 
     /**
-     * Lấy danh sách ngành có phân trang
+     * Lấy danh sách ngành có phân trang + tìm kiếm
      */
-    public org.springframework.data.domain.Page<Nganh> layDanhSachPhanTrang(int page, int size, String keyword) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+    public Page<Nganh> layDanhSachPhanTrang(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
         if (keyword != null && !keyword.trim().isEmpty()) {
-            return nganhRepository.findByMaNganhContainingOrTenNganhContainingIgnoreCase(keyword, keyword, pageable);
+            return nganhRepository.findByMaNganhContainingOrTenNganhContainingIgnoreCase(
+                keyword, keyword, pageable);
         }
         return nganhRepository.findAll(pageable);
     }
 
     /**
-     * Lưu mới hoặc Cập nhật Ngành
+     * Lưu mới hoặc cập nhật Ngành
      */
     @Transactional
     public Nganh luuNganh(Nganh nganh) {
-        // Validate cơ bản
-        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank()) {
+        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank())
             throw new IllegalArgumentException("Mã ngành không được để trống!");
-        }
-        if (nganh.getTenNganh() == null || nganh.getTenNganh().isBlank()) {
+        if (nganh.getTenNganh() == null || nganh.getTenNganh().isBlank())
             throw new IllegalArgumentException("Tên ngành không được để trống!");
-        }
         return nganhRepository.save(nganh);
     }
 
-    /**
-     * Xóa Ngành theo Mã
-     */
-    @Transactional
-    public void xoaNganh(String maNganh) {
-        if (!nganhRepository.existsById(maNganh)) {
-            throw new IllegalArgumentException("Không tìm thấy mã ngành: " + maNganh);
+
+
+
+        public List<Nganh> getAllNganh() {
+        return nganhRepository.findAll();
+    }
+
+    public Nganh getNganhById(String maNganh) {
+        return nganhRepository.findById(maNganh)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ngành với mã: " + maNganh));
+    }
+
+    public Nganh createNganh(Nganh nganh) {
+        if (nganh.getMaNganh() == null || nganh.getMaNganh().isBlank())
+            throw new IllegalArgumentException("Mã ngành không được để trống");
+        if (nganhRepository.existsById(nganh.getMaNganh()))
+            throw new IllegalArgumentException("Mã ngành đã tồn tại");
+        return nganhRepository.save(nganh);
+    }
+
+    public Nganh updateNganh(String maNganh, Nganh newData) {
+        Nganh old = nganhRepository.findById(maNganh)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ngành với mã: " + maNganh));
+
+        if (!old.getMaNganh().equals(newData.getMaNganh()))
+            throw new IllegalStateException("Không được thay đổi mã ngành");
+
+        old.setTenNganh(newData.getTenNganh());
+        old.setDiemSan(newData.getDiemSan());
+        old.setChiTieu(newData.getChiTieu());
+        old.setToHopGoc(newData.getToHopGoc());
+
+        return nganhRepository.save(old);
+    }
+
+    public void deleteNganh(String maNganh) {
+        Nganh nganh = nganhRepository.findById(maNganh)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ngành với mã: " + maNganh));
+
+        if (nguyenVongRepository.existsByNvManganh(maNganh))
+            throw new IllegalStateException("Không thể xóa vì có nguyện vọng liên quan");
+
+        if (nganhToHopRepository.existsByMaNganh(maNganh))
+            throw new IllegalStateException("Không thể xóa vì có tổ hợp liên quan");
+
+        try {
+            nganhRepository.delete(nganh);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalStateException("Không thể xóa do ràng buộc dữ liệu trong DB");
         }
-        nganhRepository.deleteById(maNganh);
     }
 }

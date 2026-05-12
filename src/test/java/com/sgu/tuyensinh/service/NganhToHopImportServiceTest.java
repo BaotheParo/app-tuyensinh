@@ -48,7 +48,7 @@ class NganhToHopServiceImplTest {
         try (InputStream is = new FileInputStream(file)) {
             log.info("🚀 Bắt đầu import file Ngành Tổ Hợp...");
             
-            ImportResultDTO result = nganhToHopService.importFromExcel(is);
+            ImportResultDTO result = nganhToHopService.importFromExcel(is, null);
 
             assertNotNull(result, "Kết quả import không được null");
             log.info("✅ Hoàn tất quá trình gọi Service!");

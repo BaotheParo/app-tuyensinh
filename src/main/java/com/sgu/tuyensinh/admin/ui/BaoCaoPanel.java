@@ -2,7 +2,7 @@ package com.sgu.tuyensinh.admin.ui;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.sgu.tuyensinh.admin.ui.common.ExportPanel;
-import com.sgu.tuyensinh.service.BaoCaoService;
+import com.sgu.tuyensinh.service.BaoCaoServiceImpl;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -26,11 +26,11 @@ import java.util.List;
 @Component
 public class BaoCaoPanel extends JPanel {
 
-        private final BaoCaoService baoCaoService;
+        private final BaoCaoServiceImpl baoCaoService;
         private JComboBox<Integer> cbNamHoc;
 
         @Autowired
-        public BaoCaoPanel(BaoCaoService baoCaoService) {
+        public BaoCaoPanel(BaoCaoServiceImpl baoCaoService) {
                 this.baoCaoService = baoCaoService;
                 initComponents();
         }
@@ -222,14 +222,14 @@ public class BaoCaoPanel extends JPanel {
         // BC-03: Tỷ lệ Đậu/Rớt theo ngành
         private JPanel createBC03PieChart() {
                 // Lấy thống kê theo ngành từ service
-                Map<String, BaoCaoService.KetQuaTheoNganhDTO> ketQuaTheoNganh = baoCaoService.thongKeKetQuaTheoNganh();
+                Map<String, BaoCaoServiceImpl.KetQuaTheoNganhDTO> ketQuaTheoNganh = baoCaoService.thongKeKetQuaTheoNganh();
 
                 // Tạo combobox chọn ngành
                 JComboBox<String> cbNganh = new JComboBox<>(ketQuaTheoNganh.keySet().toArray(new String[0]));
 
                 // Dataset ban đầu cho ngành đầu tiên
                 String nganhDauTien = cbNganh.getItemAt(0);
-                BaoCaoService.KetQuaTheoNganhDTO dto = ketQuaTheoNganh.get(nganhDauTien);
+                BaoCaoServiceImpl.KetQuaTheoNganhDTO dto = ketQuaTheoNganh.get(nganhDauTien);
 
                 DefaultPieDataset dataset = new DefaultPieDataset();
                 dataset.setValue("Đậu", dto.soDau());
@@ -253,7 +253,7 @@ public class BaoCaoPanel extends JPanel {
                 // Sự kiện chọn ngành
                 cbNganh.addActionListener(e -> {
                         String nganh = (String) cbNganh.getSelectedItem();
-                        BaoCaoService.KetQuaTheoNganhDTO kq = ketQuaTheoNganh.get(nganh);
+                        BaoCaoServiceImpl.KetQuaTheoNganhDTO kq = ketQuaTheoNganh.get(nganh);
 
                         DefaultPieDataset newDataset = new DefaultPieDataset();
                         newDataset.setValue("Đậu", kq.soDau());

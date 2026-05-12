@@ -1,6 +1,7 @@
 package com.sgu.tuyensinh.admin.ui;
 
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
+import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.ToHop;
 import com.sgu.tuyensinh.service.ToHopImportService;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ public class ToHopPanel extends JPanel {
     private JTextField txtMaToHop, txtTenToHop, txtMon1, txtMon2, txtMon3;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnPrev, btnNext;
     private JLabel lblPage;
+    private JButton btnImport;
 
     private Integer currentSelectedId = null; // Lưu ID (khóa chính) của dòng đang chọn
 
@@ -41,7 +43,7 @@ public class ToHopPanel extends JPanel {
 
     private void initComponents() {
         // Cột ID ẩn đi (chỉ lưu trữ ngầm)
-        String[] columns = {"ID", "Mã Tổ Hợp", "Tên Tổ Hợp", "Môn 1", "Môn 2", "Môn 3"};
+        String[] columns = { "ID", "Mã Tổ Hợp", "Tên Tổ Hợp", "Môn 1", "Môn 2", "Môn 3" };
         tablePanel = new BaseTablePanel(columns);
         tablePanel.getTable().setRowHeight(30);
 
@@ -64,17 +66,26 @@ public class ToHopPanel extends JPanel {
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
+
+        btnImport = new JButton("Import");
+        btnImport.setBackground(new Color(30, 144, 255));
+        btnImport.setForeground(Color.WHITE);
     }
 
     private void layoutComponents() {
         JPanel formPanel = new JPanel(new GridLayout(3, 4, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin Tổ Hợp"));
 
-        formPanel.add(new JLabel("Mã Tổ Hợp:")); formPanel.add(txtMaToHop);
-        formPanel.add(new JLabel("Tên Tổ Hợp:")); formPanel.add(txtTenToHop);
-        formPanel.add(new JLabel("Môn 1:")); formPanel.add(txtMon1);
-        formPanel.add(new JLabel("Môn 2:")); formPanel.add(txtMon2);
-        formPanel.add(new JLabel("Môn 3:")); formPanel.add(txtMon3);
+        formPanel.add(new JLabel("Mã Tổ Hợp:"));
+        formPanel.add(txtMaToHop);
+        formPanel.add(new JLabel("Tên Tổ Hợp:"));
+        formPanel.add(txtTenToHop);
+        formPanel.add(new JLabel("Môn 1:"));
+        formPanel.add(txtMon1);
+        formPanel.add(new JLabel("Môn 2:"));
+        formPanel.add(txtMon2);
+        formPanel.add(new JLabel("Môn 3:"));
+        formPanel.add(txtMon3);
 
         JPanel actionPanel = new JPanel(new GridLayout(4, 1, 5, 5));
         actionPanel.add(btnAdd);
@@ -91,9 +102,16 @@ public class ToHopPanel extends JPanel {
         pagingPanel.add(lblPage);
         pagingPanel.add(btnNext);
 
+        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        importWrap.add(btnImport);
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(pagingPanel, BorderLayout.CENTER);
+        bottomPanel.add(importWrap, BorderLayout.EAST);
+
         add(topPanel, BorderLayout.NORTH);
         add(tablePanel, BorderLayout.CENTER);
-        add(pagingPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private void addEventHandlers() {
@@ -117,8 +135,39 @@ public class ToHopPanel extends JPanel {
         btnDelete.addActionListener(e -> executeDelete());
         btnClear.addActionListener(e -> clearForm());
 
-        btnPrev.addActionListener(e -> { if (currentPage > 0) { currentPage--; loadData(); } });
-        btnNext.addActionListener(e -> { if (currentPage < totalPages - 1) { currentPage++; loadData(); } });
+        btnPrev.addActionListener(e -> {
+            if (currentPage > 0) {
+                currentPage--;
+                loadData();
+            }
+        });
+        btnNext.addActionListener(e -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                loadData();
+            }
+        });
+
+
+                // FIX: truyền parent window vào JDialog để định vị đúng
+        btnImport.addActionListener(e -> {
+            Window parentWindow = SwingUtilities.getWindowAncestor(this);
+            JDialog dialog = new JDialog(parentWindow, "Import Tổ Hợp Môn", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            ImportPanel importPanel = new ImportPanel(
+                (inputStream, callback) -> toHopService.importFromExcel(inputStream, callback)
+            );
+
+            dialog.add(importPanel);
+            dialog.pack();
+            dialog.setMinimumSize(new Dimension(500, 280));
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Sau khi dialog đóng → reload lại bảng
+            loadData();
+        });
     }
 
     private void loadData() {
@@ -130,7 +179,7 @@ public class ToHopPanel extends JPanel {
         model.setRowCount(0);
 
         for (ToHop t : pageData.getContent()) {
-            tablePanel.addRow(new Object[]{
+            tablePanel.addRow(new Object[] {
                     t.getIdtohop(), t.getMaToHop(), t.getTenToHop(),
                     t.getMon1(), t.getMon2(), t.getMon3()
             });
@@ -165,22 +214,27 @@ public class ToHopPanel extends JPanel {
             return;
         }
 
-        if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa tổ hợp này?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa tổ hợp này?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             try {
                 toHopService.xoaToHop(currentSelectedId);
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 clearForm();
                 loadData();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Không thể xóa do tổ hợp đang được liên kết với Ngành.", "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Không thể xóa do tổ hợp đang được liên kết với Ngành.",
+                        "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     private void clearForm() {
         currentSelectedId = null;
-        txtMaToHop.setText(""); txtTenToHop.setText("");
-        txtMon1.setText(""); txtMon2.setText(""); txtMon3.setText("");
+        txtMaToHop.setText("");
+        txtTenToHop.setText("");
+        txtMon1.setText("");
+        txtMon2.setText("");
+        txtMon3.setText("");
         txtMaToHop.setEditable(true);
         tablePanel.getTable().clearSelection();
     }

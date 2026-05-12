@@ -1,394 +1,296 @@
 package com.sgu.tuyensinh.admin.ui.common;
 
+import com.sgu.tuyensinh.service.dto.ImportResultDTO;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
+
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.usermodel.Sheet;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.function.BiFunction;
 
 /**
  * TUẦN 1 — ImportPanel  (Phiên bản đã sửa lỗi tương thích ProgressPanel)
  */
 public class ImportPanel extends JPanel {
 
-    // ── Constants ─────────────────────────────────────────────────
-    private static final Color SGU_BLUE      = new Color(0, 82, 155);
-    private static final Color SGU_BLUE_DARK = new Color(0, 55, 110);
-    private static final Color BG_GRAY       = new Color(245, 246, 250);
-    private static final Color BORDER_COLOR  = new Color(210, 215, 225);
-    private static final Color SUCCESS_GREEN = new Color(34, 139, 34);
-    private static final Color ERROR_RED     = new Color(196, 43, 28);
-    private static final Font  FONT_HEADER   = new Font("Segoe UI", Font.BOLD, 17);
-    private static final Font  FONT_LABEL    = new Font("Segoe UI", Font.PLAIN, 13);
-    private static final Font  FONT_LABEL_B  = new Font("Segoe UI", Font.BOLD, 13);
-    private static final Font  FONT_SMALL    = new Font("Segoe UI", Font.PLAIN, 11);
+    // ── Palette ──────────────────────────────────────────────
+    private static final Color BG = new Color(0xF9F9F8);
+    private static final Color SURFACE = Color.WHITE;
+    private static final Color BORDER = new Color(0xE0DFDA);
+    private static final Color BLUE = new Color(0x1874D2);
+    private static final Color BLUE_LIGHT = new Color(0xE6F1FB);
+    private static final Color TEXT_MAIN = new Color(0x1A1A1A);
+    private static final Color TEXT_MUTED = new Color(0x6B6B68);
+    private static final Color SUCCESS_BG = new Color(0xEAF3DE);
+    private static final Color SUCCESS_FG = new Color(0x3B6D11);
+    private static final Color DANGER_BG = new Color(0xFCEBEB);
+    private static final Color DANGER_FG = new Color(0xA32D2D);
 
-    private static final String[] DATA_TYPES = {
-            "-- Chọn loại dữ liệu --",
-            "Thí sinh (Ds_thi_sinh.xlsx)            → xt_thisinhxettuyen25 + xt_diemthixettuyen",
-            "Chỉ tiêu ngành (Chi_tieu_2025.xlsx)    → xt_nganh.n_chitieu",
-            "Ngưỡng đầu vào (Nguong_dau_vao_2025.xlsx) → xt_nganh.n_diemsan",
-            "Tổ hợp môn (tohopmon.xlsx)             → xt_tohop_monthi + xt_nganh_tohop",
-            "Quy đổi Tiếng Anh (Ds_quy_doi_tieng_Anh.xlsx) → xt_bangquydoi",
-            "Ưu tiên xét tuyển (Uu_tien_xet_tuyen.xlsx) → xt_diemcongxetuyen",
-            "Nguyện vọng (Nguyenvong.xlsx)          → xt_nguyenvongxettuyen"
-    };
+    // ProgressCallback ở đây là
+    // com.sgu.tuyensinh.service.interfaces.ProgressCallback
+    private final BiFunction<InputStream, ProgressCallback, ImportResultDTO> importFunction;
 
-    private static final String[] API_ENDPOINTS = {
-            null,
-            "http://localhost:8080/api/import/thisinh",
-            "http://localhost:8080/api/import/chitieu",
-            "http://localhost:8080/api/import/nguong",
-            "http://localhost:8080/api/import/tohop",
-            "http://localhost:8080/api/import/quydoi",
-            "http://localhost:8080/api/import/uutien",
-            "http://localhost:8080/api/import/nguyenvong"
-    };
+    private JTextField filePathField;
+    private ProgressPanel progressPanel;
+    private JLabel lblSuccess, lblError;
+    private JPanel resultPanel;
 
-    // ── Widgets ───────────────────────────────────────────────────
-    private JTextField   filePathField;
-    private JButton      browseButton;
-    private JButton      importButton;
-    private ProgressPanel progressPanel; // ĐÃ ĐỔI: Sử dụng ProgressPanel thay vì JProgressBar
-    private JComboBox<String> cboDataType;
-    private JSpinner     spnNamHoc;
-    private JLabel       lblStatus;
-    private JLabel       lblFileInfo;
+    public ImportPanel(BiFunction<InputStream, ProgressCallback, ImportResultDTO> importFunction) {
+        this.importFunction = importFunction;
+        setBackground(BG);
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(0, 0, 0, 0));
 
-    private File selectedFile = null;
-
-    public ImportPanel() {
-        initUI();
-        wireEvents();
+        add(buildHeader(), BorderLayout.NORTH);
+        add(buildBody(), BorderLayout.CENTER);
     }
 
-    private void initUI() {
-        setBackground(BG_GRAY);
-        setLayout(new BorderLayout(0, 0));
-        add(buildHeader(),    BorderLayout.NORTH);
-        add(buildFormCard(),  BorderLayout.CENTER);
-        add(buildStatusBar(), BorderLayout.SOUTH);
-    }
-
+    // ── Header ───────────────────────────────────────────────
     private JPanel buildHeader() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBackground(SGU_BLUE);
-        p.setBorder(new EmptyBorder(14, 22, 14, 22));
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 14));
+        header.setBackground(SURFACE);
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER));
 
-        JLabel lbl = new JLabel("Import Dữ Liệu");
-        lbl.setFont(FONT_HEADER);
-        lbl.setForeground(Color.WHITE);
+        JLabel icon = new JLabel("↓");
+        icon.setFont(new Font("SansSerif", Font.BOLD, 13));
+        icon.setForeground(BLUE);
+        icon.setOpaque(true);
+        icon.setBackground(BLUE_LIGHT);
+        icon.setPreferredSize(new Dimension(28, 28));
+        icon.setHorizontalAlignment(SwingConstants.CENTER);
+        icon.setBorder(new RoundedBorder(6, BLUE_LIGHT));
 
-        JLabel sub = new JLabel("Nhập dữ liệu từ file Excel vào hệ thống tuyển sinh SGU 2026");
-        sub.setFont(FONT_SMALL);
-        sub.setForeground(new Color(180, 210, 255));
+        JLabel title = new JLabel("Import ngành");
+        title.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        title.setForeground(TEXT_MAIN);
 
-        JPanel txt = new JPanel();
-        txt.setOpaque(false);
-        txt.setLayout(new BoxLayout(txt, BoxLayout.Y_AXIS));
-        txt.add(lbl);
-        txt.add(Box.createVerticalStrut(3));
-        txt.add(sub);
-        p.add(txt, BorderLayout.WEST);
-        return p;
+        header.add(icon);
+        header.add(title);
+        return header;
     }
 
-    private JPanel buildFormCard() {
-        JPanel outer = new JPanel(new GridBagLayout());
-        outer.setBackground(BG_GRAY);
-        outer.setBorder(new EmptyBorder(20, 28, 20, 28));
+    // ── Body ─────────────────────────────────────────────────
+    private JPanel buildBody() {
+        JPanel body = new JPanel();
+        body.setBackground(SURFACE);
+        body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+        body.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JPanel card = new JPanel();
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BORDER_COLOR, 1, true),
-                new EmptyBorder(24, 28, 24, 28)
-        ));
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        body.add(buildLabel("Chọn file Excel (.xlsx)"));
+        body.add(Box.createVerticalStrut(8));
+        body.add(buildFilePicker());
+        body.add(Box.createVerticalStrut(16));
+        body.add(buildProgressSection());
+        body.add(Box.createVerticalStrut(12));
+        body.add(buildImportButton());
+        body.add(Box.createVerticalStrut(12));
 
-        card.add(sectionLabel("1. Chọn file Excel"));
-        card.add(Box.createVerticalStrut(8));
-        card.add(buildFileRow());
-        card.add(buildFileInfoLabel());
-        card.add(Box.createVerticalStrut(18));
+        resultPanel = buildResultPanel();
+        resultPanel.setVisible(false);
+        body.add(resultPanel);
 
-        card.add(sectionLabel("2. Cấu hình import"));
-        card.add(Box.createVerticalStrut(8));
-        card.add(buildConfigRow());
-        card.add(Box.createVerticalStrut(24));
-
-        card.add(sectionLabel("3. Tiến trình"));
-        card.add(Box.createVerticalStrut(8));
-        card.add(buildProgressSection());
-        card.add(Box.createVerticalStrut(20));
-
-        card.add(buildButtonRow());
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1; gbc.weighty = 1;
-        outer.add(card, gbc);
-        return outer;
+        return body;
     }
 
-    private JLabel sectionLabel(String text) {
-        JLabel l = new JLabel(text);
-        l.setFont(FONT_LABEL_B);
-        l.setForeground(SGU_BLUE_DARK);
-        l.setAlignmentX(LEFT_ALIGNMENT);
-        return l;
+    private JLabel buildLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lbl.setForeground(TEXT_MUTED);
+        lbl.setAlignmentX(LEFT_ALIGNMENT);
+        return lbl;
     }
 
-    private JPanel buildFileRow() {
+    private JPanel buildFilePicker() {
         JPanel row = new JPanel(new BorderLayout(8, 0));
-        row.setOpaque(false);
-        row.setAlignmentX(LEFT_ALIGNMENT);
+        row.setBackground(SURFACE);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        row.setAlignmentX(LEFT_ALIGNMENT);
 
         filePathField = new JTextField();
-        filePathField.setFont(FONT_LABEL);
         filePathField.setEditable(false);
-        filePathField.setText("Chưa chọn file...");
-        filePathField.setForeground(Color.GRAY);
-        filePathField.setBackground(new Color(250, 251, 253));
+        filePathField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        filePathField.setForeground(TEXT_MUTED);
+        filePathField.setBackground(BG);
         filePathField.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BORDER_COLOR, 1),
-                new EmptyBorder(4, 8, 4, 8)
-        ));
+                new RoundedBorder(8, BORDER),
+                new EmptyBorder(0, 12, 0, 12)));
 
-        browseButton = new JButton("Browse...");
-        browseButton.setFont(FONT_LABEL_B);
-        browseButton.setBackground(SGU_BLUE);
-        browseButton.setForeground(Color.WHITE);
-        browseButton.setFocusPainted(false);
-        browseButton.setBorderPainted(false);
-        browseButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        browseButton.setPreferredSize(new Dimension(100, 36));
+        JButton browseBtn = makeButton("Chọn file", false);
+        browseBtn.setPreferredSize(new Dimension(90, 36));
+        browseBtn.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(
+                    new javax.swing.filechooser.FileNameExtensionFilter("Excel files", "xlsx", "xls"));
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                filePathField.setText(chooser.getSelectedFile().getAbsolutePath());
+                filePathField.setForeground(TEXT_MAIN);
+            }
+        });
 
         row.add(filePathField, BorderLayout.CENTER);
-        row.add(browseButton, BorderLayout.EAST);
-        return row;
-    }
-
-    private JPanel buildFileInfoLabel() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 3));
-        p.setOpaque(false); p.setAlignmentX(LEFT_ALIGNMENT);
-        lblFileInfo = new JLabel("Hỗ trợ: .xlsx, .xls  |  Tối đa 50 MB");
-        lblFileInfo.setFont(FONT_SMALL);
-        lblFileInfo.setForeground(Color.GRAY);
-        p.add(lblFileInfo);
-        return p;
-    }
-
-    private JPanel buildConfigRow() {
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        row.setOpaque(false); row.setAlignmentX(LEFT_ALIGNMENT);
-
-        JPanel pType = new JPanel(new BorderLayout(0, 4));
-        pType.setOpaque(false);
-        JLabel lblType = new JLabel("Loại dữ liệu:");
-        lblType.setFont(FONT_LABEL);
-        cboDataType = new JComboBox<>(DATA_TYPES);
-        cboDataType.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        cboDataType.setPreferredSize(new Dimension(380, 34));
-        cboDataType.setBackground(Color.WHITE);
-        pType.add(lblType, BorderLayout.NORTH);
-        pType.add(cboDataType, BorderLayout.CENTER);
-
-        JPanel pNam = new JPanel(new BorderLayout(0, 4));
-        pNam.setOpaque(false);
-        pNam.setBorder(new EmptyBorder(0, 20, 0, 0));
-        JLabel lblNam = new JLabel("Năm học:");
-        lblNam.setFont(FONT_LABEL);
-        spnNamHoc = new JSpinner(new SpinnerNumberModel(2026, 2020, 2030, 1));
-        spnNamHoc.setFont(FONT_LABEL);
-        spnNamHoc.setPreferredSize(new Dimension(86, 34));
-
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spnNamHoc, "#");
-        editor.getTextField().setHorizontalAlignment(JTextField.CENTER);
-        spnNamHoc.setEditor(editor);
-        pNam.add(lblNam, BorderLayout.NORTH);
-        pNam.add(spnNamHoc, BorderLayout.CENTER);
-
-        row.add(pType);
-        row.add(pNam);
+        row.add(browseBtn, BorderLayout.EAST);
         return row;
     }
 
     private JPanel buildProgressSection() {
-        JPanel p = new JPanel();
-        p.setOpaque(false); p.setAlignmentX(LEFT_ALIGNMENT);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-
-        // ĐÃ SỬA: Khởi tạo ProgressPanel của team
-        progressPanel = new ProgressPanel(100);
-
-        JLabel hint = new JLabel("Thanh tiến trình sẽ chạy khi ImportWorker hoạt động.");
-        hint.setFont(FONT_SMALL);
-        hint.setForeground(Color.GRAY);
-
-        p.add(progressPanel); // ĐÃ SỬA: Thêm component mới vào panel
-        p.add(Box.createVerticalStrut(5));
-        p.add(hint);
-        return p;
+        progressPanel = new ProgressPanel();
+        progressPanel.setAlignmentX(LEFT_ALIGNMENT);
+        return progressPanel;
     }
 
-    private JPanel buildButtonRow() {
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        row.setOpaque(false); row.setAlignmentX(LEFT_ALIGNMENT);
+    private JPanel buildResultPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 2, 8, 0));
+        panel.setBackground(SURFACE);
+        panel.setAlignmentX(LEFT_ALIGNMENT);
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
 
-        JButton btnReset = new JButton("Làm mới");
-        btnReset.setFont(FONT_LABEL);
-        btnReset.setPreferredSize(new Dimension(100, 36));
-        btnReset.setBackground(Color.WHITE);
-        btnReset.setForeground(SGU_BLUE_DARK);
-        btnReset.setBorder(new LineBorder(BORDER_COLOR, 1));
-        btnReset.setFocusPainted(false);
-        btnReset.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnReset.addActionListener(e -> resetForm());
+        lblSuccess = new JLabel("0", SwingConstants.LEFT);
+        lblError = new JLabel("0", SwingConstants.LEFT);
 
-        importButton = new JButton("Import");
-        importButton.setFont(FONT_LABEL_B);
-        importButton.setPreferredSize(new Dimension(110, 36));
-        importButton.setBackground(new Color(160, 160, 160));
-        importButton.setForeground(Color.WHITE);
-        importButton.setBorderPainted(false);
-        importButton.setFocusPainted(false);
-        importButton.setEnabled(false);
-        importButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        row.add(btnReset);
-        row.add(importButton);
-        return row;
+        panel.add(buildResultCard("Thành công", lblSuccess, SUCCESS_BG, SUCCESS_FG));
+        panel.add(buildResultCard("Lỗi", lblError, DANGER_BG, DANGER_FG));
+        return panel;
     }
 
-    private JPanel buildStatusBar() {
-        JPanel bar = new JPanel(new BorderLayout());
-        bar.setBackground(new Color(235, 238, 245));
-        bar.setBorder(BorderFactory.createCompoundBorder(
-                new MatteBorder(1, 0, 0, 0, BORDER_COLOR),
-                new EmptyBorder(5, 22, 5, 22)
-        ));
-        lblStatus = new JLabel("Sẵn sàng. Chọn file và loại dữ liệu để bắt đầu.");
-        lblStatus.setFont(FONT_SMALL);
-        lblStatus.setForeground(new Color(80, 90, 110));
-        bar.add(lblStatus, BorderLayout.WEST);
+    private JPanel buildResultCard(String title, JLabel valueLabel, Color bg, Color fg) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(bg);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                new RoundedBorder(8, bg),
+                new EmptyBorder(10, 14, 10, 14)));
 
-        JLabel ver = new JLabel("SGU Tuyển Sinh 2026  •  v3.0");
-        ver.setFont(FONT_SMALL);
-        ver.setForeground(new Color(160, 170, 190));
-        bar.add(ver, BorderLayout.EAST);
-        return bar;
+        JLabel lbl = new JLabel(title);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lbl.setForeground(fg);
+
+        valueLabel.setFont(new Font("SansSerif", Font.PLAIN, 22));
+        valueLabel.setForeground(fg);
+
+        card.add(lbl);
+        card.add(Box.createVerticalStrut(4));
+        card.add(valueLabel);
+        return card;
     }
 
-    private void wireEvents() {
-        browseButton.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Chọn file Excel");
-            chooser.setFileFilter(new FileNameExtensionFilter(
-                    "Excel Files (*.xlsx, *.xls)", "xlsx", "xls"));
-            chooser.setAcceptAllFileFilterUsed(false);
-
-            int result = chooser.showOpenDialog(this);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                selectedFile = chooser.getSelectedFile();
-                filePathField.setText(selectedFile.getAbsolutePath());
-                filePathField.setForeground(Color.BLACK);
-
-                long sizeKB = selectedFile.length() / 1024;
-                String sizeStr = sizeKB > 1024 ? (sizeKB / 1024) + " MB" : sizeKB + " KB";
-                lblFileInfo.setText("File: " + selectedFile.getName() + "  |  " + sizeStr);
-                lblFileInfo.setForeground(new Color(34, 100, 34));
-                refreshImportButton();
-            }
-        });
-
-        cboDataType.addActionListener(e -> refreshImportButton());
-
-        importButton.addActionListener(e -> {
-            String path = filePathField.getText();
-            if (path == null || path.isEmpty()) {
-                MessageDialog.showError("Vui lòng chọn file Excel!");
-                return;
-            }
-            if (cboDataType.getSelectedIndex() == 0) {
-                MessageDialog.showWarning("Vui lòng chọn loại dữ liệu!");
+    private JButton buildImportButton() {
+        JButton btn = makeButton("Import", true);
+        btn.setAlignmentX(LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        btn.addActionListener(e -> {
+            String path = filePathField.getText().trim();
+            if (path.isEmpty()) {
+                MessageDialog.showWarning("Vui lòng chọn file trước!");
                 return;
             }
 
-            // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm không có trong ProgressPanel
-            importButton.setEnabled(false);
-            browseButton.setEnabled(false);
-            cboDataType.setEnabled(false);
-            setStatus("Đang xử lý: " + selectedFile.getName());
+            resultPanel.setVisible(false);
+            progressPanel.reset();
 
-            // ĐÃ SỬA: Truyền progressPanel (thay vì progressBar cũ) vào ImportWorker
-            ImportWorker worker = new ImportWorker(path, progressPanel) {
+            ImportWorker worker = new ImportWorker(path, progressPanel, importFunction) {
+                // Trong buildImportButton(), phần done()
                 @Override
                 protected void done() {
-                    super.done();
-                    // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm của JProgressBar cũ
-                    importButton.setEnabled(true);
-                    browseButton.setEnabled(true);
-                    cboDataType.setEnabled(true);
-                    setStatus("✅  Import hoàn tất: " + selectedFile.getName());
+                    try {
+                        ImportResultDTO result = get();
+                        if (result != null) {
+                            lblSuccess.setText(String.valueOf(result.getSuccessCount()));
+                            lblError.setText(String.valueOf(result.getErrors().size()));
+                            resultPanel.setVisible(true);
+                            revalidate();
+                            repaint();
+
+                            Window w = SwingUtilities.getWindowAncestor(ImportPanel.this);
+                            if (w != null)
+                                w.pack();
+
+                            // ← Thêm dòng này: hiện dialog lỗi nếu có
+                            ErrorLogDialog.showIfNeeded(w, filePathField.getText(), result.getErrors());
+                        }
+                    } catch (Exception ex) {
+                        MessageDialog.showError("Lỗi: " + ex.getMessage());
+                    }
                 }
             };
             worker.execute();
         });
+        return btn;
     }
 
-    private void refreshImportButton() {
-        boolean ok = selectedFile != null && selectedFile.exists()
-                && cboDataType.getSelectedIndex() > 0;
-        importButton.setEnabled(ok);
-        importButton.setBackground(ok ? SGU_BLUE : new Color(160, 160, 160));
-        if (ok) setStatus("✔  Sẵn sàng import. Nhấn 'Import' để tiếp tục.");
+    // ── Helpers ──────────────────────────────────────────────
+    private JButton makeButton(String text, boolean primary) {
+        Color secBg = new Color(0xEEEDE8);
+        Color secBgHover = new Color(0xE3E2DC);
+        Color secBorder = new Color(0xC8C7C0);
+
+        JButton btn = new JButton(text) {
+            private boolean hovered = false;
+            {
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                        hovered = true;
+                        repaint();
+                    }
+
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        hovered = false;
+                        repaint();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                if (primary) {
+                    g2.setColor(hovered ? BLUE.darker() : BLUE);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                } else {
+                    g2.setColor(hovered ? secBgHover : secBg);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                    g2.setColor(secBorder);
+                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
+                }
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        btn.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        btn.setForeground(primary ? Color.WHITE : TEXT_MAIN);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(0, 14, 0, 14));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 
-    private void resetForm() {
-        selectedFile = null;
-        filePathField.setText("Chưa chọn file...");
-        filePathField.setForeground(Color.GRAY);
-        cboDataType.setSelectedIndex(0);
-        spnNamHoc.setValue(2026);
-        // ĐÃ SỬA: Loại bỏ các lệnh gọi hàm JProgressBar cũ
-        lblFileInfo.setText("Hỗ trợ: .xlsx, .xls  |  Tối đa 50 MB");
-        lblFileInfo.setForeground(Color.GRAY);
-        importButton.setEnabled(false);
-        importButton.setBackground(new Color(160, 160, 160));
-        setStatus("Form đã được làm mới.");
+    // ── Rounded border helper ────────────────────────────────
+    static class RoundedBorder extends AbstractBorder {
+        private final int radius;
+        private final Color color;
+
+        RoundedBorder(int radius, Color color) {
+            this.radius = radius;
+            this.color = color;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.drawRoundRect(x, y, w - 1, h - 1, radius, radius);
+            g2.dispose();
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(1, 1, 1, 1);
+        }
     }
 
-    private void setStatus(String msg) {
-        lblStatus.setText(msg);
-    }
-
-    public File getSelectedFile()  { return selectedFile; }
-    public String getDataType()    { return (String) cboDataType.getSelectedItem(); }
-    public int    getNamHoc()      { return (Integer) spnNamHoc.getValue(); }
-    public String getApiEndpoint() {
-        int idx = cboDataType.getSelectedIndex();
-        return (idx > 0 && idx < API_ENDPOINTS.length) ? API_ENDPOINTS[idx] : null;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }
-            catch (Exception ignored) {}
-            JFrame f = new JFrame("SGU Import Panel");
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            f.setSize(740, 490);
-            f.setMinimumSize(new Dimension(600, 420));
-            f.setLocationRelativeTo(null);
-            f.add(new ImportPanel());
-            f.setVisible(true);
-        });
-    }
 }

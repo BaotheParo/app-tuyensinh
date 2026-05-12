@@ -5,6 +5,8 @@ import com.sgu.tuyensinh.entity.NguyenVong;
 import com.sgu.tuyensinh.repository.DiemThiRepository;
 import com.sgu.tuyensinh.repository.NganhRepository;
 import com.sgu.tuyensinh.repository.NguyenVongRepository;
+import com.sgu.tuyensinh.service.interfaces.IImportService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BaoCaoService {
+public class BaoCaoServiceImpl  {
 
         private final NguyenVongRepository nguyenVongRepository;
         private final NganhRepository nganhRepository;

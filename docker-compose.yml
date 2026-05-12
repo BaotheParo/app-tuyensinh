@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: mysql:8.0
-    container_name: mysql-sgu-2026
+    container_name: mysql-sgu
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: sgu_tuyensinh_2026

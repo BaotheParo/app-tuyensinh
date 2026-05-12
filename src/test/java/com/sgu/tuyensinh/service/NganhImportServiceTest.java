@@ -40,7 +40,7 @@ class NganhServiceImplTest {
             }
             
             FileInputStream is = new FileInputStream(file);
-            ImportResultDTO result = nganhService.importFromExcel(is);
+            ImportResultDTO result = nganhService.importFromExcel(is,null);
 
             assertNotNull(result);
             System.out.println("SUCCESS: " + result.getSuccessCount());

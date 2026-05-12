@@ -1,6 +1,6 @@
 package com.sgu.tuyensinh.admin.ui;
 
-import com.sgu.tuyensinh.service.BaoCaoService;
+import com.sgu.tuyensinh.service.BaoCaoServiceImpl;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -33,7 +33,7 @@ import java.util.Map;
  *   2. Biểu đồ cột: Thống kê lượng thí sinh theo loại điểm (THPT/VSAT/ĐGNL)
  *   3. Histogram: Phổ điểm môn Toán / Văn / Anh
  *
- * Dùng dữ liệu từ BaoCaoService (đã có sẵn trong project).
+ * Dùng dữ liệu từ BaoCaoServiceImpl (đã có sẵn trong project).
  * Khi BE chưa xong → dùng mock data tự build bên trong.
  */
 @Component
@@ -59,7 +59,7 @@ public class DashboardPanel extends JPanel {
     private static final Font FONT_SECTION    = new Font("Segoe UI", Font.BOLD, 15);
     private static final Font FONT_SMALL      = new Font("Segoe UI", Font.PLAIN, 11);
 
-    private final BaoCaoService baoCaoService;
+    private final BaoCaoServiceImpl baoCaoService;
 
     // ── Stat card labels — để refresh được ───────────────────────
     private JLabel lblTongNop;
@@ -74,7 +74,7 @@ public class DashboardPanel extends JPanel {
     private JPanel pnlChartPhoAnh;
 
     @Autowired
-    public DashboardPanel(BaoCaoService baoCaoService) {
+    public DashboardPanel(BaoCaoServiceImpl baoCaoService) {
         this.baoCaoService = baoCaoService;
         initUI();
         loadData();
@@ -270,7 +270,7 @@ public class DashboardPanel extends JPanel {
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  fetchData — gọi BaoCaoService, fallback sang mock nếu lỗi
+    //  fetchData — gọi BaoCaoServiceImpl, fallback sang mock nếu lỗi
     // ─────────────────────────────────────────────────────────────
     private DashboardData fetchData() {
         DashboardData d = new DashboardData();
@@ -281,16 +281,16 @@ public class DashboardPanel extends JPanel {
             d.tongNop = dangKy.values().stream().mapToLong(Long::longValue).sum();
 
             // Tổng trúng tuyển
-            Map<String, BaoCaoService.KetQuaTheoNganhDTO> ketQua = baoCaoService.thongKeKetQuaTheoNganh();
-            d.tongDau = ketQua.values().stream().mapToLong(BaoCaoService.KetQuaTheoNganhDTO::soDau).sum();
+            Map<String, BaoCaoServiceImpl.KetQuaTheoNganhDTO> ketQua = baoCaoService.thongKeKetQuaTheoNganh();
+            d.tongDau = ketQua.values().stream().mapToLong(BaoCaoServiceImpl.KetQuaTheoNganhDTO::soDau).sum();
 
             // Ngành lấy điểm cao nhất — lấy từ getDanhSachTrungTuyen data
             // Dùng dangKy map để tìm ngành có số lượng lớn nhất làm proxy
             String nganhMaxKey = "";
             double diemMaxVal  = 0;
-            for (Map.Entry<String, BaoCaoService.KetQuaTheoNganhDTO> e : ketQua.entrySet()) {
+            for (Map.Entry<String, BaoCaoServiceImpl.KetQuaTheoNganhDTO> e : ketQua.entrySet()) {
                 // Giả sử tenNganh có dấu ":" kèm điểm — nếu không thì lấy tên
-                // Thực tế cần thêm hàm getDiemChuanCaoNhat() vào BaoCaoService
+                // Thực tế cần thêm hàm getDiemChuanCaoNhat() vào BaoCaoServiceImpl
                 if (e.getValue().soDau() > 0) {
                     nganhMaxKey = e.getValue().tenNganh();
                     break;
@@ -300,7 +300,7 @@ public class DashboardPanel extends JPanel {
             d.diemChuanMax  = diemMaxVal;
 
             // ── 2. Biểu đồ loại điểm (THPT/VSAT/ĐGNL) ─────────
-            // BaoCaoService.getDiemMonHoc trả về double[]
+            // BaoCaoServiceImpl.getDiemMonHoc trả về double[]
             // Đếm số thí sinh có điểm > 0 theo từng loại
             double[] dsToan = baoCaoService.getDiemMonHoc("toan");
             double[] dsVsat = baoCaoService.getDiemMonHoc("nk1");  // nk1 = V-SAT theo entity

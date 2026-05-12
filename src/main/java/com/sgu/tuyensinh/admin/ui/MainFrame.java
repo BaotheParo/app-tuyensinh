@@ -29,15 +29,13 @@ public class MainFrame extends JFrame {
     private final QuanLyUserPanel quanlyUserPanel;
     private final DiemThiPanel diemThiPanel;
     private final DashboardPanel      dashboardPanel;
-    private final DiemCongFormPanel   diemCongFormPanel;
-    private final BangQuyDoiFormPanel bangQuyDoiFormPanel;
-    private final XetTuyenPanel xetTuyenPanel;
+            private final XetTuyenPanel xetTuyenPanel;
     /**
      * Creates new form Main
      */
     public MainFrame(TrangChuPanel trangChuPanel, NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel,
                      BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
-                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, DiemCongFormPanel diemCongFormPanel, BangQuyDoiFormPanel bangQuyDoiFormPanel, XetTuyenPanel xetTuyenPanel) {
+                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, XetTuyenPanel xetTuyenPanel) {
         this.trangChuPanel = trangChuPanel;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -49,9 +47,7 @@ public class MainFrame extends JFrame {
         this.quanlyUserPanel = quanlyUserPanel;
         this.diemThiPanel = diemThiPanel;
         this.dashboardPanel = dashboardPanel;
-        this.diemCongFormPanel = diemCongFormPanel;
-        this.bangQuyDoiFormPanel = bangQuyDoiFormPanel;
-        this.xetTuyenPanel = xetTuyenPanel;
+                        this.xetTuyenPanel = xetTuyenPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -383,7 +379,7 @@ public class MainFrame extends JFrame {
     }// GEN-LAST:event_btnXetTuyenActionPerformed
 
     private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, bangQuyDoiFormPanel);
+        addTaskBar(mainContent2, bangQuyDoiPanel);
     }
 
     private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -391,7 +387,7 @@ public class MainFrame extends JFrame {
     }
 
     private void btnDiemUuTienActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, diemCongFormPanel);
+        addTaskBar(mainContent2, diemUuTienPanel);
     }
 
     private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {

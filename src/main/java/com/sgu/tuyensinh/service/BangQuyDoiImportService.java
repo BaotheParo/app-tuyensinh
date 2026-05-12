@@ -2,9 +2,12 @@ package com.sgu.tuyensinh.service;
 
 import com.sgu.tuyensinh.dto.QuyDoiNNImportDTO;
 import com.sgu.tuyensinh.entity.BangQuyDoi;
+import com.sgu.tuyensinh.entity.Nganh;
 import com.sgu.tuyensinh.repository.BangQuyDoiRepository;
 import com.sgu.tuyensinh.service.dto.ImportResultDTO;
 import com.sgu.tuyensinh.service.interfaces.IImportService;
+import com.sgu.tuyensinh.service.interfaces.ProgressCallback;
+
 import com.sgu.tuyensinh.util.ExcelReaderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +15,18 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sgu.tuyensinh.dto.NganhImportDTO;
+
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -30,7 +41,7 @@ public class BangQuyDoiImportService implements IImportService {
 
     @Override
     @Transactional
-    public ImportResultDTO importFromExcel(InputStream inputStream) {
+    public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback callback) {
         ImportResultDTO result = new ImportResultDTO();
 
         if (inputStream == null) {
@@ -187,4 +198,21 @@ public class BangQuyDoiImportService implements IImportService {
 
         return entity;
     }
+
+
+
+public Page<BangQuyDoi> layDanhSachPhanTrang(int page, int size, String keyword) {
+    Pageable pageable = PageRequest.of(page, size);
+
+    if (keyword != null && !keyword.trim().isEmpty()) {
+        return bangQuyDoiRepository
+            .findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(
+                keyword, keyword, pageable);
+    }
+
+    return bangQuyDoiRepository.findAll(pageable);
+}
+
+
+    
 }
