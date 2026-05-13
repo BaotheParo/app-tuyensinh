@@ -11,7 +11,12 @@ public class BaseTablePanel extends JPanel {
     public BaseTablePanel(String[] columnNames) {
         setLayout(new BorderLayout());
 
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         table = new JTable(tableModel);
 
         JScrollPane scrollPane = new JScrollPane(table);

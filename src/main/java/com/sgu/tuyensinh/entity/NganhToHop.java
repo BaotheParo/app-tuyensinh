@@ -173,11 +173,13 @@ public class NganhToHop {
      * Quan hệ tới tổ hợp môn.
      * - fetch LAZY để tối ưu truy vấn.
      * - JsonIgnore tránh vòng lặp infinite recursion.
+     * - Sử dụng ConstraintMode.NO_CONSTRAINT để tránh lỗi MySQL khi không có index trên cột matohop.
      */
     @JsonIgnore
     @lombok.ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "matohop", referencedColumnName = "matohop", insertable = false, updatable = false)
+    @JoinColumn(name = "matohop", referencedColumnName = "matohop", insertable = false, updatable = false, 
+                foreignKey = @jakarta.persistence.ForeignKey(jakarta.persistence.ConstraintMode.NO_CONSTRAINT))
     private ToHop toHop;
 }
 

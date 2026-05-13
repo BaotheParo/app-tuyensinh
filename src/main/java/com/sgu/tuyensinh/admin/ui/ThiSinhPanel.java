@@ -3,6 +3,7 @@ package com.sgu.tuyensinh.admin.ui;
 import com.sgu.tuyensinh.admin.ui.common.BaseTablePanel;
 import com.sgu.tuyensinh.admin.ui.common.ImportPanel;
 import com.sgu.tuyensinh.entity.ThiSinh;
+import com.sgu.tuyensinh.service.ThiSinhImportService;
 import com.sgu.tuyensinh.service.ThiSinhService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -10,39 +11,46 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import com.sgu.tuyensinh.admin.ui.common.ThiSinhDashboard;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
 
 @Component
 public class ThiSinhPanel extends JPanel {
 
     private final ThiSinhService thiSinhService;
+    private final ThiSinhImportService thiSinhImportService;
+    private final com.sgu.tuyensinh.service.DiemQuyDoiNgoaiNguImportService englishImportService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // UI Components
     private BaseTablePanel tablePanel;
     private JTextField txtCCCD, txtHoTen, txtNgaySinh, txtMaTruong, txtMaTinh;
     private JComboBox<String> cbGioiTinh, cbDoiTuong, cbKhuVuc;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnPrev, btnNext, btnSearch;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnPrev, btnNext, btnSearch, btnViewDetail, btnRefresh;
     private JTextField txtSearch;
     private JLabel lblPage;
-    private JButton btnImport;
+    private JLabel lblStatTotal, lblStatDoiTuong, lblStatKhuVuc;
+    private JButton btnImport, btnImportEnglish;
 
     // Phân trang
     private int currentPage = 0;
     private final int pageSize = 15;
     private int totalPages = 1;
 
-    public ThiSinhPanel(ThiSinhService thiSinhService) {
+    public ThiSinhPanel(ThiSinhService thiSinhService, ThiSinhImportService thiSinhImportService, com.sgu.tuyensinh.service.DiemQuyDoiNgoaiNguImportService englishImportService) {
         this.thiSinhService = thiSinhService;
+        this.thiSinhImportService = thiSinhImportService;
+        this.englishImportService = englishImportService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         initComponents();
         layoutComponents();
         addEventHandlers();
-        loadData();
+        // loadData(); // Moved to MainFrame action listener to speed up startup
     }
 
     private void initComponents() {
@@ -71,12 +79,24 @@ public class ThiSinhPanel extends JPanel {
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
 
-        btnImport = new JButton("Import");
+        btnImport = new JButton("Import Thí Sinh");
         btnImport.setBackground(new Color(30, 144, 255));
         btnImport.setForeground(Color.WHITE);
 
+        btnImportEnglish = new JButton("Import Quy Đổi TA");
+        btnImportEnglish.setBackground(new Color(155, 89, 182));
+        btnImportEnglish.setForeground(Color.WHITE);
+
         txtSearch = new JTextField(20);
         btnSearch = new JButton("Tìm Kiếm");
+        btnRefresh = new JButton("Làm mới");
+        btnViewDetail = new JButton("Xem Chi Tiết");
+        btnViewDetail.setBackground(new Color(46, 204, 113));
+        btnViewDetail.setForeground(Color.WHITE);
+
+        lblStatTotal = new JLabel("Tổng: 0");
+        lblStatDoiTuong = new JLabel("Theo ĐT: —");
+        lblStatKhuVuc = new JLabel("Theo KV: —");
     }
 
     private void layoutComponents() {
@@ -114,9 +134,20 @@ public class ThiSinhPanel extends JPanel {
         searchPanel.add(new JLabel("Tìm theo CCCD hoặc Họ Tên:"));
         searchPanel.add(txtSearch);
         searchPanel.add(btnSearch);
+        searchPanel.add(btnRefresh);
 
-        // Gắn vào Top Panel (Bao gồm Form và Search)
+        // Khối Thống kê nhanh
+        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+        statsPanel.setBackground(new Color(240, 248, 255));
+        statsPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        statsPanel.add(new JLabel("📊 THỐNG KÊ NHANH:"));
+        statsPanel.add(lblStatTotal);
+        statsPanel.add(lblStatDoiTuong);
+        statsPanel.add(lblStatKhuVuc);
+
+        // Gắn vào Top Panel (Bao gồm Stats, Form và Search)
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(statsPanel, BorderLayout.NORTH);
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(actionPanel, BorderLayout.EAST);
         topPanel.add(searchPanel, BorderLayout.SOUTH);
@@ -127,7 +158,9 @@ public class ThiSinhPanel extends JPanel {
         pagingPanel.add(lblPage);
         pagingPanel.add(btnNext);
 
-        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        importWrap.add(btnViewDetail);
+        importWrap.add(btnImportEnglish);
         importWrap.add(btnImport);
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -164,6 +197,7 @@ public class ThiSinhPanel extends JPanel {
         btnUpdate.addActionListener(e -> executeSave(false));
         btnDelete.addActionListener(e -> executeDelete());
         btnClear.addActionListener(e -> clearForm());
+        btnViewDetail.addActionListener(e -> showDetail());
 
         // Nút phân trang
         btnPrev.addActionListener(e -> {
@@ -185,33 +219,87 @@ public class ThiSinhPanel extends JPanel {
             loadData();
         });
 
+        btnRefresh.addActionListener(e -> {
+            loadData();
+            updateStats();
+        });
+
         txtSearch.addActionListener(e -> {
             currentPage = 0;
             loadData();
         });
 
         // FIX: truyền parent window vào JDialog để định vị đúng
-        btnImport.addActionListener(e -> {
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            JDialog dialog = new JDialog(parentWindow, "Import Ngành", Dialog.ModalityType.APPLICATION_MODAL);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-            ImportPanel importPanel = new ImportPanel(
-                    null /* thiSinhService.importFromExcel not supported */
-                );
-
-            dialog.add(importPanel);
-            dialog.pack();
-            dialog.setMinimumSize(new Dimension(500, 280));
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-
-            // Sau khi dialog đóng → reload lại bảng
-            loadData();
-        });
+        btnImport.addActionListener(e -> showImportDialog());
+        btnImportEnglish.addActionListener(e -> showImportEnglishDialog());
     }
 
-    private void loadData() {
+    private void showImportDialog() {
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentWindow, "Import Thí sinh & Điểm thi", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
+        // Hướng dẫn cấu trúc file
+        JPanel infoPanel = createInfoPanel("<html><b>File:</b> Ds thi sinh.xlsx (50,000+ dòng)<br>" +
+            "<b>Cấu trúc:</b> Col1:CCCD | Col2:Họ Tên | Col3:Ngày sinh | Col7:Toán | Col8:Văn | Col15:NN...<br>" +
+            "<i>Hệ thống sử dụng đa luồng và cơ chế chống Deadlock.</i></html>");
+
+        ImportPanel importPanel = new ImportPanel(thiSinhImportService::importFromExcel, () -> {
+            loadData();
+            updateStats();
+        });
+
+        mainPanel.add(infoPanel, BorderLayout.NORTH);
+        mainPanel.add(importPanel, BorderLayout.CENTER);
+
+        dialog.add(mainPanel);
+        dialog.pack();
+        dialog.setSize(550, 400);
+        dialog.setLocationRelativeTo(parentWindow);
+        dialog.setVisible(true);
+    }
+
+    private void showImportEnglishDialog() {
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(parentWindow, "Import Quy đổi Tiếng Anh", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
+        JPanel infoPanel = createInfoPanel("<html><b>File:</b> Ds quy doi tieng Anh.xlsx<br>" +
+            "<b>Cấu trúc:</b> Col1:CCCD | Col4:Điểm Quy đổi | Col5:Điểm cộng<br>" +
+            "<i>Dùng để nạp điểm chứng chỉ ngoại ngữ cho từng thí sinh.</i></html>");
+
+        ImportPanel importPanel = new ImportPanel(englishImportService::importFromExcel, () -> {
+            loadData();
+        });
+
+        mainPanel.add(infoPanel, BorderLayout.NORTH);
+        mainPanel.add(importPanel, BorderLayout.CENTER);
+
+        dialog.add(mainPanel);
+        dialog.pack();
+        dialog.setSize(550, 400);
+        dialog.setLocationRelativeTo(parentWindow);
+        dialog.setVisible(true);
+    }
+
+    private JPanel createInfoPanel(String htmlText) {
+        JPanel infoPanel = new JPanel(new BorderLayout());
+        infoPanel.setBackground(new Color(0xE3F2FD));
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x2196F3)),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+        JLabel lblInfo = new JLabel(htmlText);
+        lblInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        infoPanel.add(lblInfo);
+        return infoPanel;
+    }
+
+    public void loadData() {
         String keyword = txtSearch.getText().trim();
         Page<ThiSinh> pageData = thiSinhService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
@@ -219,6 +307,8 @@ public class ThiSinhPanel extends JPanel {
 
         DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
         model.setRowCount(0);
+        
+        updateStats(); // Tự động cập nhật thống kê mỗi khi load data
 
         for (ThiSinh ts : pageData.getContent()) {
             String ngaySinhStr = ts.getNgaySinh() != null ? ts.getNgaySinh().format(dateFormatter) : "";
@@ -226,6 +316,66 @@ public class ThiSinhPanel extends JPanel {
                     ts.getId(), ts.getHoTen(), ngaySinhStr, ts.getGioiTinh(),
                     ts.getMaTruong(), ts.getMaTinh(), ts.getDoiTuongUt(), ts.getKhuVucUt()
             });
+        }
+
+        updateStats();
+    }
+
+    private void updateStats() {
+        try {
+            Map<String, Object> stats = thiSinhService.getThongKeThiSinh();
+            lblStatTotal.setText("Tổng thí sinh: " + stats.get("total"));
+            
+            java.util.List<Object[]> byDT = (java.util.List<Object[]>) stats.get("byDoiTuong");
+            StringBuilder sbDT = new StringBuilder("Theo ĐT: ");
+            for (Object[] row : byDT) {
+                if (row[0] != null && !row[0].toString().isEmpty()) {
+                    sbDT.append(row[0]).append("(").append(row[1]).append(") ");
+                }
+            }
+            lblStatDoiTuong.setText(sbDT.length() > 10 ? sbDT.toString() : "Theo ĐT: 0");
+
+            java.util.List<Object[]> byKV = (java.util.List<Object[]>) stats.get("byKhuVuc");
+            StringBuilder sbKV = new StringBuilder("Theo KV: ");
+            for (Object[] row : byKV) {
+                if (row[0] != null && !row[0].toString().isEmpty()) {
+                    sbKV.append(row[0]).append("(").append(row[1]).append(") ");
+                }
+            }
+            lblStatKhuVuc.setText(sbKV.length() > 10 ? sbKV.toString() : "Theo KV: 0");
+        } catch (Exception e) {
+            System.err.println("Lỗi cập nhật thống kê: " + e.getMessage());
+        }
+    }
+
+    private void showDetail() {
+        int selectedRow = tablePanel.getTable().getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một thí sinh để xem chi tiết!");
+            return;
+        }
+
+        String cccd = tablePanel.getTable().getValueAt(selectedRow, 0).toString();
+        try {
+            com.sgu.tuyensinh.entity.ThiSinh ts = thiSinhService.findByCccd(cccd);
+            com.sgu.tuyensinh.entity.DiemThi dt = thiSinhService.findDiemByCccd(cccd);
+            
+            if (ts == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy dữ liệu thí sinh!");
+                return;
+            }
+
+            ThiSinhDashboard.CandidateData dashboardData = ThiSinhDashboard.fromEntity(ts, dt);
+            
+            JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết Thí sinh: " + ts.getHoTen(), true);
+            dialog.setLayout(new BorderLayout());
+            dialog.add(new ThiSinhDashboard(dashboardData));
+            dialog.setSize(1100, 800);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải chi tiết: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

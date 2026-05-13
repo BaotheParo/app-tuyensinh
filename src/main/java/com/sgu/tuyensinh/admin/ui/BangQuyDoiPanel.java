@@ -37,7 +37,7 @@ public class BangQuyDoiPanel extends JPanel {
         initComponents();
         layoutComponents();
         addEventHandlers();
-        loadData();
+        // loadData(); // Defer loading
     }
 
     private void initComponents() {
@@ -119,7 +119,7 @@ public class BangQuyDoiPanel extends JPanel {
         });
     }
 
-    private void loadData() {
+    public void loadData() {
         String keyword = txtSearch.getText().trim();
         Page<BangQuyDoi> pageData = bangQuyDoiService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();

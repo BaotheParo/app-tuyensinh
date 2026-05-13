@@ -29,6 +29,7 @@ import java.util.List;
 public class NguyenVongServiceImpl implements IImportService {
 
     private final NguyenVongRepository repository;
+    private final com.sgu.tuyensinh.repository.ThiSinhRepository thiSinhRepository;
 
     // ── Import ───────────────────────────────────────────────
     @Override
@@ -40,43 +41,111 @@ public class NguyenVongServiceImpl implements IImportService {
             return result;
         }
 
-        if (callback != null) callback.onProgress(0, 0); // báo đang đọc file
+        if (callback != null) callback.onProgress(0, 0);
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            if (sheet == null || sheet.getLastRowNum() < 1) {
-                result.addError("File không có dữ liệu");
-                return result;
+            int totalSheets = workbook.getNumberOfSheets();
+            int totalRowsAllSheets = 0;
+            for (int s = 0; s < totalSheets; s++) {
+                Sheet sheet = workbook.getSheetAt(s);
+                if (sheet != null && !sheet.getSheetName().equalsIgnoreCase("TKchung")) {
+                    totalRowsAllSheets += sheet.getLastRowNum();
+                }
             }
 
-            int total   = sheet.getLastRowNum();
-            int current = 0;
+            List<NguyenVong> batchList = new java.util.ArrayList<>();
+            int processedCount = 0;
 
-            for (int i = 1; i <= total; i++) {
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
-
-                current++;
-
-                // ── Parse DTO ───────────────────────────────
-                NguyenVongImportDTO dto = new NguyenVongImportDTO();
-                dto.setCccd(ExcelReaderUtil.getSafeString(row.getCell(0)));
-                dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(1)));
-                dto.setThuTu(ExcelReaderUtil.getSafeInteger(row.getCell(2)));
-                dto.setPhuongThuc(ExcelReaderUtil.getSafeString(row.getCell(3)));
-                dto.setToHopMon(ExcelReaderUtil.getSafeString(row.getCell(4)));
-
-                // ── Validate ────────────────────────────────
-                String error = validate(dto, i + 1);
-                if (error != null) {
-                    result.addError(i + 1, dto.getCccd(), "INVALID_DATA", error);
-                    result.incrementSkip();
-                } else {
-                    repository.save(toEntity(dto));
-                    result.incrementSuccess();
+            for (int s = 0; s < totalSheets; s++) {
+                Sheet sheet = workbook.getSheetAt(s);
+                String sheetName = sheet.getSheetName().trim();
+                
+                // 1. Bỏ qua sheet thống kê chung hoặc sheet không liên quan
+                if (sheetName.equalsIgnoreCase("TKchung") || sheetName.contains("ThongKe")) {
+                    log.info("⏭️ Bỏ qua sheet thống kê: {}", sheetName);
+                    continue;
                 }
 
-                if (callback != null) callback.onProgress(current, total);
+                log.info("🔍 Đang xử lý sheet: {}", sheetName);
+                int totalRows = sheet.getLastRowNum();
+                boolean isWishListSheet = false;
+                
+                for (int i = 0; i <= totalRows; i++) {
+                    Row row = sheet.getRow(i);
+                    if (row == null) continue;
+
+                    String cccdRaw = ExcelReaderUtil.getSafeString(row.getCell(1));
+                    if (cccdRaw == null || cccdRaw.isBlank()) continue;
+                    
+                    // 2. Kiểm tra dòng tiêu đề để xác định cấu trúc sheet
+                    if (cccdRaw.equalsIgnoreCase("CCCD") || cccdRaw.contains("Số CCCD")) {
+                        isWishListSheet = true;
+                        continue;
+                    }
+
+                    // 3. Nếu là sheet TKchung mà bị sót qua filter name, hoặc dòng rác của sheet TK
+                    if (cccdRaw.contains("Mã xét tuyển") || cccdRaw.contains("TT")) {
+                        continue; 
+                    }
+
+                    processedCount++;
+
+                    // ── Parse DTO ───────────────────────────────
+                    NguyenVongImportDTO dto = new NguyenVongImportDTO();
+                    String cccd = cccdRaw.trim();
+                    
+                    if (isWishListSheet) {
+                        // Cấu trúc Sheet1/Sheet2 (CCCD ở cột 1, ThuTu ở cột 2, MaNganh ở cột 5)
+                        dto.setCccd(cccd);
+                        dto.setThuTu(ExcelReaderUtil.getSafeInteger(row.getCell(2)));
+                        dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(5)));
+                    } else {
+                        // Cấu trúc mặc định (Phòng hờ nếu file khác)
+                        dto.setCccd(cccd);
+                        dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(4)));
+                        dto.setThuTu(ExcelReaderUtil.getSafeInteger(row.getCell(7)));
+                        dto.setPhuongThuc(ExcelReaderUtil.getSafeString(row.getCell(6)));
+                        dto.setToHopMon(ExcelReaderUtil.getSafeString(row.getCell(5)));
+                    }
+
+                    // ── Validate & Add to Batch ────────────────
+                    try {
+                        String error = validate(dto, i + 1);
+                        if (error != null) {
+                            if (dto.getThuTu() == null && (cccd.length() < 5)) continue;
+                            result.addError(i + 1, dto.getCccd(), "INVALID_DATA", "Sheet [" + sheetName + "] " + error);
+                            result.incrementSkip();
+                        } else if (!thiSinhRepository.existsById(dto.getCccd())) {
+                            result.addError(i + 1, dto.getCccd(), "MISSING_THISINH", 
+                                "Sheet [" + sheetName + "] Dòng " + (i + 1) + ": Thí sinh " + dto.getCccd() + " chưa có.");
+                            result.incrementSkip();
+                        } else {
+                            batchList.add(toEntity(dto));
+                            
+                            // Thực hiện lưu theo batch (ví dụ 1000 dòng/lần) để tăng tốc độ
+                            if (batchList.size() >= 1000) {
+                                repository.saveAll(batchList);
+                                result.addSuccessCount(batchList.size());
+                                batchList.clear();
+                                log.info("✅ Đã import thành công {} nguyện vọng...", processedCount);
+                            }
+                        }
+                    } catch (Exception e) {
+                        result.addError(i + 1, dto.getCccd(), "DB_ERROR", "Lỗi: " + e.getMessage());
+                        result.incrementSkip();
+                    }
+
+                    if (callback != null && processedCount % 500 == 0) {
+                        callback.onProgress(processedCount, totalRowsAllSheets);
+                    }
+                }
+            }
+
+            // Lưu phần dư còn lại trong batch
+            if (!batchList.isEmpty()) {
+                repository.saveAll(batchList);
+                result.addSuccessCount(batchList.size());
+                batchList.clear();
             }
 
         } catch (Exception e) {
@@ -125,6 +194,11 @@ public class NguyenVongServiceImpl implements IImportService {
         return repository.findAll(pageable);
     }
 
+    public Page<NguyenVong> layDanhSachPhanTrangVoiStatus(int page, int size, String keyword, String status) {
+        Pageable pageable = PageRequest.of(page, size);
+        return repository.searchWithFilter(keyword, status, pageable);
+    }
+
     public List<NguyenVong> getByCccd(String cccd) {
         return repository.findAll().stream()
                 .filter(nv -> nv.getNnCccd().equals(cccd))
@@ -134,5 +208,10 @@ public class NguyenVongServiceImpl implements IImportService {
     @Transactional
     public List<NguyenVong> getDanhSachTrungTuyen(String maNganh) {
         return repository.findByNvManganhAndNvKetQua(maNganh, "TRUNG_TUYEN");
+    }
+
+    @Transactional
+    public void deleteAll() {
+        repository.deleteAll();
     }
 }

@@ -102,7 +102,7 @@ public class NguyenVong {
      * - Vì vậy {@code insertable=false, updatable=false} để tránh ghi 2 nơi cùng 1 cột.
      */
     @lombok.ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "nn_cccd", referencedColumnName = "cccd", insertable = false, updatable = false)
     private ThiSinh thiSinh;
 }

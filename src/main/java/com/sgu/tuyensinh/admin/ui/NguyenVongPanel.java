@@ -38,11 +38,11 @@ public class NguyenVongPanel extends JPanel {
         initComponents();
         layoutComponents();
         addEventHandlers();
-        loadData();
+        // loadData(); // Moved to MainFrame action listener to speed up startup
     }
 
     private void initComponents() {
-        String[] columns = { "Thứ Tự", "CCCD Thí Sinh", "Mã Ngành", "Mã Tổ Hợp", "Phương Thức", "Trạng Thái" };
+        String[] columns = { "STT", "Thứ Tự", "CCCD", "Họ Tên", "Mã Ngành", "Mã Tổ Hợp", "Phương Thức", "Trạng Thái" };
         tablePanel = new BaseTablePanel(columns);
 
         txtSearch = new JTextField(20);
@@ -72,6 +72,20 @@ public class NguyenVongPanel extends JPanel {
         pagingPanel.add(btnNext);
 
         JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnDeleteAll = new JButton("Xóa Tất Cả");
+        btnDeleteAll.setBackground(new Color(220, 20, 60)); // Crimson red
+        btnDeleteAll.setForeground(Color.WHITE);
+        btnDeleteAll.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "Bạn có chắc chắn muốn XÓA TOÀN BỘ nguyện vọng trong hệ thống?\nThao tác này không thể hoàn tác!", 
+                "Xác nhận xóa sạch", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                nguyenVongService.deleteAll();
+                JOptionPane.showMessageDialog(this, "Đã xóa sạch toàn bộ nguyện vọng.");
+                loadData();
+            }
+        });
+        importWrap.add(btnDeleteAll);
         importWrap.add(btnImport);
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -126,20 +140,30 @@ public class NguyenVongPanel extends JPanel {
         });
     }
 
-    private void loadData() {
+    public void loadData() {
         String keyword = txtSearch.getText().trim();
-                            String status = cbStatusFilter.getSelectedItem().toString();
-                    Page<NguyenVong> pageData = nguyenVongService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
+        String status = (String) cbStatusFilter.getSelectedItem();
+        if ("Tất cả".equals(status)) status = null;
+        
+        Page<NguyenVong> pageData = nguyenVongService.layDanhSachPhanTrangVoiStatus(currentPage, pageSize, keyword, status);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
         lblPage.setText("Trang: " + (currentPage + 1) + " / " + totalPages);
 
         DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
         model.setRowCount(0);
 
+        int stt = currentPage * pageSize + 1;
         for (NguyenVong n : pageData.getContent()) {
+            String hoTen = n.getThiSinh() != null ? n.getThiSinh().getHoTen() : "N/A";
             tablePanel.addRow(new Object[] {
-                    n.getNvTt(), n.getNnCccd(), n.getNvManganh(), n.getTtThm(),
-                    n.getTtPhuongthuc(), n.getNvKetQua()
+                    stt++,
+                    n.getNvTt(), 
+                    n.getNnCccd(), 
+                    hoTen,
+                    n.getNvManganh(), 
+                    n.getTtThm() != null ? n.getTtThm() : "---",
+                    n.getTtPhuongthuc(), 
+                    n.getNvKetQua() != null ? n.getNvKetQua() : "DANG_XET"
             });
         }
     }

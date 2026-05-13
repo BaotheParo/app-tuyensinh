@@ -25,7 +25,7 @@ public class XetTuyenPanel extends JPanel {
         this.admissionService = admissionService;
         this.nguyenVongRepository = nguyenVongRepository;
         initComponents();
-        loadSummary();
+        // loadSummary(); // Defer loading
     }
 
     private void initComponents() {
@@ -33,7 +33,7 @@ public class XetTuyenPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Header
-        JLabel lblTitle = new JLabel("XET TUYEN & LOC AO", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel("XÉT TUYỂN & LỌC ẢO", SwingConstants.CENTER);
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
         add(lblTitle, BorderLayout.NORTH);
 
@@ -43,7 +43,7 @@ public class XetTuyenPanel extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
 
-        btnRun = new JButton("\u25B6 Chay Thuat Toan Xet Tuyen");
+        btnRun = new JButton("\u25B6 Chạy Thuật Toán Xét Tuyển");
         btnRun.setFont(new Font("SansSerif", Font.BOLD, 16));
         btnRun.setBackground(new Color(40, 167, 69));
         btnRun.setForeground(Color.WHITE);
@@ -52,24 +52,24 @@ public class XetTuyenPanel extends JPanel {
         centerPanel.add(btnRun, gbc);
 
         gbc.gridy = 1;
-        lblStatus = new JLabel("Trang thai: San sang");
+        lblStatus = new JLabel("Trạng thái: Sẵn sàng");
         lblStatus.setForeground(Color.GRAY);
         centerPanel.add(lblStatus, gbc);
 
         // Stats Panel
         gbc.gridy = 2; gbc.fill = GridBagConstraints.HORIZONTAL;
         JPanel statsPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        statsPanel.setBorder(BorderFactory.createTitledBorder(null, "Ket qua Xet Tuyen (Summary)", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("SansSerif", Font.BOLD, 14)));
+        statsPanel.setBorder(BorderFactory.createTitledBorder(null, "Kết Quả Xét Tuyển (Tổng hợp)", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("SansSerif", Font.BOLD, 14)));
 
-        lblTrungTuyen = new JLabel("\u2705 TRUNG_TUYEN: 0");
+        lblTrungTuyen = new JLabel("\u2705 TRUNG TUYỂN: 0");
         lblTrungTuyen.setFont(new Font("SansSerif", Font.PLAIN, 16));
         lblTrungTuyen.setForeground(new Color(0, 128, 0));
 
-        lblTruot = new JLabel("\u274C TRUOT: 0");
+        lblTruot = new JLabel("\u274C TRƯỢT: 0");
         lblTruot.setFont(new Font("SansSerif", Font.PLAIN, 16));
         lblTruot.setForeground(Color.RED);
 
-        lblDangXet = new JLabel("\u23F3 DANG_XET: 0");
+        lblDangXet = new JLabel("\u23F3 ĐANG XÉT: 0");
         lblDangXet.setFont(new Font("SansSerif", Font.PLAIN, 16));
         lblDangXet.setForeground(Color.ORANGE);
 
@@ -82,22 +82,22 @@ public class XetTuyenPanel extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
     }
 
-    private void loadSummary() {
+    public void loadSummary() {
         long trungTuyen = nguyenVongRepository.countByNvKetQua("TRUNG_TUYEN");
         long truot = nguyenVongRepository.countByNvKetQua("TRUOT");
         long dangXet = nguyenVongRepository.countByNvKetQua("DANG_XET");
 
-        lblTrungTuyen.setText("\u2705 TRUNG_TUYEN: " + trungTuyen);
-        lblTruot.setText("\u274C TRUOT: " + truot);
-        lblDangXet.setText("\u23F3 DANG_XET / KHONG_HOP_LE: " + dangXet);
+        lblTrungTuyen.setText("\u2705 TRUNG TUYỂN: " + trungTuyen);
+        lblTruot.setText("\u274C TRƯỢT: " + truot);
+        lblDangXet.setText("\u23F3 ĐANG XÉT / KHÔNG HỢP LỆ: " + dangXet);
     }
 
     private void runAdmission(ActionEvent evt) {
-        int confirm = JOptionPane.showConfirmDialog(this, "Ban co chac chan muon chay lai thuat toan loc ao?\nQua trinh nay co the mat vai giay den vai phut tuy theo du lieu.", "Xac nhan", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn chạy lại thuật toán lọc ảo?\nQuá trình này có thể mất vài giây đến vài phút tùy theo dữ liệu.", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         btnRun.setEnabled(false);
-        lblStatus.setText("Trang thai: Dang chay thuat toan, vui long doi...");
+        lblStatus.setText("Trạng thái: Đang chạy thuật toán, vui lòng đợi...");
         lblStatus.setForeground(Color.BLUE);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -114,14 +114,14 @@ public class XetTuyenPanel extends JPanel {
                 setCursor(Cursor.getDefaultCursor());
                 try {
                     get();
-                    lblStatus.setText("Trang thai: Xet tuyen thanh cong!");
+                    lblStatus.setText("Trạng thái: Xét tuyển thành công!");
                     lblStatus.setForeground(new Color(0, 128, 0));
                     loadSummary();
-                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Chay xet tuyen va loc ao thanh cong!", "Thong bao", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Chạy xét tuyển và lọc ảo thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception e) {
-                    lblStatus.setText("Trang thai: Co loi xay ra!");
+                    lblStatus.setText("Trạng thái: Có lỗi xảy ra!");
                     lblStatus.setForeground(Color.RED);
-                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Loi khi xet tuyen: " + e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Lỗi khi xét tuyển: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };

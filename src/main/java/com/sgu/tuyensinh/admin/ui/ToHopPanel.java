@@ -38,7 +38,7 @@ public class ToHopPanel extends JPanel {
         initComponents();
         layoutComponents();
         addEventHandlers();
-        loadData();
+        // loadData(); // Defer loading
     }
 
     private void initComponents() {
@@ -170,7 +170,7 @@ public class ToHopPanel extends JPanel {
         });
     }
 
-    private void loadData() {
+    public void loadData() {
         Page<ToHop> pageData = toHopService.layDanhSachPhanTrang(currentPage, pageSize, "");
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
         lblPage.setText("Trang: " + (currentPage + 1) + " / " + totalPages);

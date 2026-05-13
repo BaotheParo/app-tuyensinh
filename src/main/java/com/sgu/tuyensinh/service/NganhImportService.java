@@ -203,4 +203,26 @@ private final NganhToHopRepository nganhToHopRepository;    // ← thêm
             throw new IllegalStateException("Không thể xóa do ràng buộc dữ liệu trong DB");
         }
     }
+
+    public java.util.Map<String, Long> getCandidateCounts() {
+        java.util.List<Object[]> results = nguyenVongRepository.countByMaNganh();
+        java.util.Map<String, Long> map = new java.util.HashMap<>();
+        for (Object[] row : results) {
+            map.put((String) row[0], (Long) row[1]);
+        }
+        return map;
+    }
+
+    public String formatPhuongThuc(Nganh n) {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        if ("1".equals(n.getThpt())) list.add("THPT");
+        if ("1".equals(n.getDgnl())) list.add("ĐGNL");
+        if ("1".equals(n.getVsat())) list.add("VSAT");
+        if ("1".equals(n.getTuyenThang())) list.add("T.Thẳng");
+        return list.isEmpty() ? "—" : String.join(", ", list);
+    }
+
+    public java.util.List<com.sgu.tuyensinh.entity.NganhToHop> getToHopsByMaNganh(String maNganh) {
+        return nganhToHopRepository.findByMaNganh(maNganh);
+    }
 }

@@ -31,6 +31,7 @@ public class ImportPanel extends JPanel {
     // ProgressCallback ở đây là
     // com.sgu.tuyensinh.service.interfaces.ProgressCallback
     private final BiFunction<InputStream, ProgressCallback, ImportResultDTO> importFunction;
+    private Runnable onComplete;
 
     private JTextField filePathField;
     private ProgressPanel progressPanel;
@@ -38,7 +39,12 @@ public class ImportPanel extends JPanel {
     private JPanel resultPanel;
 
     public ImportPanel(BiFunction<InputStream, ProgressCallback, ImportResultDTO> importFunction) {
+        this(importFunction, null);
+    }
+
+    public ImportPanel(BiFunction<InputStream, ProgressCallback, ImportResultDTO> importFunction, Runnable onComplete) {
         this.importFunction = importFunction;
+        this.onComplete = onComplete;
         setBackground(BG);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -208,6 +214,10 @@ public class ImportPanel extends JPanel {
 
                             // ← Thêm dòng này: hiện dialog lỗi nếu có
                             ErrorLogDialog.showIfNeeded(w, filePathField.getText(), result.getErrors());
+                            
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
                         }
                     } catch (Exception ex) {
                         MessageDialog.showError("Lỗi: " + ex.getMessage());

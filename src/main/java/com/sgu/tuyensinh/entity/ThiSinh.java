@@ -60,8 +60,7 @@ public class ThiSinh {
     private java.util.List<DiemCong> diemCongs;
 
     @lombok.ToString.Exclude
-    @jakarta.persistence.OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "cccd", referencedColumnName = "cccd", insertable = false, updatable = false)
+    @jakarta.persistence.OneToOne(mappedBy = "thiSinh", fetch = jakarta.persistence.FetchType.LAZY, cascade = jakarta.persistence.CascadeType.ALL)
     private DiemThi diemThi;
 }
 

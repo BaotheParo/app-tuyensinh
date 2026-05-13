@@ -21,6 +21,11 @@ public interface NguyenVongRepository extends JpaRepository<NguyenVong, Integer>
     
     long countByNvKetQua(String nvKetQua);
 
+    @Query("SELECT n.nvManganh, COUNT(n) FROM NguyenVong n GROUP BY n.nvManganh")
+    List<Object[]> countByMaNganh();
+
+    java.util.Optional<NguyenVong> findByNnCccdAndNvManganh(String nnCccd, String nvManganh);
+
     @Query("SELECT n FROM NguyenVong n WHERE (:status IS NULL OR :status = '' OR n.nvKetQua = :status) AND (:keyword IS NULL OR :keyword = '' OR n.nnCccd LIKE CONCAT('%', :keyword, '%') OR n.nvManganh LIKE CONCAT('%', :keyword, '%'))")
     Page<NguyenVong> searchWithFilter(@Param("keyword") String keyword, @Param("status") String status, Pageable pageable);
 }

@@ -17,7 +17,7 @@ import java.util.List;
  * Class DatabaseSeeder giúp tự động tạo dữ liệu mẫu (Mock Data) khi ứng dụng khởi chạy.
  * Phù hợp cho đội Frontend test giao diện và Senior Dev test logic xét tuyển/nội suy.
  */
-@Component
+// @Component
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
@@ -195,10 +195,10 @@ public class DatabaseSeeder implements CommandLineRunner {
             for (int i = 1; i <= 25; i++) {
                 String cccd = String.format("079000000%03d", i);
                 // Mock diem uu tien khu vuc/doi tuong
-                ds.add(new DiemCong(null, cccd, null, null, "PT1", 0.0, 0.5, 0.5, "Uu tien khu vuc/doi tuong", null, cccd + "_DC", null));
+                ds.add(new DiemCong(null, cccd, null, null, "PT1", 0.0, 0.5, 0.0, 0.5, "Uu tien khu vuc/doi tuong", null, cccd + "_DC", null));
                 // Mock diem cong IELTS cho nhung thi sinh le
                 if (i % 2 != 0) {
-                    ds.add(new DiemCong(null, cccd, null, "A01", "PT2", 1.0, 0.0, 1.0, "Cong diem IELTS 6.5", "10/10/2025", cccd + "_IELTS", null));
+                    ds.add(new DiemCong(null, cccd, null, "A01", "PT2", 1.0, 0.0, 0.0, 1.0, "Cong diem IELTS 6.5", "10/10/2025", cccd + "_IELTS", null));
                 }
             }
             diemCongRepository.saveAll(ds);

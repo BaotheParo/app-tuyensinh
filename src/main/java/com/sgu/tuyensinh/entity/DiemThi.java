@@ -41,7 +41,7 @@ public class DiemThi {
     @Column(name = "cccd", nullable = false, length = 20)
     private String cccd;
 
-    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.EAGER)
+    @jakarta.persistence.OneToOne(fetch = jakarta.persistence.FetchType.EAGER)
     @jakarta.persistence.JoinColumn(name = "cccd", referencedColumnName = "cccd", insertable = false, updatable = false)
     @lombok.ToString.Exclude
     private ThiSinh thiSinh;

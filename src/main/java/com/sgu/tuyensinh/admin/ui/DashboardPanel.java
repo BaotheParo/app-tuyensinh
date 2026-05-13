@@ -77,7 +77,7 @@ public class DashboardPanel extends JPanel {
     public DashboardPanel(BaoCaoServiceImpl baoCaoService) {
         this.baoCaoService = baoCaoService;
         initUI();
-        loadData();
+        // loadData(); // Defer loading
     }
 
     // ─────────────────────────────────────────────────────────────

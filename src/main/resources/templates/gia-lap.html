@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giả lập tính điểm xét tuyển – SGU 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            padding: 36px 0;
+        }
+        .main-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px 36px 36px;
+        }
+        .section-title {
+            font-weight: 700; color: #1e3c72;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 8px; margin-bottom: 20px;
+        }
+        .score-label { font-weight: 600; font-size: 0.92rem; }
+        .result-panel {
+            border-radius: 14px; padding: 28px;
+            margin-top: 28px;
+        }
+        .result-pass {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: #fff;
+            animation: glow 2s ease-in-out infinite;
+        }
+        .result-fail {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: #fff;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(56,239,125,0.4); }
+            50%      { box-shadow: 0 0 28px 8px rgba(56,239,125,0.2); }
+        }
+        .detail-table th { background: #f0f4f8; font-weight: 600; width: 50%; }
+        .detail-table td { font-weight: 700; font-size: 1.1rem; }
+        .btn-calc {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: none; font-weight: 600; padding: 12px;
+            border-radius: 10px; font-size: 1.05rem;
+        }
+        .btn-calc:hover { box-shadow: 0 6px 20px rgba(30,60,114,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+
+    <!-- ═══ Header ═══ -->
+    <div class="text-center mb-4">
+        <i class="bi bi-calculator-fill" style="font-size:2.5rem; color:#1e3c72;"></i>
+        <h4 class="section-title border-0 pb-0 mt-2">Giả Lập Tính Điểm Xét Tuyển</h4>
+        <p class="text-muted mb-0">Nhập điểm của bạn để xem mình có đạt ngưỡng xét tuyển hay không.</p>
+    </div>
+
+    <!-- ═══ Thông báo lỗi ═══ -->
+    <div th:if="${error}" class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span></div>
+
+    <!-- ═══ Form nhập liệu ═══ -->
+    <form method="post" th:action="@{/gia-lap}" id="formGiaLap">
+
+        <!-- Row 1: Ngành + Tổ hợp -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label score-label"><i class="bi bi-building me-1"></i>Chọn Ngành</label>
+                <select class="form-select" id="selNganh" name="maNganh" required>
+                    <option value="">— Chọn ngành —</option>
+                    <option th:each="n : ${danhSachNganh}"
+                            th:value="${n.maNganh}"
+                            th:text="${n.maNganh + ' – ' + n.tenNganh}"
+                            th:selected="${nganh != null and nganh.maNganh == n.maNganh}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label score-label"><i class="bi bi-grid-3x3 me-1"></i>Chọn Tổ hợp</label>
+                <select class="form-select" id="selToHop" name="toHopId" required>
+                    <option value="">— Chọn tổ hợp —</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 2: Phương thức -->
+        <div class="mb-3">
+            <label class="form-label score-label"><i class="bi bi-signpost-split me-1"></i>Phương thức xét tuyển</label>
+            <select class="form-select" id="selPhuongThuc" name="phuongThuc" required>
+                <option value="THPT" th:selected="${phuongThuc == 'THPT'}">THPT (Điểm tối đa mỗi môn: 10)</option>
+                <option value="DGNL" th:selected="${phuongThuc == 'DGNL'}">ĐGNL (Điểm tối đa mỗi môn: 1200)</option>
+                <option value="VSAT" th:selected="${phuongThuc == 'VSAT'}">V-SAT (Điểm tối đa mỗi môn: 150)</option>
+            </select>
+        </div>
+
+        <!-- Row 3: 3 ô nhập điểm -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label score-label" id="lblMon1">Điểm Môn 1</label>
+                <input type="number" step="0.01" min="0" class="form-control score-input"
+                       id="txtDiem1" name="diem1" required th:value="${diem1}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label score-label" id="lblMon2">Điểm Môn 2</label>
+                <input type="number" step="0.01" min="0" class="form-control score-input"
+                       id="txtDiem2" name="diem2" required th:value="${diem2}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label score-label" id="lblMon3">Điểm Môn 3</label>
+                <input type="number" step="0.01" min="0" class="form-control score-input"
+                       id="txtDiem3" name="diem3" required th:value="${diem3}">
+            </div>
+        </div>
+
+        <!-- Row 4: Ưu tiên -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label score-label"><i class="bi bi-person-badge me-1"></i>Đối tượng ưu tiên</label>
+                <select class="form-select" name="doiTuongUt">
+                    <option value="">Không có</option>
+                    <option value="01" th:selected="${doiTuongUt == '01'}">01 — ƯT 1 (+2.0đ)</option>
+                    <option value="02" th:selected="${doiTuongUt == '02'}">02 — ƯT 2 (+1.5đ)</option>
+                    <option value="03" th:selected="${doiTuongUt == '03'}">03 — ƯT 3 (+1.0đ)</option>
+                    <option value="04" th:selected="${doiTuongUt == '04'}">04 — ƯT 4 (+2.0đ)</option>
+                    <option value="05" th:selected="${doiTuongUt == '05'}">05 — ƯT 5 (+0.5đ)</option>
+                    <option value="06a" th:selected="${doiTuongUt == '06a'}">06a — ƯT 6a (+0.5đ)</option>
+                    <option value="07" th:selected="${doiTuongUt == '07'}">07 — ƯT 7 (+0.25đ)</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label score-label"><i class="bi bi-geo-alt me-1"></i>Khu vực ưu tiên</label>
+                <select class="form-select" name="khuVucUt">
+                    <option value="">Không có (KV3)</option>
+                    <option value="KV1" th:selected="${khuVucUt == 'KV1'}">KV1 (+0.75đ)</option>
+                    <option value="KV2NT" th:selected="${khuVucUt == 'KV2NT'}">KV2-NT (+0.5đ)</option>
+                    <option value="KV2" th:selected="${khuVucUt == 'KV2'}">KV2 (+0.25đ)</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-calc btn-primary w-100">
+            <i class="bi bi-lightning-charge-fill me-1"></i> Tính điểm xét tuyển
+        </button>
+    </form>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--  KẾT QUẢ                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div th:if="${coKetQua}">
+        <!-- Panel kết quả (ĐẠT / CHƯA ĐẠT) -->
+        <div class="result-panel" th:classappend="${datNguong ? 'result-pass' : 'result-fail'}">
+            <div class="text-center">
+                <h3 class="fw-bold mb-1">
+                    <i th:class="${datNguong ? 'bi bi-trophy-fill' : 'bi bi-x-octagon-fill'}" class="me-2"></i>
+                    <span th:text="${datNguong ? 'ĐẠT NGƯỠNG XÉT TUYỂN' : 'CHƯA ĐẠT NGƯỠNG'}"></span>
+                </h3>
+                <p class="mb-0" style="opacity:0.92">
+                    Ngành: <strong th:text="${nganh.tenNganh}">Tên ngành</strong>
+                    — Điểm sàn: <strong th:text="${diemSan}">0</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết điểm -->
+        <table class="table table-bordered detail-table mt-4 mb-0">
+            <tbody>
+                <tr>
+                    <th><i class="bi bi-journal-check me-1"></i>Tổ hợp</th>
+                    <td th:text="${toHop.maToHop + ' (' + toHop.thMon1 + ', ' + toHop.thMon2 + ', ' + toHop.thMon3 + ')'}">A00</td>
+                </tr>
+                <tr>
+                    <th><i class="bi bi-bar-chart-line me-1"></i>Điểm quy đổi (thang 30)</th>
+                    <td th:text="${diemQuyDoi}">0</td>
+                </tr>
+                <tr>
+                    <th><i class="bi bi-plus-circle me-1"></i>Điểm cộng (HSG / Chứng chỉ)</th>
+                    <td th:text="${diemCong}">0</td>
+                </tr>
+                <tr>
+                    <th><i class="bi bi-star me-1"></i>Điểm ưu tiên (ĐT + KV)</th>
+                    <td th:text="${diemUuTien}">0</td>
+                </tr>
+                <tr class="table-primary">
+                    <th><i class="bi bi-trophy me-1"></i>TỔNG ĐIỂM XÉT TUYỂN</th>
+                    <td class="fs-4" th:text="${tongDiem}">0</td>
+                </tr>
+                <tr>
+                    <th><i class="bi bi-flag me-1"></i>Điểm sàn ngành</th>
+                    <td th:text="${diemSan}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ Footer ═══ -->
+    <div class="text-center text-muted mt-4" style="font-size:0.83rem;">
+        <i class="bi bi-info-circle me-1"></i>
+        Kết quả chỉ mang tính tham khảo. Điểm chính thức được tính từ dữ liệu tuyển sinh của nhà trường.
+    </div>
+</div>
+
+<!-- ═══ JavaScript: Dynamic UI ═══ -->
+<script>
+    const selNganh = document.getElementById('selNganh');
+    const selToHop = document.getElementById('selToHop');
+    const selPhuongThuc = document.getElementById('selPhuongThuc');
+    const scoreInputs = document.querySelectorAll('.score-input');
+
+    // Load tổ hợp khi chọn ngành
+    selNganh.addEventListener('change', function () {
+        const maNganh = this.value;
+        selToHop.innerHTML = '<option value="">— Đang tải... —</option>';
+        if (!maNganh) { selToHop.innerHTML = '<option value="">— Chọn tổ hợp —</option>'; return; }
+
+        fetch('/api/to-hop-theo-nganh?maNganh=' + encodeURIComponent(maNganh))
+            .then(r => r.json())
+            .then(list => {
+                selToHop.innerHTML = '<option value="">— Chọn tổ hợp —</option>';
+                list.forEach(nth => {
+                    const opt = document.createElement('option');
+                    opt.value = nth.id;
+                    opt.textContent = nth.maToHop + ' (' + (nth.thMon1||'') + ', ' + (nth.thMon2||'') + ', ' + (nth.thMon3||'') + ')';
+                    selToHop.appendChild(opt);
+                });
+                // Cập nhật nhãn môn
+                if (list.length > 0) updateMonLabels(list[0]);
+            });
+    });
+
+    // Cập nhật nhãn môn khi chọn tổ hợp
+    selToHop.addEventListener('change', function () {
+        const toHopId = this.value;
+        if (!toHopId) return;
+        // Tìm trong options text
+        const text = this.options[this.selectedIndex].textContent;
+        const match = text.match(/\(([^,]+),\s*([^,]+),\s*([^)]+)\)/);
+        if (match) {
+            document.getElementById('lblMon1').textContent = 'Điểm ' + match[1].trim();
+            document.getElementById('lblMon2').textContent = 'Điểm ' + match[2].trim();
+            document.getElementById('lblMon3').textContent = 'Điểm ' + match[3].trim();
+        }
+    });
+
+    function updateMonLabels(nth) {
+        document.getElementById('lblMon1').textContent = 'Điểm ' + (nth.thMon1 || 'Môn 1');
+        document.getElementById('lblMon2').textContent = 'Điểm ' + (nth.thMon2 || 'Môn 2');
+        document.getElementById('lblMon3').textContent = 'Điểm ' + (nth.thMon3 || 'Môn 3');
+    }
+
+    // Cập nhật max theo phương thức
+    selPhuongThuc.addEventListener('change', updateMaxScore);
+    function updateMaxScore() {
+        const pt = selPhuongThuc.value;
+        let max = 10;
+        if (pt === 'DGNL') max = 1200;
+        else if (pt === 'VSAT') max = 150;
+        scoreInputs.forEach(input => input.max = max);
+    }
+    updateMaxScore(); // init
+</script>
+
+</body>
+</html>

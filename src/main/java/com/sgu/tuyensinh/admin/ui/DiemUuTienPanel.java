@@ -18,10 +18,11 @@ import java.awt.*;
 public class DiemUuTienPanel extends JPanel {
 
     private final DiemCongServiceImpl diemCongService;
+    private final com.sgu.tuyensinh.repository.NguyenVongRepository nguyenVongRepository;
 
     private BaseTablePanel tablePanel;
     private JTextField txtSearch;
-    private JButton btnSearch, btnPrev, btnNext;
+    private JButton btnSearch, btnPrev, btnNext, btnRefresh, btnDeleteAll;
     private JLabel lblPage;
     private JButton btnImport;
 
@@ -29,24 +30,34 @@ public class DiemUuTienPanel extends JPanel {
     private final int pageSize = 20;
     private int totalPages = 1;
 
-    public DiemUuTienPanel(DiemCongServiceImpl diemCongService) {
+    public DiemUuTienPanel(DiemCongServiceImpl diemCongService, com.sgu.tuyensinh.repository.NguyenVongRepository nguyenVongRepository) {
         this.diemCongService = diemCongService;
+        this.nguyenVongRepository = nguyenVongRepository;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         initComponents();
         layoutComponents();
         addEventHandlers();
-        loadData();
+        // loadData(); // Defer loading
     }
 
     private void initComponents() {
-        String[] columns = { "ID", "CCCD Thí Sinh", "Mã Ngành", "Tổ Hợp", "Phương Thức", "Điểm CC", "Điểm Ưu Tiên",
-                "Ghi Chú" };
+        String[] columns = { "ID", "CCCD", "Họ Tên", "Nguyện Vọng", "Tổ Hợp", "PT", "Điểm Anh", "Điểm UT", "Tổng Cộng" };
         tablePanel = new BaseTablePanel(columns);
+        tablePanel.getTable().setRowHeight(30);
 
-        txtSearch = new JTextField(20);
+        // Ẩn cột ID
+        tablePanel.getTable().getColumnModel().getColumn(0).setMinWidth(0);
+        tablePanel.getTable().getColumnModel().getColumn(0).setMaxWidth(0);
+        tablePanel.getTable().getColumnModel().getColumn(0).setWidth(0);
+
+        txtSearch = new JTextField(15);
         btnSearch = new JButton("Tìm Kiếm");
+        btnRefresh = new JButton("Làm mới");
+        btnDeleteAll = new JButton("Xóa Tất Cả");
+        btnDeleteAll.setBackground(new Color(231, 76, 60));
+        btnDeleteAll.setForeground(Color.WHITE);
         btnPrev = new JButton("<< Trước");
         btnNext = new JButton("Sau >>");
         lblPage = new JLabel("Trang: 1/1");
@@ -62,6 +73,8 @@ public class DiemUuTienPanel extends JPanel {
         searchPanel.add(new JLabel("Tìm theo CCCD:"));
         searchPanel.add(txtSearch);
         searchPanel.add(btnSearch);
+        searchPanel.add(btnRefresh);
+        searchPanel.add(btnDeleteAll);
 
         JPanel pagingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         pagingPanel.add(btnPrev);
@@ -81,9 +94,15 @@ public class DiemUuTienPanel extends JPanel {
     }
 
     private void addEventHandlers() {
-        btnSearch.addActionListener(e -> {
-            currentPage = 0;
+        btnRefresh.addActionListener(e -> {
             loadData();
+        });
+        btnDeleteAll.addActionListener(e -> {
+            if (JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn XÓA TOÀN BỘ dữ liệu điểm cộng?", "Xác nhận xóa", 
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                diemCongService.deleteAll();
+                loadData();
+            }
         });
         txtSearch.addActionListener(e -> {
             currentPage = 0;
@@ -119,7 +138,7 @@ public class DiemUuTienPanel extends JPanel {
         });
     }
 
-    private void loadData() {
+    public void loadData() {
         String keyword = txtSearch.getText().trim();
         Page<DiemCong> pageData = diemCongService.layDanhSachPhanTrang(currentPage, pageSize, keyword);
         totalPages = pageData.getTotalPages() == 0 ? 1 : pageData.getTotalPages();
@@ -129,9 +148,26 @@ public class DiemUuTienPanel extends JPanel {
         model.setRowCount(0);
 
         for (DiemCong d : pageData.getContent()) {
+            String hoTen = d.getThiSinh() != null ? d.getThiSinh().getHoTen() : "N/A";
+            
+            // Tìm thông tin nguyện vọng để lấy thứ tự (nv_tt)
+            String nvDisplay = d.getManganh();
+            java.util.Optional<com.sgu.tuyensinh.entity.NguyenVong> nvOpt = nguyenVongRepository.findByNnCccdAndNvManganh(d.getTsCccd(), d.getManganh());
+            if (nvOpt.isPresent()) {
+                nvDisplay = "NV " + nvOpt.get().getNvTt() + " - " + d.getManganh();
+            }
+
             tablePanel.addRow(new Object[] {
-                    d.getIddiemcong(), d.getTsCccd(), d.getManganh(), d.getMatohop(),
-                    d.getPhuongthuc(), d.getDiemCC(), d.getDiemUtxt(), d.getGhichu()
+                    d.getIddiemcong(), 
+                    d.getTsCccd(), 
+                    hoTen,
+                    nvDisplay, 
+                    d.getMatohop(),
+                    d.getPhuongthuc(), 
+                    d.getDiemCC() != null ? d.getDiemCC() : 0.0,
+                    // d.getDiemHSG() != null ? d.getDiemHSG() : 0.0, // Đã bỏ cột HSG
+                    d.getDiemUtxt() != null ? d.getDiemUtxt() : 0.0,
+                    d.getDiemTong() != null ? d.getDiemTong() : 0.0
             });
         }
     }

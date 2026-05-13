@@ -80,15 +80,25 @@ public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback
                 }
 
                 dc.setTsCccd(cccd);
-                dc.setManganh(ExcelReaderUtil.getSafeString(row.getCell(2)));
-                dc.setMatohop(ExcelReaderUtil.getSafeString(row.getCell(3)));
-                dc.setPhuongthuc(ExcelReaderUtil.getSafeString(row.getCell(4)));
+                String maNganh = ExcelReaderUtil.getSafeString(row.getCell(3));
+                String maToHop = ExcelReaderUtil.getSafeString(row.getCell(4));
+                String pt = ExcelReaderUtil.getSafeString(row.getCell(5));
 
-                dc.setDiemCC(ExcelReaderUtil.getSafeDouble(row.getCell(5)));
-                dc.setDiemUtxt(ExcelReaderUtil.getSafeDouble(row.getCell(6)));
-                dc.setDiemTong(ExcelReaderUtil.getSafeDouble(row.getCell(7)));
+                // Skip if PT is NGOAINGU or similar
+                if (pt != null && (pt.equalsIgnoreCase("NGOAINGU") || pt.equalsIgnoreCase("NGOAI NGU"))) {
+                    continue;
+                }
 
-                dc.setGhichu(ExcelReaderUtil.getSafeString(row.getCell(8)));
+                dc.setManganh(maNganh);
+                dc.setMatohop(maToHop);
+                dc.setPhuongthuc(pt);
+
+                dc.setDiemCC(ExcelReaderUtil.getSafeDouble(row.getCell(6)));
+                // dc.setDiemHSG(ExcelReaderUtil.getSafeDouble(row.getCell(7))); // Bỏ qua HSG vì dữ liệu mặc định là HSG
+                dc.setDiemUtxt(ExcelReaderUtil.getSafeDouble(row.getCell(7)));
+                dc.setDiemTong(ExcelReaderUtil.getSafeDouble(row.getCell(8)));
+
+                dc.setGhichu(ExcelReaderUtil.getSafeString(row.getCell(9)));
 
                 // generate key chống trùng
                 dc.setDcKeys("IMPORT_" + System.currentTimeMillis() + "_" + i);
@@ -146,6 +156,7 @@ public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback
         existing.setMatohop(diemCongMoi.getMatohop());
         existing.setPhuongthuc(diemCongMoi.getPhuongthuc());
         existing.setDiemCC(diemCongMoi.getDiemCC());
+        existing.setDiemHSG(diemCongMoi.getDiemHSG());
         existing.setDiemUtxt(diemCongMoi.getDiemUtxt());
         existing.setDiemTong(diemCongMoi.getDiemTong());
         existing.setGhichu(diemCongMoi.getGhichu());
@@ -174,5 +185,10 @@ public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback
             return diemCongRepository.findByTsCccdContainingIgnoreCase(keyword, pageable);
         }
         return diemCongRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public void deleteAll() {
+        diemCongRepository.deleteAll();
     }
 }

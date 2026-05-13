@@ -10,5 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface NganhToHopRepository extends JpaRepository<NganhToHop, Integer> {
     boolean existsByMaNganh(String maNganh);
     boolean existsByMaToHop(String maToHop);
+    java.util.List<com.sgu.tuyensinh.entity.NganhToHop> findByMaNganh(String maNganh);
 }
 

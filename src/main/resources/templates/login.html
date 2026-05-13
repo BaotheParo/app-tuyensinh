@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu kết quả xét tuyển – SGU 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        .login-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+            max-width: 440px;
+            width: 100%;
+            padding: 44px 36px 36px;
+        }
+        .login-card .logo-area {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .login-card .logo-area i {
+            font-size: 3rem;
+            color: #2c5364;
+        }
+        .login-card h4 {
+            font-weight: 700;
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .login-card .subtitle {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.92rem;
+            margin-bottom: 28px;
+        }
+        .form-floating > .form-control:focus {
+            border-color: #2c5364;
+            box-shadow: 0 0 0 0.2rem rgba(44,83,100,0.2);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(30,60,114,0.4);
+        }
+        .hint-text {
+            font-size: 0.82rem;
+            color: #888;
+            text-align: center;
+            margin-top: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-area">
+        <i class="bi bi-mortarboard-fill"></i>
+    </div>
+    <h4>Tra Cứu Kết Quả Xét Tuyển</h4>
+    <p class="subtitle">Đại học Sài Gòn – Năm 2026</p>
+
+    <!-- Thông báo lỗi (flash attribute) -->
+    <div th:if="${error}" class="alert alert-danger d-flex align-items-center py-2 px-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${error}">Lỗi</span>
+    </div>
+
+    <form method="post" th:action="@{/tra-cuu}" autocomplete="off">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="cccd" name="cccd"
+                   placeholder="Số CCCD" required maxlength="20"
+                   th:value="${cccd}" pattern="[0-9]{9,12}"
+                   title="CCCD gồm 9-12 chữ số">
+            <label for="cccd"><i class="bi bi-person-vcard me-1"></i> Số CCCD</label>
+        </div>
+
+        <div class="form-floating mb-4">
+            <input type="password" class="form-control" id="matKhau" name="matKhau"
+                   placeholder="Mật khẩu" required maxlength="8"
+                   pattern="[0-9]{8}" title="Nhập 8 chữ số ngày sinh (DDMMYYYY)">
+            <label for="matKhau"><i class="bi bi-key-fill me-1"></i> Mật khẩu</label>
+        </div>
+
+        <button type="submit" class="btn btn-login btn-primary w-100">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Tra cứu
+        </button>
+    </form>
+
+    <p class="hint-text">
+        <i class="bi bi-info-circle"></i>
+        Mật khẩu là <strong>8 chữ số ngày sinh</strong> của bạn.<br>
+        Ví dụ: Sinh ngày 02/07/2004 → Mật khẩu: <code>02072004</code>
+    </p>
+</div>
+
+</body>
+</html>

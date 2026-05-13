@@ -30,7 +30,7 @@ public class ToHop {
     /**
      * Mã tổ hợp môn (ví dụ: A00, A01...).
      */
-    @Column(name = "matohop", nullable = false, length = 45)
+    @Column(name = "matohop", nullable = false, length = 45, unique = true)
     private String maToHop;
 
     /**

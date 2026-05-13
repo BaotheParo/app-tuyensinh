@@ -28,14 +28,16 @@ public class MainFrame extends JFrame {
     private final BaoCaoPanel baoCaoPanel;
     private final QuanLyUserPanel quanlyUserPanel;
     private final DiemThiPanel diemThiPanel;
-    private final DashboardPanel      dashboardPanel;
-            private final XetTuyenPanel xetTuyenPanel;
+    private final DashboardPanel dashboardPanel;
+    private final XetTuyenPanel xetTuyenPanel;
+    private final DiemXetTuyenPanel diemXetTuyenPanel;
     /**
      * Creates new form Main
      */
     public MainFrame(TrangChuPanel trangChuPanel, NganhPanel nganhPanel, ThiSinhPanel thiSinhPanel, ToHopPanel toHopPanel,
                      BangQuyDoiPanel bangQuyDoiPanel, DiemUuTienPanel diemUuTienPanel, NguyenVongPanel nguyenVongPanel,
-                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, XetTuyenPanel xetTuyenPanel) {
+                     BaoCaoPanel baoCaoPanel, QuanLyUserPanel quanlyUserPanel, DiemThiPanel diemThiPanel, DashboardPanel dashboardPanel, 
+                     XetTuyenPanel xetTuyenPanel, DiemXetTuyenPanel diemXetTuyenPanel) {
         this.trangChuPanel = trangChuPanel;
         this.nganhPanel = nganhPanel;
         this.thiSinhPanel = thiSinhPanel;
@@ -47,7 +49,8 @@ public class MainFrame extends JFrame {
         this.quanlyUserPanel = quanlyUserPanel;
         this.diemThiPanel = diemThiPanel;
         this.dashboardPanel = dashboardPanel;
-                        this.xetTuyenPanel = xetTuyenPanel;
+        this.xetTuyenPanel = xetTuyenPanel;
+        this.diemXetTuyenPanel = diemXetTuyenPanel;
 
         // Setup Frame Attributes
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -96,6 +99,7 @@ public class MainFrame extends JFrame {
         btnDiemUuTien = new javax.swing.JToggleButton();
         btnNguyenVong = new javax.swing.JToggleButton();
         btnXetTuyen = new javax.swing.JToggleButton();
+        btnDiemXetTuyen = new javax.swing.JToggleButton();
         btnDiemThi = new javax.swing.JToggleButton();
         btnBaoCao = new javax.swing.JToggleButton();
         btnUser = new javax.swing.JToggleButton();
@@ -235,6 +239,16 @@ public class MainFrame extends JFrame {
             }
         });
 
+        buttonGroup1.add(btnDiemXetTuyen);
+        btnDiemXetTuyen.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnDiemXetTuyen.setText("Điểm Xét Tuyển");
+        btnDiemXetTuyen.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnDiemXetTuyen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDiemXetTuyenActionPerformed(evt);
+            }
+        });
+
         buttonGroup1.add(btnDiemThi);
         btnDiemThi.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         btnDiemThi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -281,6 +295,8 @@ public class MainFrame extends JFrame {
                                 javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnDiemThi, javax.swing.GroupLayout.DEFAULT_SIZE,
                                 javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnDiemXetTuyen, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnThiSinh, javax.swing.GroupLayout.DEFAULT_SIZE,
                                 javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnToHopMon, javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -312,6 +328,8 @@ public class MainFrame extends JFrame {
                                 .addComponent(btnNguyenVong)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnXetTuyen)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnDiemXetTuyen)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnBaoCao)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -376,30 +394,42 @@ public class MainFrame extends JFrame {
 
     private void btnXetTuyenActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXetTuyenActionPerformed
         addTaskBar(mainContent2, xetTuyenPanel);
+        xetTuyenPanel.loadSummary();
     }// GEN-LAST:event_btnXetTuyenActionPerformed
+
+    private void btnDiemXetTuyenActionPerformed(java.awt.event.ActionEvent evt) {
+        addTaskBar(mainContent2, diemXetTuyenPanel);
+        diemXetTuyenPanel.loadData();
+    }
 
     private void btnBangQuyDoiActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, bangQuyDoiPanel);
+        bangQuyDoiPanel.loadData();
     }
 
     private void btnToHopMonActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, toHopPanel);
+        toHopPanel.loadData();
     }
 
     private void btnDiemUuTienActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, diemUuTienPanel);
+        diemUuTienPanel.loadData();
     }
 
     private void btnNganhActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, nganhPanel);
+        nganhPanel.loadData();
     }
 
     private void btnThiSinhActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, thiSinhPanel);
+        thiSinhPanel.loadData();
     }
 
     private void btnNguyenVongActionPerformed(java.awt.event.ActionEvent evt) {
         addTaskBar(mainContent2, nguyenVongPanel);
+        nguyenVongPanel.loadData();
     }
 
     private void btnTrangChuActionPerformed(java.awt.event.ActionEvent evt) {
@@ -422,7 +452,8 @@ public class MainFrame extends JFrame {
         btnNguyenVong.setText("<html>&nbsp;&nbsp;&nbsp;Nguyện Vọng</html>");
         btnThiSinh.setText("<html>&nbsp;&nbsp;&nbsp;Thí Sinh</html>");
         btnNganh.setText("<html>&nbsp;&nbsp;&nbsp;Ngành</html>");
-        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển</html>");
+        btnXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Xét Tuyển Engine</html>");
+        btnDiemXetTuyen.setText("<html>&nbsp;&nbsp;&nbsp;Điểm Xét Tuyển</html>");
         btnToHopMon.setText("<html>&nbsp;&nbsp;&nbsp;Tổ Hợp Môn</html>");
         btnBaoCao.setText("<html>&nbsp;&nbsp;&nbsp;Báo Cáo</html>");
         btnUser.setText("<html>&nbsp;&nbsp;&nbsp;Quản lý User</html>");
@@ -438,6 +469,7 @@ public class MainFrame extends JFrame {
             btnDiemUuTien.setIcon(new FlatSVGIcon("icon/area.svg"));
             btnNguyenVong.setIcon(new FlatSVGIcon("icon/staff.svg"));
             btnXetTuyen.setIcon(new FlatSVGIcon("icon/ghinhangopy.svg"));
+            btnDiemXetTuyen.setIcon(new FlatSVGIcon("icon/ghinhangopy.svg"));
             btnDiemThi.setIcon(new FlatSVGIcon("icon/nhomquyen.svg"));
             btnBaoCao.setIcon(new FlatSVGIcon("icon/statistical.svg"));
             btnUser.setIcon(new FlatSVGIcon("icon/statistical.svg"));
@@ -447,7 +479,7 @@ public class MainFrame extends JFrame {
         }
 
         for (AbstractButton btn : java.util.Arrays.asList(btnTrangChu, btnNganh, btnToHopMon, btnThiSinh,
-                btnDiemThi, btnBangQuyDoi, btnDiemUuTien, btnNguyenVong, btnXetTuyen, btnBaoCao, btnUser, btnDangXuat)) {
+                btnDiemThi, btnBangQuyDoi, btnDiemUuTien, btnNguyenVong, btnXetTuyen, btnDiemXetTuyen, btnBaoCao, btnUser, btnDangXuat)) {
             btn.setHorizontalAlignment(SwingConstants.LEFT);
         }
     }
@@ -506,6 +538,7 @@ public class MainFrame extends JFrame {
     private javax.swing.JToggleButton btnToHopMon;
     private javax.swing.JToggleButton btnTrangChu;
     private javax.swing.JToggleButton btnXetTuyen;
+    private javax.swing.JToggleButton btnDiemXetTuyen;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel info;
     private javax.swing.JPanel jPanel1;

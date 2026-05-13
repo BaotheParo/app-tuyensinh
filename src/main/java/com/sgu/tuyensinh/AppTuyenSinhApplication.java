@@ -16,7 +16,7 @@ public class AppTuyenSinhApplication {
     public static void main(String[] args) {
         new org.springframework.boot.builder.SpringApplicationBuilder(AppTuyenSinhApplication.class)
                 .headless(false)
-                .web(WebApplicationType.NONE)
+                .web(org.springframework.boot.WebApplicationType.SERVLET)
                 .run(args);
     }
 

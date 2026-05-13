@@ -22,6 +22,7 @@ public class ImportResultDTO {
     }
 
     public void incrementSuccess() { this.successCount++; }
+    public void addSuccessCount(int count) { this.successCount += count; }
     public void incrementSkip()    { this.skipCount++;    }
 
     // Thêm lỗi có đầy đủ thông tin

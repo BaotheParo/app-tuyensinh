@@ -654,6 +654,51 @@ public class ThiSinhDashboard extends JPanel {
         }
     }
 
+    // ── Static Mapper for team integration ──────────────────────
+    public static CandidateData fromEntity(com.sgu.tuyensinh.entity.ThiSinh ts, com.sgu.tuyensinh.entity.DiemThi dt) {
+        CandidateData d = new CandidateData();
+        d.cccd = ts.getId();
+        d.hoTen = ts.getHoTen();
+        d.ngaySinh = ts.getNgaySinh() != null ? ts.getNgaySinh().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "—";
+        d.gioiTinh = ts.getGioiTinh();
+        d.doiTuongUt = ts.getDoiTuongUt();
+        d.khuVucUt = ts.getKhuVucUt();
+        d.maTinh = ts.getMaTinh();
+        d.namHoc = 2026;
+
+        if (dt != null) {
+            d.toan = dt.getToan();
+            d.van = dt.getVan();
+            d.ly = dt.getLy();
+            d.hoa = dt.getHoa();
+            d.sinh = dt.getSinh();
+            d.su = dt.getSu();
+            d.dia = dt.getDia();
+            d.anh = dt.getAnh();
+            d.anhCC = dt.getAnh(); // Default no CC
+            d.nk1 = dt.getNk1();
+            d.nk2 = dt.getNk2();
+            d.nk3 = dt.getNk3();
+            d.nk4 = dt.getNk4();
+            d.nk5 = dt.getNk5();
+            d.nk6 = dt.getNk6();
+            d.nk7 = dt.getNk7();
+            d.nk8 = dt.getNk8();
+
+            // Giả định nk2 là ĐGNL, nk3 là VSAT nếu có điểm lớn hơn 10
+            if (d.getNk2() > 10) {
+                d.dDGNL = d.getNk2();
+                d.dDGNLConverted = d.dDGNL / 40.0; // Sample convert
+            }
+            if (d.getNk3() > 10) {
+                d.dVSAT = d.getNk3();
+                d.dVSATConverted = d.dVSAT / 15.0; // Sample convert
+            }
+        }
+        
+        return d;
+    }
+
     // ═════════════════════════════════════════════════════════════
     //  Sample data — xóa khi tích hợp Service thật (tuần 4)
     //

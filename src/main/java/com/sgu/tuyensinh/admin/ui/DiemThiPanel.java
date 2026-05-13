@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class DiemThiPanel extends JPanel {
 
     private final DiemThiService diemThiService;
+    private final com.sgu.tuyensinh.service.ThiSinhImportService thiSinhImportService;
 
     private JTextField txtSearch;
     private JButton btnSearch;
@@ -37,10 +38,11 @@ public class DiemThiPanel extends JPanel {
     private int totalPages = 1;
 
     @Autowired
-    public DiemThiPanel(DiemThiService  diemThiService) {
+    public DiemThiPanel(DiemThiService diemThiService, com.sgu.tuyensinh.service.ThiSinhImportService thiSinhImportService) {
         this.diemThiService = diemThiService;
+        this.thiSinhImportService = thiSinhImportService;
         initUI();
-        loadData();
+        // loadData(); // Defer loading
     }
 
     private void initUI() {
@@ -64,6 +66,7 @@ public class DiemThiPanel extends JPanel {
         // --- CENTER PANEL: Table ---
         String[] columns = { "CCCD", "Họ Tên", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "V-SAT", "ĐGNL" };
         tablePanel = new BaseTablePanel(columns);
+        tablePanel.getTable().setRowHeight(30);
         add(tablePanel, BorderLayout.CENTER);
 
         // --- BOTTOM PANEL: Pagination & Actions ---
@@ -151,7 +154,7 @@ public class DiemThiPanel extends JPanel {
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             ImportPanel importPanel = new ImportPanel(
-                    null /* diemThiService.importFromExcel not supported */);
+                    (inputStream, callback) -> thiSinhImportService.importFromExcel(inputStream, callback));
 
             dialog.add(importPanel);
             dialog.pack();
@@ -344,6 +347,11 @@ public class DiemThiPanel extends JPanel {
         if (text == null || text.trim().isEmpty() || text.trim().equalsIgnoreCase("null")) {
             return null;
         }
-        return Double.parseDouble(text.trim().replace(",", "."));
+        double v = Double.parseDouble(text.trim().replace(",", "."));
+        if (v < 0 || v > 10) {
+            throw new NumberFormatException(
+                "Điểm \"" + text.trim() + "\" nằm ngoài phạm vi cho phép [0.00 – 10.00].");
+        }
+        return v;
     }
 }

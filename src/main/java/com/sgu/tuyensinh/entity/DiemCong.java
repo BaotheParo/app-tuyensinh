@@ -70,6 +70,12 @@ public class DiemCong {
     private Double diemUtxt;
 
     /**
+     * Điểm cộng học sinh giỏi (cột DB: diemHSG).
+     */
+    @Column(name = "diemHSG")
+    private Double diemHSG;
+
+    /**
      * Tổng điểm cộng sau khi xử lý theo logic trong PRD (cột DB: diemTong).
      */
     @Column(name = "diemTong")
@@ -103,7 +109,7 @@ public class DiemCong {
      *   {@code insertable=false, updatable=false} để tránh Hibernate ghi 2 nơi.
      */
     @lombok.ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "ts_cccd", referencedColumnName = "cccd", insertable = false, updatable = false)
     private ThiSinh thiSinh;
 }

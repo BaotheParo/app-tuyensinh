@@ -98,11 +98,11 @@ public class ScoringService {
         if (rawScore == null)
             return 0.0;
         if ("VSAT".equalsIgnoreCase(type)) {
-            // Tạm thời return (rawScore / 150) * 10
-            return (rawScore / 150.0) * 10.0;
+            // VSAT thang 450 -> Thang 10: raw / 45
+            return (rawScore / 45.0);
         } else if ("DGNL".equalsIgnoreCase(type)) {
-            // Tạm thời return (rawScore / 1200) * 10
-            return (rawScore / 1200.0) * 10.0;
+            // ĐGNL thang 1200 -> Thang 10: raw / 120
+            return (rawScore / 120.0);
         }
         return rawScore;
     }

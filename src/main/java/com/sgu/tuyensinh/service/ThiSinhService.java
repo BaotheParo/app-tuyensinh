@@ -204,4 +204,20 @@ public class ThiSinhService {
         }
         thiSinhRepository.deleteById(idClean);
     }
+
+    public java.util.Map<String, Object> getThongKeThiSinh() {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("total", thiSinhRepository.countTotal());
+        stats.put("byDoiTuong", thiSinhRepository.countByDoiTuong());
+        stats.put("byKhuVuc", thiSinhRepository.countByKhuVuc());
+        return stats;
+    }
+
+    public com.sgu.tuyensinh.entity.ThiSinh findByCccd(String cccd) {
+        return thiSinhRepository.findById(cccd.trim()).orElse(null);
+    }
+
+    public com.sgu.tuyensinh.entity.DiemThi findDiemByCccd(String cccd) {
+        return diemThiRepository.findByCccd(cccd.trim()).orElse(null);
+    }
 }
