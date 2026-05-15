@@ -50,37 +50,38 @@ public class ProductionDataImportRunner implements CommandLineRunner {
         log.info("🚀 BẮT ĐẦU IMPORT DỮ LIỆU THỰC TẾ TỪ EXCEL...");
 
         try {
+            // 0. Seed Bảng Quy Đổi (Nếu trống)
+            seedBangQuyDoi();
+
             // 1. Chỉ tiêu tuyển sinh: Chi tieu 2025.xlsx
-            //    Cấu trúc: Row1=title (bỏ), Row2=header (bỏ), Row3+=dữ liệu
-            //              Col0=TT, Col1=MÃ CTĐT, Col2=TÊN CTĐT, Col3=Chỉ tiêu chốt
-            //    → Upsert bảng xt_nganh với trường chi_tieu (Tạo ngành trước)
             importFile("Chi tieu 2025.xlsx", chiTieuImportService);
 
             // 2. Tổ hợp môn: tohopmon.xlsx
-            //    Cấu trúc: Col0=STT, Col1=MANGANH, Col2=TEN_NGANHCHUAN,
-            //              Col3=MA_TO_HOP dạng "B03(TO-3,VA-3,SI-1)", Col4=tb_keys, Col5=TEN_TO_HOP
-            //    → Import tổ hợp và cập nhật toHopGoc cho ngành đã tạo ở trên
             importFile("tohopmon.xlsx", toHopImportService);
 
             // 3. Ngưỡng đầu vào: Nguong dau vao 2025.xlsx
-            //    Cấu trúc: Row1=header (bỏ), Row2+=dữ liệu
-            //              Col0=STT, Col1=Mã xét tuyển, Col2=Tên ngành, Col3=Ngưỡng đầu vào
-            //    → Update trường diem_san trong bảng xt_nganh
             importFile("Nguong dau vao 2025.xlsx", nguongDauVaoImportService);
 
             // 4. Quy đổi Tiếng Anh (Cá nhân thí sinh)
             importFile("Ds quy doi tieng Anh.xlsx", diemQuyDoiNgoaiNguImportService);
 
-            // 5. Danh sách thí sinh & điểm thi (đã giới hạn 50 bản ghi trong service)
+            // 5. Danh sách thí sinh & điểm thi
             importFile("Ds thi sinh.xlsx", thiSinhImportService);
 
-            // 6. Nguyện vọng xét tuyển (đã giới hạn 200 bản ghi trong service)
+            // 6. Nguyện vọng xét tuyển
             importFile("Nguyenvong.xlsx", nguyenVongImportService);
 
             log.info("✅ HOÀN TẤT IMPORT TOÀN BỘ DỮ LIỆU THỰC TẾ.");
 
         } catch (Exception e) {
             log.error("❌ LỖI TRONG QUÁ TRÌNH IMPORT TỔNG THỂ: {}", e.getMessage());
+        }
+    }
+
+    private void seedBangQuyDoi() {
+        if (bangQuyDoiImportService.isEmpty()) {
+            log.info("--- Đang nạp dữ liệu mẫu cho Bảng Quy Đổi ---");
+            bangQuyDoiImportService.saveSampleData();
         }
     }
 

@@ -79,26 +79,43 @@ public ImportResultDTO importFromExcel(InputStream inputStream, ProgressCallback
                     throw new EntityNotFoundException("Không tồn tại CCCD: " + cccd);
                 }
 
-                dc.setTsCccd(cccd);
-                String maNganh = ExcelReaderUtil.getSafeString(row.getCell(3));
-                String maToHop = ExcelReaderUtil.getSafeString(row.getCell(4));
-                String pt = ExcelReaderUtil.getSafeString(row.getCell(5));
+                String headerCol = ExcelReaderUtil.getSafeString(sheet.getRow(0).getCell(3));
+                boolean isUuTienFile = headerCol != null && headerCol.equalsIgnoreCase("ĐT");
 
-                // Skip if PT is NGOAINGU or similar
-                if (pt != null && (pt.equalsIgnoreCase("NGOAINGU") || pt.equalsIgnoreCase("NGOAI NGU"))) {
-                    continue;
+                if (isUuTienFile) {
+                    // Cấu trúc Uu tien xet tuyen.xlsx
+                    dc.setTsCccd(cccd);
+                    String maMon = ExcelReaderUtil.getSafeString(row.getCell(4));
+                    String loaiGiai = ExcelReaderUtil.getSafeString(row.getCell(5));
+                    dc.setPhuongthuc("HSG");
+                    dc.setGhichu("Môn: " + maMon + " - Giải: " + loaiGiai);
+                    
+                    Double diemCoMon = ExcelReaderUtil.getSafeDouble(row.getCell(6));
+                    Double diemKhongMon = ExcelReaderUtil.getSafeDouble(row.getCell(7));
+                    
+                    // Do hệ thống đang gộp điểm, tạm thời lưu điểm ưu tiên cao nhất vào diemUtxt
+                    dc.setDiemUtxt(diemCoMon != null ? diemCoMon : diemKhongMon);
+                    dc.setDiemHSG(diemCoMon);
+                } else {
+                    // Cấu trúc cũ
+                    dc.setTsCccd(cccd);
+                    String maNganh = ExcelReaderUtil.getSafeString(row.getCell(3));
+                    String maToHop = ExcelReaderUtil.getSafeString(row.getCell(4));
+                    String pt = ExcelReaderUtil.getSafeString(row.getCell(5));
+
+                    if (pt != null && (pt.equalsIgnoreCase("NGOAINGU") || pt.equalsIgnoreCase("NGOAI NGU"))) {
+                        continue;
+                    }
+
+                    dc.setManganh(maNganh);
+                    dc.setMatohop(maToHop);
+                    dc.setPhuongthuc(pt);
+
+                    dc.setDiemCC(ExcelReaderUtil.getSafeDouble(row.getCell(6)));
+                    dc.setDiemUtxt(ExcelReaderUtil.getSafeDouble(row.getCell(7)));
+                    dc.setDiemTong(ExcelReaderUtil.getSafeDouble(row.getCell(8)));
+                    dc.setGhichu(ExcelReaderUtil.getSafeString(row.getCell(9)));
                 }
-
-                dc.setManganh(maNganh);
-                dc.setMatohop(maToHop);
-                dc.setPhuongthuc(pt);
-
-                dc.setDiemCC(ExcelReaderUtil.getSafeDouble(row.getCell(6)));
-                // dc.setDiemHSG(ExcelReaderUtil.getSafeDouble(row.getCell(7))); // Bỏ qua HSG vì dữ liệu mặc định là HSG
-                dc.setDiemUtxt(ExcelReaderUtil.getSafeDouble(row.getCell(7)));
-                dc.setDiemTong(ExcelReaderUtil.getSafeDouble(row.getCell(8)));
-
-                dc.setGhichu(ExcelReaderUtil.getSafeString(row.getCell(9)));
 
                 // generate key chống trùng
                 dc.setDcKeys("IMPORT_" + System.currentTimeMillis() + "_" + i);

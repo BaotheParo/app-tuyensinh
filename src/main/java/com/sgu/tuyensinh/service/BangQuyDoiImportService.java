@@ -199,20 +199,54 @@ public class BangQuyDoiImportService implements IImportService {
         return entity;
     }
 
+    public Page<BangQuyDoi> layDanhSachPhanTrang(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
 
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return bangQuyDoiRepository
+                    .findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(
+                            keyword, keyword, pageable);
+        }
 
-public Page<BangQuyDoi> layDanhSachPhanTrang(int page, int size, String keyword) {
-    Pageable pageable = PageRequest.of(page, size);
-
-    if (keyword != null && !keyword.trim().isEmpty()) {
-        return bangQuyDoiRepository
-            .findByPhuongThucContainingIgnoreCaseOrMonContainingIgnoreCase(
-                keyword, keyword, pageable);
+        return bangQuyDoiRepository.findAll(pageable);
     }
 
-    return bangQuyDoiRepository.findAll(pageable);
-}
+    public boolean isEmpty() {
+        return bangQuyDoiRepository.count() == 0;
+    }
 
+    @Transactional
+    public void saveSampleData() {
+        List<BangQuyDoi> samples = new ArrayList<>();
 
-    
+        // IELTS conversion
+        samples.add(createSample("CERT", null, "IELTS", 5.0, null, 8.0, null, "I50", "Quy đổi IELTS 5.0 -> 8.0"));
+        samples.add(createSample("CERT", null, "IELTS", 5.5, null, 8.5, null, "I55", "Quy đổi IELTS 5.5 -> 8.5"));
+        samples.add(createSample("CERT", null, "IELTS", 6.0, null, 9.0, null, "I60", "Quy đổi IELTS 6.0 -> 9.0"));
+        samples.add(createSample("CERT", null, "IELTS", 6.5, null, 9.5, null, "I65", "Quy đổi IELTS 6.5 -> 9.5"));
+        samples.add(createSample("CERT", null, "IELTS", 7.0, null, 10.0, null, "I70", "Quy đổi IELTS 7.0 -> 10.0"));
+
+        // V-SAT conversion (Sample steps)
+        samples.add(createSample("VSAT", null, "TOAN", 300.0, null, 7.0, null, "V300", "V-SAT Toán 300 -> 7.0"));
+        samples.add(createSample("VSAT", null, "TOAN", 350.0, null, 8.0, null, "V350", "V-SAT Toán 350 -> 8.0"));
+        samples.add(createSample("VSAT", null, "TOAN", 400.0, null, 9.0, null, "V400", "V-SAT Toán 400 -> 9.0"));
+        samples.add(createSample("VSAT", null, "TOAN", 450.0, null, 10.0, null, "V450", "V-SAT Toán 450 -> 10.0"));
+
+        bangQuyDoiRepository.saveAll(samples);
+        log.info("Đã nạp {} dòng dữ liệu quy đổi mẫu.", samples.size());
+    }
+
+    private BangQuyDoi createSample(String pt, String th, String mon, Double a, Double b, Double c, Double d, String code, String note) {
+        BangQuyDoi entity = new BangQuyDoi();
+        entity.setPhuongThuc(pt);
+        entity.setToHop(th);
+        entity.setMon(mon);
+        entity.setDiemGocA(a);
+        entity.setDiemGocB(b);
+        entity.setDiemQuyDoiC(c);
+        entity.setDiemQuyDoiD(d);
+        entity.setMaQuyDoi(code);
+        entity.setPhanVi(note);
+        return entity;
+    }
 }

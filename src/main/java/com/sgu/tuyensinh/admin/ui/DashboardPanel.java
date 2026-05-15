@@ -434,7 +434,7 @@ public class DashboardPanel extends JPanel {
     private ChartPanel buildHistogram(double[] scores, String monName, Color barColor) {
         HistogramDataset dataset = new HistogramDataset();
         if (scores != null && scores.length > 0) {
-            dataset.addSeries(monName, scores, 10, 0.0, 10.0);
+            dataset.addSeries(monName, scores, 20, 0.0, 10.0);
         }
 
         JFreeChart chart = ChartFactory.createHistogram(

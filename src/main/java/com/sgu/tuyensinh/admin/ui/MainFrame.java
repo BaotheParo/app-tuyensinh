@@ -437,8 +437,8 @@ public class MainFrame extends JFrame {
     }
 
     private void btnBaoCaoActionPerformed(java.awt.event.ActionEvent evt) {
-        addTaskBar(mainContent2, dashboardPanel);
-        dashboardPanel.loadData();
+        addTaskBar(mainContent2, baoCaoPanel);
+        baoCaoPanel.loadData();
     }
 
     private void btnUserActionPerformed(java.awt.event.ActionEvent evt) {

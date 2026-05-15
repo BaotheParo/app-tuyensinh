@@ -173,9 +173,9 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build();
 
                 // Tao 3 nguyen vong cho moi thi sinh de test logic tie-break
-                nvList.add(new NguyenVong(null, cccd, "7480201", 1, null, cccd + "_1", "THPT", "A01", null, null, null, null, null));
-                nvList.add(new NguyenVong(null, cccd, "7340101", 2, null, cccd + "_2", "THPT", "D01", null, null, null, null, null));
-                nvList.add(new NguyenVong(null, cccd, "7220201", 3, null, cccd + "_3", "THPT", "D01", null, null, null, null, null));
+                nvList.add(new NguyenVong(null, cccd, "7480201", 1, null, false, cccd + "_1", "THPT", "A01", null, null, null, null, null));
+                nvList.add(new NguyenVong(null, cccd, "7340101", 2, null, false, cccd + "_2", "THPT", "D01", null, null, null, null, null));
+                nvList.add(new NguyenVong(null, cccd, "7220201", 3, null, false, cccd + "_3", "THPT", "D01", null, null, null, null, null));
 
                 thiSinhList.add(ts);
                 diemThiList.add(dt);

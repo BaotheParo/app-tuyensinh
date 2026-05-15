@@ -30,6 +30,7 @@ public class NguyenVongServiceImpl implements IImportService {
 
     private final NguyenVongRepository repository;
     private final com.sgu.tuyensinh.repository.ThiSinhRepository thiSinhRepository;
+    private final com.sgu.tuyensinh.repository.NganhRepository nganhRepository;
 
     // ── Import ───────────────────────────────────────────────
     @Override
@@ -99,6 +100,8 @@ public class NguyenVongServiceImpl implements IImportService {
                         dto.setCccd(cccd);
                         dto.setThuTu(ExcelReaderUtil.getSafeInteger(row.getCell(2)));
                         dto.setMaNganh(ExcelReaderUtil.getSafeString(row.getCell(5)));
+                        String tuyenThangCol = ExcelReaderUtil.getSafeString(row.getCell(7));
+                        dto.setIsTuyenThang(tuyenThangCol != null && !tuyenThangCol.trim().isEmpty());
                     } else {
                         // Cấu trúc mặc định (Phòng hờ nếu file khác)
                         dto.setCccd(cccd);
@@ -181,6 +184,7 @@ public class NguyenVongServiceImpl implements IImportService {
         nv.setDiemXetTuyen(dto.getDiemXetTuyen());
         nv.setNvKetQua(null);
         nv.setNvKeys(dto.getCccd() + "_" + dto.getMaNganh() + "_" + dto.getThuTu());
+        nv.setIsTuyenThang(dto.getIsTuyenThang() != null ? dto.getIsTuyenThang() : false);
         return nv;
     }
 
@@ -213,5 +217,15 @@ public class NguyenVongServiceImpl implements IImportService {
     @Transactional
     public void deleteAll() {
         repository.deleteAll();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Double> getMapDiemSan() {
+        return nganhRepository.findAll().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                    com.sgu.tuyensinh.entity.Nganh::getMaNganh,
+                    n -> n.getDiemSan() != null ? n.getDiemSan().doubleValue() : 0.0,
+                    (existing, replacement) -> existing
+                ));
     }
 }

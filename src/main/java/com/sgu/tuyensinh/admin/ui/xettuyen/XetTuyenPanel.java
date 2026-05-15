@@ -16,70 +16,143 @@ public class XetTuyenPanel extends JPanel {
     private final NguyenVongRepository nguyenVongRepository;
 
     private JButton btnRun;
+    private JButton btnReset;
     private JLabel lblTrungTuyen;
     private JLabel lblTruot;
     private JLabel lblDangXet;
     private JLabel lblStatus;
+    private JProgressBar progressBar;
 
     public XetTuyenPanel(AdmissionService admissionService, NguyenVongRepository nguyenVongRepository) {
         this.admissionService = admissionService;
         this.nguyenVongRepository = nguyenVongRepository;
         initComponents();
-        // loadSummary(); // Defer loading
+        loadSummary();
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(20, 20));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(new Color(248, 249, 250));
 
-        // Header
-        JLabel lblTitle = new JLabel("XÉT TUYỂN & LỌC ẢO", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
-        add(lblTitle, BorderLayout.NORTH);
+        // --- HEADER SECTION ---
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setBackground(new Color(41, 128, 185));
+        pnlHeader.setPreferredSize(new Dimension(0, 100));
+        pnlHeader.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
 
-        // Center Panel (Button + Stats)
-        JPanel centerPanel = new JPanel(new GridBagLayout());
+        JLabel lblTitle = new JLabel("XÉT TUYỂN & LỌC ẢO TOÀN CỤC");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setForeground(Color.WHITE);
+        pnlHeader.add(lblTitle, BorderLayout.WEST);
+
+        JLabel lblSubTitle = new JLabel("Hệ thống tự động tính điểm và phân bổ chỉ tiêu");
+        lblSubTitle.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        lblSubTitle.setForeground(new Color(236, 240, 241));
+        pnlHeader.add(lblSubTitle, BorderLayout.SOUTH);
+
+        add(pnlHeader, BorderLayout.NORTH);
+
+        // --- CONTENT SECTION ---
+        JPanel pnlContent = new JPanel(new GridBagLayout());
+        pnlContent.setOpaque(false);
+        pnlContent.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
 
-        btnRun = new JButton("\u25B6 Chạy Thuật Toán Xét Tuyển");
-        btnRun.setFont(new Font("SansSerif", Font.BOLD, 16));
-        btnRun.setBackground(new Color(40, 167, 69));
-        btnRun.setForeground(Color.WHITE);
-        btnRun.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // 1. Action Card
+        JPanel pnlActions = createStyledCard("BẢNG ĐIỀU KHIỂN");
+        pnlActions.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 20));
+
+        btnRun = new JButton("▶ Chạy Thuật Toán");
+        styleButton(btnRun, new Color(46, 204, 113));
         btnRun.addActionListener(this::runAdmission);
-        centerPanel.add(btnRun, gbc);
 
-        gbc.gridy = 1;
-        lblStatus = new JLabel("Trạng thái: Sẵn sàng");
-        lblStatus.setForeground(Color.GRAY);
-        centerPanel.add(lblStatus, gbc);
+        btnReset = new JButton("↺ Reset Kết Quả");
+        styleButton(btnReset, new Color(231, 76, 60));
+        btnReset.addActionListener(e -> resetResults());
 
-        // Stats Panel
-        gbc.gridy = 2; gbc.fill = GridBagConstraints.HORIZONTAL;
-        JPanel statsPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        statsPanel.setBorder(BorderFactory.createTitledBorder(null, "Kết Quả Xét Tuyển (Tổng hợp)", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("SansSerif", Font.BOLD, 14)));
+        pnlActions.add(btnRun);
+        pnlActions.add(btnReset);
 
-        lblTrungTuyen = new JLabel("\u2705 TRUNG TUYỂN: 0");
-        lblTrungTuyen.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        lblTrungTuyen.setForeground(new Color(0, 128, 0));
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.weighty = 0.3;
+        pnlContent.add(pnlActions, gbc);
 
-        lblTruot = new JLabel("\u274C TRƯỢT: 0");
-        lblTruot.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        lblTruot.setForeground(Color.RED);
+        // 2. Status Card
+        JPanel pnlStatus = createStyledCard("TRẠNG THÁI HỆ THỐNG");
+        pnlStatus.setLayout(new BorderLayout(10, 10));
+        pnlStatus.setBorder(BorderFactory.createCompoundBorder(pnlStatus.getBorder(), BorderFactory.createEmptyBorder(15, 15, 15, 15)));
 
-        lblDangXet = new JLabel("\u23F3 ĐANG XÉT: 0");
-        lblDangXet.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        lblDangXet.setForeground(Color.ORANGE);
+        lblStatus = new JLabel("Sẵn sàng thực hiện xét tuyển cho 64,000+ nguyện vọng.");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        pnlStatus.add(lblStatus, BorderLayout.NORTH);
 
-        statsPanel.add(lblTrungTuyen);
-        statsPanel.add(lblTruot);
-        statsPanel.add(lblDangXet);
+        progressBar = new JProgressBar();
+        progressBar.setPreferredSize(new Dimension(0, 25));
+        progressBar.setStringPainted(true);
+        pnlStatus.add(progressBar, BorderLayout.CENTER);
 
-        centerPanel.add(statsPanel, gbc);
+        gbc.gridy = 1; gbc.weighty = 0.2;
+        pnlContent.add(pnlStatus, gbc);
 
-        add(centerPanel, BorderLayout.CENTER);
+        // 3. Stats Card (3 small cards inside)
+        JPanel pnlStatsGrid = new JPanel(new GridLayout(1, 3, 20, 0));
+        pnlStatsGrid.setOpaque(false);
+
+        lblTrungTuyen = createStatLabel("TRÚNG TUYỂN", new Color(39, 174, 96));
+        lblTruot = createStatLabel("TRƯỢT", new Color(192, 57, 43));
+        lblDangXet = createStatLabel("ĐANG XÉT", new Color(230, 126, 34));
+
+        pnlStatsGrid.add(createStatCard("TRÚNG TUYỂN", lblTrungTuyen, new Color(235, 245, 238)));
+        pnlStatsGrid.add(createStatCard("TRƯỢT", lblTruot, new Color(253, 237, 236)));
+        pnlStatsGrid.add(createStatCard("ĐANG XÉT", lblDangXet, new Color(254, 245, 231)));
+
+        gbc.gridy = 2; gbc.weighty = 0.5;
+        pnlContent.add(pnlStatsGrid, gbc);
+
+        add(new JScrollPane(pnlContent), BorderLayout.CENTER);
+    }
+
+    private JPanel createStyledCard(String title) {
+        JPanel card = new JPanel();
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true),
+            title, TitledBorder.LEFT, TitledBorder.TOP,
+            new Font("Segoe UI", Font.BOLD, 12), new Color(127, 140, 141)
+        ));
+        return card;
+    }
+
+    private JPanel createStatCard(String title, JLabel valueLabel, Color bg) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(bg);
+        card.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true));
+        
+        JLabel lblTitle = new JLabel(title, SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblTitle.setForeground(new Color(100, 100, 100));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        
+        card.add(lblTitle, BorderLayout.NORTH);
+        card.add(valueLabel, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JLabel createStatLabel(String text, Color color) {
+        JLabel label = new JLabel("0", SwingConstants.CENTER);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        label.setForeground(color);
+        return label;
+    }
+
+    private void styleButton(JButton btn, Color color) {
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(200, 45));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     public void loadSummary() {
@@ -87,19 +160,22 @@ public class XetTuyenPanel extends JPanel {
         long truot = nguyenVongRepository.countByNvKetQua("TRUOT");
         long dangXet = nguyenVongRepository.countByNvKetQua("DANG_XET");
 
-        lblTrungTuyen.setText("\u2705 TRUNG TUYỂN: " + trungTuyen);
-        lblTruot.setText("\u274C TRƯỢT: " + truot);
-        lblDangXet.setText("\u23F3 ĐANG XÉT / KHÔNG HỢP LỆ: " + dangXet);
+        lblTrungTuyen.setText(String.valueOf(trungTuyen));
+        lblTruot.setText(String.valueOf(truot));
+        lblDangXet.setText(String.valueOf(dangXet));
     }
 
     private void runAdmission(ActionEvent evt) {
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn chạy lại thuật toán lọc ảo?\nQuá trình này có thể mất vài giây đến vài phút tùy theo dữ liệu.", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Bắt đầu quy trình xét tuyển toàn cục?\n" +
+            "- Tính điểm từng nguyện vọng.\n" +
+            "- Phân loại trúng tuyển theo chỉ tiêu.\n" +
+            "Quá trình có thể mất vài giây.", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        btnRun.setEnabled(false);
-        lblStatus.setText("Trạng thái: Đang chạy thuật toán, vui lòng đợi...");
-        lblStatus.setForeground(Color.BLUE);
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        setUIEnabled(false);
+        lblStatus.setText("Đang thực hiện xét tuyển... Vui lòng không đóng ứng dụng.");
+        progressBar.setIndeterminate(true);
 
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
@@ -110,21 +186,36 @@ public class XetTuyenPanel extends JPanel {
 
             @Override
             protected void done() {
-                btnRun.setEnabled(true);
-                setCursor(Cursor.getDefaultCursor());
+                setUIEnabled(true);
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(100);
                 try {
                     get();
-                    lblStatus.setText("Trạng thái: Xét tuyển thành công!");
-                    lblStatus.setForeground(new Color(0, 128, 0));
+                    lblStatus.setText("Kết thúc quy trình xét tuyển thành công!");
                     loadSummary();
-                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Chạy xét tuyển và lọc ảo thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Xét tuyển hoàn tất!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception e) {
-                    lblStatus.setText("Trạng thái: Có lỗi xảy ra!");
-                    lblStatus.setForeground(Color.RED);
-                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Lỗi khi xét tuyển: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    lblStatus.setText("Lỗi: " + e.getMessage());
+                    JOptionPane.showMessageDialog(XetTuyenPanel.this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         worker.execute();
+    }
+
+    private void resetResults() {
+        int confirm = JOptionPane.showConfirmDialog(this, "Xóa toàn bộ kết quả trúng tuyển hiện tại?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            admissionService.resetResults();
+            loadSummary();
+            lblStatus.setText("Đã reset trạng thái xét tuyển về ban đầu.");
+            progressBar.setValue(0);
+        }
+    }
+
+    private void setUIEnabled(boolean enabled) {
+        btnRun.setEnabled(enabled);
+        btnReset.setEnabled(enabled);
+        setCursor(enabled ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     }
 }

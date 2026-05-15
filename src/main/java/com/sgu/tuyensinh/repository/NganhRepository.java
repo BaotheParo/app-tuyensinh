@@ -16,4 +16,6 @@ public interface NganhRepository extends JpaRepository<Nganh, String> {
 
     // BỔ SUNG: Truy vấn phân trang hỗ trợ tìm kiếm theo Mã hoặc Tên ngành
     Page<Nganh> findByMaNganhContainingOrTenNganhContainingIgnoreCase(String maNganh, String tenNganh, Pageable pageable);
+
+    Nganh findByTenNganh(String tenNganh);
 }

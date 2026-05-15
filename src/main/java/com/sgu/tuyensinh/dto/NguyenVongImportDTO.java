@@ -18,4 +18,5 @@ public class NguyenVongImportDTO {
     private Double diemUtqd;
     private Double diemCong;
     private Double diemXetTuyen;
+    private Boolean isTuyenThang;
 }

@@ -41,43 +41,66 @@ public class BangQuyDoiPanel extends JPanel {
     }
 
     private void initComponents() {
-        String[] columns = { "ID", "Phương Thức", "Môn/Tổ Hợp", "Điểm Gốc A", "Điểm Gốc B", "Quy Đổi C", "Quy Đổi D",
-                "Ghi Chú" };
+        // Rút gọn các cột dư thừa, tập trung vào thông tin quan trọng
+        String[] columns = { "Mã", "Phương thức", "Đối tượng quy đổi", "Mức điểm gốc", "Điểm quy đổi", "Ghi chú" };
         tablePanel = new BaseTablePanel(columns);
+        
+        // Chỉnh style table giống các panel khác (ThiSinh, Nganh)
+        JTable table = tablePanel.getTable();
+        table.setRowHeight(30);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        
+        // Căn giữa cho các cột điểm số
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer); // Mức điểm gốc
+        table.getColumnModel().getColumn(4).setCellRenderer(centerRenderer); // Điểm quy đổi
 
-        txtSearch = new JTextField(20);
-        btnSearch = new JButton("Tìm Kiếm");
-        btnPrev = new JButton("<< Trước");
-        btnNext = new JButton("Sau >>");
+        txtSearch = new JTextField(25);
+        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm theo phương thức hoặc môn...");
+        
+        btnSearch = new JButton("Tìm kiếm");
+        btnSearch.setBackground(new Color(70, 130, 180));
+        btnSearch.setForeground(Color.WHITE);
+
+        btnPrev = new JButton("Trước");
+        btnNext = new JButton("Sau");
         lblPage = new JLabel("Trang: 1/1");
+        lblPage.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        btnImport = new JButton("Import");
-        btnImport.setBackground(new Color(30, 144, 255));
+        btnImport = new JButton("Nạp dữ liệu quy đổi (Excel)");
+        btnImport.setBackground(new Color(46, 204, 113));
         btnImport.setForeground(Color.WHITE);
+        btnImport.setFont(new Font("Segoe UI", Font.BOLD, 13));
     }
 
     private void layoutComponents() {
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Bộ lọc dữ liệu Quy Đổi"));
-        searchPanel.add(new JLabel("Tìm theo Phương thức/Môn:"));
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnSearch);
+        JPanel topPanel = new JPanel(new BorderLayout(20, 0));
+        topPanel.setOpaque(false);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+
+        JPanel searchWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        searchWrap.setOpaque(false);
+        searchWrap.add(new JLabel("Bộ lọc:"));
+        searchWrap.add(txtSearch);
+        searchWrap.add(btnSearch);
+
+        JPanel actionWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        actionWrap.setOpaque(false);
+        actionWrap.add(btnImport);
+
+        topPanel.add(searchWrap, BorderLayout.WEST);
+        topPanel.add(actionWrap, BorderLayout.EAST);
 
         JPanel pagingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        pagingPanel.setOpaque(false);
         pagingPanel.add(btnPrev);
         pagingPanel.add(lblPage);
         pagingPanel.add(btnNext);
 
-        JPanel importWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        importWrap.add(btnImport);
-
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.add(pagingPanel, BorderLayout.CENTER);
-        bottomPanel.add(importWrap, BorderLayout.EAST);
-
-        add(searchPanel, BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
         add(tablePanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(pagingPanel, BorderLayout.SOUTH);
     }
 
     private void addEventHandlers() {
@@ -112,7 +135,7 @@ public class BangQuyDoiPanel extends JPanel {
 
             dialog.add(importPanel);
             dialog.pack();
-            dialog.setMinimumSize(new Dimension(500, 280));
+            dialog.setMinimumSize(new Dimension(550, 300));
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
             loadData();
@@ -129,11 +152,20 @@ public class BangQuyDoiPanel extends JPanel {
         model.setRowCount(0);
 
         for (BangQuyDoi b : pageData.getContent()) {
+            // Logic hiển thị khoảng điểm thông minh hơn
+            String mucDiemGoc;
+            if (b.getDiemGocB() != null && b.getDiemGocB() > b.getDiemGocA()) {
+                mucDiemGoc = b.getDiemGocA() + " - " + b.getDiemGocB();
+            } else {
+                mucDiemGoc = String.valueOf(b.getDiemGocA());
+            }
+
             tablePanel.addRow(new Object[] {
-                    b.getMaQuyDoi(), b.getPhuongThuc(),
+                    b.getMaQuyDoi(),
+                    b.getPhuongThuc(),
                     (b.getMon() != null ? b.getMon() : b.getToHop()),
-                    b.getDiemGocA(), b.getDiemGocB(),
-                    b.getDiemQuyDoiC(), b.getDiemQuyDoiD(),
+                    mucDiemGoc,
+                    b.getDiemQuyDoiC(),
                     b.getPhanVi()
             });
         }

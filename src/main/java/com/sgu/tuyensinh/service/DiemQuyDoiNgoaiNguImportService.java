@@ -25,7 +25,7 @@ public class DiemQuyDoiNgoaiNguImportService implements IImportService {
     private final JdbcTemplate jdbcTemplate;
 
     private static final String SQL_UPDATE_DIEM_THI = 
-        "UPDATE diem_thi SET anh = ? WHERE cccd = ?";
+        "UPDATE diem_thi SET anh = GREATEST(IFNULL(anh, 0), ?) WHERE cccd = ?";
 
     private static final String SQL_UPSERT_DIEM_CONG = 
         "INSERT INTO xt_diemcongxetuyen (ts_cccd, diemCC, dc_keys, phuongthuc, ghichu) " +

@@ -63,6 +63,9 @@ public class NguyenVong {
     @Column(name = "nv_ketqua", length = 45)
     private String nvKetQua;
 
+    @Column(name = "is_tuyen_thang")
+    private Boolean isTuyenThang = false;
+
     /**
      * Khóa tổ hợp duy nhất (do import tạo).
      */

@@ -3,12 +3,14 @@ package com.sgu.tuyensinh.service;
 import com.sgu.tuyensinh.entity.DiemThi;
 import com.sgu.tuyensinh.entity.NganhToHop;
 import com.sgu.tuyensinh.entity.ThiSinh;
+import com.sgu.tuyensinh.service.dto.DiemXetTuyenDTO;
 import com.sgu.tuyensinh.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ScoringService {
+
 
     @Autowired
     private BonusPointService bonusPointService;
@@ -18,20 +20,18 @@ public class ScoringService {
      * Cấu trúc viết đơn giản cho sinh viên năm 3 tham khảo dễ hiểu.
      */
     public Double calculateFinalScore(ThiSinh ts, NganhToHop nth) {
-        // Bước 1: Tính Điểm Tổ Hợp Gốc (ĐTHGXT)
-        // Cần truyền thêm 1 chuỗi giả định "PT4" (THPT) hoặc loại phương thức tùy theo
-        // tham số thực sau này
-        Double dtHxt = calculateComboScore(ts, nth, "THPT");
-
-        // Trừ đi độ lệch tổ hợp về gốc (ĐTHGXT = ĐTHXT - dolech)
-        double dolech = (nth.getDoLech() != null) ? nth.getDoLech() : 0.0;
-        double dthgxt = dtHxt - dolech;
-
-        // Bước 2: Tính tổng Điểm Cộng thô (ĐC raw)
         double dcRaw = 0.0;
         if (ts.getId() != null) {
             dcRaw = bonusPointService.calculateRawBonusPoint(ts.getId());
         }
+        return calculateFinalScore(ts, nth, dcRaw);
+    }
+
+    public Double calculateFinalScore(ThiSinh ts, NganhToHop nth, double dcRaw) {
+        // Bước 1: Tính Điểm Tổ Hợp Gốc (ĐTHGXT)
+        Double dtHxt = calculateComboScore(ts, nth, "THPT");
+        double dolech = (nth.getDoLech() != null) ? nth.getDoLech() : 0.0;
+        double dthgxt = dtHxt - dolech;
 
         // Bước 3: Chặn trần Điểm Cộng (Cap ĐC)
         double capDc = Math.min(dcRaw, 3.0);
@@ -44,7 +44,6 @@ public class ScoringService {
         double dutThucTe;
 
         if (baseScore >= AppConstants.THRESHOLD_UUTIEN) {
-            // Áp dụng công thức giảm dần
             dutThucTe = ((AppConstants.MAX_SCORE - baseScore) / 7.5) * dutGoc;
         } else {
             dutThucTe = dutGoc;
@@ -53,8 +52,47 @@ public class ScoringService {
         // Bước 6: Chốt Điểm Xét Tuyển cuối cùng (ĐXT)
         double finalScore = Math.min(baseScore + dutThucTe, AppConstants.MAX_SCORE);
 
-        // Trả về kết quả ĐXT đã làm tròn 2 chữ số thập phân
         return Math.round(finalScore * 100.0) / 100.0;
+    }
+
+    /**
+     * Tính toán và trả về chi tiết các thành phần điểm.
+     */
+    public DiemXetTuyenDTO calculateDetailedScore(ThiSinh ts, NganhToHop nth, String phuongThuc) {
+        double dcRaw = 0.0;
+        if (ts.getId() != null) {
+            dcRaw = bonusPointService.calculateRawBonusPoint(ts.getId());
+        }
+        return calculateDetailedScore(ts, nth, phuongThuc, dcRaw);
+    }
+
+    public DiemXetTuyenDTO calculateDetailedScore(ThiSinh ts, NganhToHop nth, String phuongThuc, double dcRaw) {
+        Double dtHxt = calculateComboScore(ts, nth, phuongThuc);
+        double dolech = (nth.getDoLech() != null) ? nth.getDoLech() : 0.0;
+        double dthgxt = dtHxt - dolech;
+
+        double capDc = Math.min(dcRaw, 3.0);
+        double baseScore = Math.min(dthgxt + capDc, AppConstants.MAX_SCORE);
+
+        double dutGoc = calculateBaseUT(ts);
+        double dutThucTe;
+
+        if (baseScore >= AppConstants.THRESHOLD_UUTIEN) {
+            dutThucTe = ((AppConstants.MAX_SCORE - baseScore) / 7.5) * dutGoc;
+        } else {
+            dutThucTe = dutGoc;
+        }
+
+        double finalScore = Math.min(baseScore + dutThucTe, AppConstants.MAX_SCORE);
+
+        return DiemXetTuyenDTO.builder()
+                .diemThxt(Math.round(dtHxt * 100.0) / 100.0)
+                .diemCong(Math.round(capDc * 100.0) / 100.0)
+                .diemUtqd(Math.round(dutThucTe * 100.0) / 100.0)
+                .diemXetTuyen(Math.round(finalScore * 100.0) / 100.0)
+                .ttThm(nth.getMaToHop())
+                .phuongThuc(phuongThuc)
+                .build();
     }
 
     /**
@@ -71,6 +109,11 @@ public class ScoringService {
         double m2 = getScoreBySubject(diemThi, nth.getThMon2());
         double m3 = getScoreBySubject(diemThi, nth.getThMon3());
 
+        // CHỐT THEO PRD 2.10.1: Nếu có bất kỳ môn nào = 0.0 hoặc không có điểm -> Loại tổ hợp (Trả về 0.0)
+        if (m1 <= 0.0 || m2 <= 0.0 || m3 <= 0.0) {
+            return 0.0;
+        }
+
         // Nếu tham gia thi ĐGNL hoặc V-SAT, gọi hàm quy đổi mock
         if ("VSAT".equalsIgnoreCase(type) || "DGNL".equalsIgnoreCase(type)) {
             m1 = mockConvertScore(m1, type);
@@ -86,17 +129,48 @@ public class ScoringService {
         double tongHeSo = w1 + w2 + w3;
         double tongDiem = (m1 * w1) + (m2 * w2) + (m3 * w3);
 
-        // Quy về thang đo
+        // Quy về thang đo 30 (tongDiem / tongHeSo * 3)
         return (tongDiem / tongHeSo) * 3;
     }
 
+    @Autowired
+    private com.sgu.tuyensinh.repository.BangQuyDoiRepository bangQuyDoiRepository;
+
     /**
-     * Hàm mock nội suy điểm V-SAT / ĐGNL tạm thời do dev khác sẽ điền công thức
-     * sau.
+     * Hàm quy đổi điểm V-SAT / ĐGNL sử dụng bảng quy đổi.
      */
     private Double mockConvertScore(Double rawScore, String type) {
         if (rawScore == null)
             return 0.0;
+            
+        // Nếu điểm đã nằm trong thang 10 (do mock data), giữ nguyên để tránh bị chia nhỏ
+        if (rawScore <= 10.0) {
+            return rawScore;
+        }
+
+        // Lấy danh sách quy đổi từ DB
+        java.util.List<com.sgu.tuyensinh.entity.BangQuyDoi> dsQuyDoi = bangQuyDoiRepository.findByPhuongThuc(type);
+        
+        if (dsQuyDoi != null && !dsQuyDoi.isEmpty()) {
+            // Tìm quy tắc có điểm gốc gần nhất hoặc bao hàm rawScore
+            // Sắp xếp theo điểm gốc A giảm dần (từ cao xuống thấp)
+            dsQuyDoi.sort((a, b) -> Double.compare(
+                b.getDiemGocA() != null ? b.getDiemGocA() : 0.0, 
+                a.getDiemGocA() != null ? a.getDiemGocA() : 0.0
+            ));
+            
+            for (com.sgu.tuyensinh.entity.BangQuyDoi rule : dsQuyDoi) {
+                double minScore = rule.getDiemGocA() != null ? rule.getDiemGocA() : 0.0;
+                double maxScore = rule.getDiemGocB() != null ? rule.getDiemGocB() : Double.MAX_VALUE;
+                
+                // Nếu rawScore nằm trong khoảng (hoặc lớn hơn minScore nếu maxScore không có)
+                if (rawScore >= minScore && (rule.getDiemGocB() == null || rawScore <= maxScore)) {
+                    return rule.getDiemQuyDoiC() != null ? rule.getDiemQuyDoiC() : 0.0;
+                }
+            }
+        }
+
+        // Fallback nội suy tuyến tính nếu không có luật trong bảng
         if ("VSAT".equalsIgnoreCase(type)) {
             // VSAT thang 450 -> Thang 10: raw / 45
             return (rawScore / 45.0);
@@ -113,39 +187,20 @@ public class ScoringService {
     private double getScoreBySubject(DiemThi dt, String subject) {
         if (subject == null)
             return 0.0;
+        String sub = subject.toUpperCase().trim();
         Double sc = null;
-        switch (subject.toUpperCase()) {
-            case "TOAN":
-                sc = dt.getToan();
-                break;
-            case "VAN":
-                sc = dt.getVan();
-                break;
-            case "LY":
-                sc = dt.getLy();
-                break;
-            case "HOA":
-                sc = dt.getHoa();
-                break;
-            case "SINH":
-                sc = dt.getSinh();
-                break;
-            case "SU":
-                sc = dt.getSu();
-                break;
-            case "DIA":
-                sc = dt.getDia();
-                break;
-            case "ANH":
-                sc = dt.getAnh();
-                break;
-            case "NK1":
-                sc = dt.getNk1();
-                break;
-            case "NK2":
-                sc = dt.getNk2();
-                break;
-        }
+        
+        if (sub.equals("TO") || sub.equals("TOAN") || sub.equals("TOÁN")) sc = dt.getToan();
+        else if (sub.equals("VA") || sub.equals("VAN") || sub.equals("VĂN")) sc = dt.getVan();
+        else if (sub.equals("LI") || sub.equals("LY") || sub.equals("LÝ")) sc = dt.getLy();
+        else if (sub.equals("HO") || sub.equals("HOA") || sub.equals("HÓA")) sc = dt.getHoa();
+        else if (sub.equals("SI") || sub.equals("SINH")) sc = dt.getSinh();
+        else if (sub.equals("SU") || sub.equals("SỬ")) sc = dt.getSu();
+        else if (sub.equals("DI") || sub.equals("DIA") || sub.equals("ĐỊA")) sc = dt.getDia();
+        else if (sub.equals("AN") || sub.equals("ANH") || sub.equals("N1") || sub.equals("N1_CC") || sub.equals("NN1")) sc = dt.getAnh();
+        else if (sub.startsWith("NK1")) sc = dt.getNk1();
+        else if (sub.startsWith("NK2")) sc = dt.getNk2();
+
         return (sc != null) ? sc : 0.0;
     }
 

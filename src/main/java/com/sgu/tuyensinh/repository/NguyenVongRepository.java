@@ -28,4 +28,20 @@ public interface NguyenVongRepository extends JpaRepository<NguyenVong, Integer>
 
     @Query("SELECT n FROM NguyenVong n WHERE (:status IS NULL OR :status = '' OR n.nvKetQua = :status) AND (:keyword IS NULL OR :keyword = '' OR n.nnCccd LIKE CONCAT('%', :keyword, '%') OR n.nvManganh LIKE CONCAT('%', :keyword, '%'))")
     Page<NguyenVong> searchWithFilter(@Param("keyword") String keyword, @Param("status") String status, Pageable pageable);
+
+    @Query("SELECT COUNT(n) FROM NguyenVong n WHERE n.nvManganh = :maNganh AND n.nvKetQua = :ketQua")
+    long countByMaNganhAndKetQua(@Param("maNganh") String maNganh, @Param("ketQua") String ketQua);
+
+    @Query("SELECT COUNT(n) FROM NguyenVong n WHERE n.nvManganh = :maNganh AND n.ttPhuongthuc = :phuongThuc")
+    long countByMaNganhAndPhuongThuc(@Param("maNganh") String maNganh, @Param("phuongThuc") String phuongThuc);
+
+    List<NguyenVong> findTop100ByNvKetQuaOrderByDiemXetTuyenDesc(String nvKetQua);
+
+    List<NguyenVong> findTop100ByNvManganhAndNvKetQuaOrderByDiemXetTuyenDesc(String nvManganh, String nvKetQua);
+
+    @Query("SELECT n.nvManganh, n.ttPhuongthuc, COUNT(n) FROM NguyenVong n WHERE n.nvKetQua = :ketQua GROUP BY n.nvManganh, n.ttPhuongthuc")
+    List<Object[]> countPhuongThucByMaNganhAndKetQua(@Param("ketQua") String ketQua);
+
+    @Query("SELECT n.ttPhuongthuc, COUNT(n) FROM NguyenVong n WHERE n.nvManganh = :maNganh AND n.nvKetQua = 'TRUNG_TUYEN' GROUP BY n.ttPhuongthuc")
+    List<Object[]> countByPhuongThucForNganh(@Param("maNganh") String maNganh);
 }

@@ -2,6 +2,8 @@ package com.sgu.tuyensinh.controller;
 
 import com.sgu.tuyensinh.entity.NguyenVong;
 import com.sgu.tuyensinh.entity.ThiSinh;
+import com.sgu.tuyensinh.entity.Nganh;
+import com.sgu.tuyensinh.entity.NganhToHop;
 import com.sgu.tuyensinh.repository.NguyenVongRepository;
 import com.sgu.tuyensinh.repository.ThiSinhRepository;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +94,6 @@ public class TraCuuController {
      */
     @GetMapping("/tra-cuu/ket-qua")
     public String showKetQua(@RequestParam("cccd") String cccd, Model model) {
-
         // Tìm thí sinh
         Optional<ThiSinh> optThiSinh = thiSinhRepository.findById(cccd.trim());
         if (optThiSinh.isEmpty()) {
@@ -119,6 +120,88 @@ public class TraCuuController {
         model.addAttribute("coTrungTuyen", coTrungTuyen);
 
         return "ketqua"; // → templates/ketqua.html
+    }
+
+    private final com.sgu.tuyensinh.repository.NganhRepository nganhRepository;
+    private final com.sgu.tuyensinh.repository.NganhToHopRepository nganhToHopRepository;
+    private final com.sgu.tuyensinh.service.ScoringService scoringService;
+
+    /**
+     * GET /tra-cuu/chi-tiet — Xem chi tiết cách tính điểm của từng nguyện vọng.
+     * Nếu không có cccd, hiển thị form nhập.
+     */
+    @GetMapping("/tra-cuu/chi-tiet")
+    public String showDetailedKetQua(@RequestParam(value = "cccd", required = false) String cccd, Model model) {
+        if (cccd == null || cccd.trim().isEmpty()) {
+            return "tra-cuu-chi-tiet-search"; // Trang nhập CCCD để xem chi tiết
+        }
+        
+        Optional<ThiSinh> optThiSinh = thiSinhRepository.findById(cccd.trim());
+        if (optThiSinh.isEmpty()) {
+            model.addAttribute("error", "Không tìm thấy thí sinh với mã: " + cccd);
+            return "tra-cuu-chi-tiet-search";
+        }
+
+        ThiSinh thiSinh = optThiSinh.get();
+        List<NguyenVong> danhSachNV = nguyenVongRepository.findAll().stream()
+                .filter(nv -> cccd.trim().equals(nv.getNnCccd()))
+                .sorted((a, b) -> Integer.compare(a.getNvTt() != null ? a.getNvTt() : 999, b.getNvTt() != null ? b.getNvTt() : 999))
+                .toList();
+
+        // Tạo cấu trúc dữ liệu để chứa chi tiết điểm của từng nguyện vọng
+        // Map<NV_TT, List<DiemXetTuyenDTO>>
+        java.util.Map<Integer, List<com.sgu.tuyensinh.service.dto.DiemXetTuyenDTO>> chiTietDiemMap = new java.util.LinkedHashMap<>();
+        java.util.Map<Integer, String> tenNganhMap = new java.util.HashMap<>();
+
+        for (NguyenVong nv : danhSachNV) {
+            String maNganh = nv.getNvManganh();
+            Optional<Nganh> optNganh = nganhRepository.findById(maNganh);
+            if (optNganh.isPresent()) {
+                Nganh nganh = optNganh.get();
+                tenNganhMap.put(nv.getNvTt(), nganh.getTenNganh());
+                
+                List<NganhToHop> dsToHop = nganhToHopRepository.findByMaNganh(maNganh);
+
+                List<com.sgu.tuyensinh.service.dto.DiemXetTuyenDTO> detailedScores = new java.util.ArrayList<>();
+                java.util.Set<String> processedKeys = new java.util.HashSet<>(); // Để tránh trùng lặp tổ hợp+phương thức
+                
+                // Các phương thức được phép của ngành
+                String[] phuongThucs = {"THPT", "DGNL", "VSAT"};
+                for (String pt : phuongThucs) {
+                    // Kiểm tra flag phương thức trong ngành (mặc định là Y nếu null để test)
+                    boolean isAllowed = switch (pt) {
+                        case "THPT" -> nganh.getThpt() == null || "Y".equalsIgnoreCase(nganh.getThpt());
+                        case "DGNL" -> "Y".equalsIgnoreCase(nganh.getDgnl());
+                        case "VSAT" -> "Y".equalsIgnoreCase(nganh.getVsat());
+                        default -> false;
+                    };
+
+                    if (isAllowed) {
+                        for (NganhToHop nth : dsToHop) {
+                            String key = pt + "_" + nth.getMaToHop();
+                            if (processedKeys.contains(key)) continue;
+                            
+                            com.sgu.tuyensinh.service.dto.DiemXetTuyenDTO dto = scoringService.calculateDetailedScore(thiSinh, nth, pt);
+                            // Chỉ thêm nếu có điểm thô > 0 (không bị liệt môn)
+                            if (dto.getDiemThxt() != null && dto.getDiemThxt() > 0) {
+                                detailedScores.add(dto);
+                                processedKeys.add(key);
+                            }
+                        }
+                    }
+                }
+                // Sắp xếp điểm giảm dần
+                detailedScores.sort((a, b) -> Double.compare(b.getDiemXetTuyen(), a.getDiemXetTuyen()));
+                chiTietDiemMap.put(nv.getNvTt(), detailedScores);
+            }
+        }
+
+        model.addAttribute("thiSinh", thiSinh);
+        model.addAttribute("danhSachNV", danhSachNV);
+        model.addAttribute("chiTietDiemMap", chiTietDiemMap);
+        model.addAttribute("tenNganhMap", tenNganhMap);
+
+        return "tra-cuu-chi-tiet";
     }
 
     // ── Helper ───────────────────────────────────────────────────
